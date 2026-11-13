@@ -1,4 +1,4 @@
-# Privacy Policy for Summary Expressive
+# Privacy Policy for UTubeSummary
 
 **Effective Date:** August 6, 2025
 
