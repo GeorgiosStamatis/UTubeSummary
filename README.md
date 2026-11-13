@@ -1,7 +1,7 @@
 <div style="text-align: center;">
 <img src=".github/logo.webp"  width=160 height=160 alt="logo">
 
-# Summary Expressive
+# UTubeSummary
 
 [![Discord](https://img.shields.io/discord/1406171833119801394?style=flat&logo=discord&link=https%3A%2F%2Fdiscord.gg%2FWjN73wKTqd)](https://discord.gg/WjN73wKTqd)
 ![GitHub License](https://img.shields.io/github/license/kid1412621/SummaryExpressive)
