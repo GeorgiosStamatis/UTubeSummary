@@ -4,7 +4,7 @@ This file provides guidance for AI agents working with code in this repository.
 
 ## Project Overview
 
-SummaryExpressive is an AI/LLM summarizer FOSS Android app that summarizes YouTube/BiliBili videos, web articles, images, and documents. It follows [MAD (Modern Android Development)](https://developer.android.com/courses/pathways/android-architecture) principles using pure Kotlin + Jetpack Compose + Material 3 Expressive. The app is BYOK (Bring Your Own Key), allowing users to configure their own LLM API keys.
+UTubeSummary is an AI/LLM summarizer FOSS Android app that summarizes YouTube/BiliBili videos, web articles, images, and documents. It follows [MAD (Modern Android Development)](https://developer.android.com/courses/pathways/android-architecture) principles using pure Kotlin + Jetpack Compose + Material 3 Expressive. The app is BYOK (Bring Your Own Key), allowing users to configure their own LLM API keys.
 
 ---
 
