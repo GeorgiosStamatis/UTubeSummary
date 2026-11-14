@@ -1,0 +1,194 @@
+package io.github.utubesummary.domain.usecase
+
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
+import io.github.utubesummary.domain.provider.AppLocaleProvider
+import io.github.utubesummary.domain.provider.DocumentMetadataProvider
+import io.github.utubesummary.domain.repository.AIProviderConfigRepository
+import io.github.utubesummary.domain.repository.HistoryRepository
+import io.github.utubesummary.domain.repository.UserPreferencesRepository
+import io.github.utubesummary.exception.SummaryException
+import io.github.utubesummary.exception.toSummaryException
+import io.github.utubesummary.llm.AIProvider
+import io.github.utubesummary.llm.LLMHandler
+import io.github.utubesummary.model.HistoryLengthResult
+import io.github.utubesummary.model.HistorySummary
+import io.github.utubesummary.model.SummaryLength
+import io.github.utubesummary.model.SummaryOutput
+import io.github.utubesummary.model.SummarySource
+import io.github.utubesummary.model.SummaryType
+import io.github.utubesummary.model.VideoSubtype
+import javax.inject.Inject
+
+interface SummarizeContentUseCase {
+    suspend operator fun invoke(
+        text: String,
+        overrideLength: SummaryLength? = null,
+    ): Result<SummaryOutput>
+}
+
+class SummarizeContentUseCaseImpl @Inject constructor(
+    private val userPreferencesRepository: UserPreferencesRepository,
+    private val aiProviderConfigRepository: AIProviderConfigRepository,
+    private val historyRepository: HistoryRepository,
+    private val llmHandler: LLMHandler,
+    private val documentMetadataProvider: DocumentMetadataProvider,
+    private val appLocaleProvider: AppLocaleProvider,
+) : SummarizeContentUseCase {
+    override suspend operator fun invoke(
+        text: String,
+        overrideLength: SummaryLength?,
+    ): Result<SummaryOutput> = withContext(Dispatchers.IO) {
+        runCatching {
+            val prefs = userPreferencesRepository.preferencesFlow.first()
+            val providerConfigs = aiProviderConfigRepository.providerConfigsFlow.first()
+
+            val activeProviderEnum = prefs.activeProvider?.let { name ->
+                AIProvider.entries.find { it.name == name }
+            } ?: throw SummaryException.NoKeyException()
+
+            val providerConfig = providerConfigs[activeProviderEnum.name]
+            val apiKey = providerConfig?.apiKey?.takeIf { it.isNotBlank() }
+                ?: throw SummaryException.NoKeyException()
+
+            val source = resolveSummarySource(text, prefs.autoExtractUrl)
+            if (source is SummarySource.None) {
+                throw SummaryException.NoContentException()
+            }
+
+            val targetLength = if (prefs.showLength) {
+                overrideLength
+                    ?: SummaryLength.entries.find { it.name == prefs.summaryLength && it != SummaryLength.NONE }
+                    ?: SummaryLength.MEDIUM
+            } else {
+                SummaryLength.NONE
+            }
+
+            val agent = llmHandler.getSummarizationAgent(
+                provider = activeProviderEnum,
+                apiKey = apiKey,
+                baseUrl = providerConfig.baseUrl.takeIf { it.isNotBlank() },
+                model = providerConfig.activeModel.takeIf { it.isNotBlank() },
+                summaryLength = targetLength,
+                showLength = prefs.showLength,
+                useContentLanguage = prefs.useOriginalLanguage,
+                appLanguage = appLocaleProvider.getCurrentLocale(),
+                isAppendMode = prefs.isAppendMode,
+                customBasePrompt = prefs.customBasePrompt,
+                additionalSystemPrompt = prefs.additionalSystemPrompt,
+            )
+
+            val summaryOutput = agent.run(source)
+
+            saveSummaryToHistory(
+                summaryOutput = summaryOutput,
+                summaryLength = targetLength,
+                source = source,
+                provider = activeProviderEnum.name,
+                model = providerConfig.activeModel.takeIf { it.isNotBlank() },
+            )
+
+            summaryOutput
+        }.fold(
+            onSuccess = { Result.success(it) },
+            onFailure = { Result.failure(it.toSummaryException()) }
+        )
+    }
+
+    private suspend fun resolveSummarySource(text: String, autoExtractUrl: Boolean): SummarySource {
+        if (text.startsWith("content://") || text.startsWith("file://")) {
+            val filename = documentMetadataProvider.getFileName(text) ?: "Document"
+            return SummarySource.Document(filename, text)
+        }
+
+        val processedText = if (autoExtractUrl) extractHttpUrl(text) else text
+        return when {
+            processedText.startsWith("http://", ignoreCase = true) ||
+                    processedText.startsWith("https://", ignoreCase = true) -> {
+                if (VideoSubtype.fromUrl(processedText) != null) {
+                    SummarySource.Video(processedText)
+                } else {
+                    SummarySource.Article(processedText)
+                }
+            }
+
+            processedText.isNotBlank() -> SummarySource.Text(processedText)
+            else -> SummarySource.None
+        }
+    }
+
+    private fun extractHttpUrl(text: String): String {
+        val urlRegex = Regex(
+            "(?:^|\\W)((http|https)://)" +
+                    "([\\w\\-]+\\.)+" +
+                    "([\\w\\-]+)" +
+                    "([^\\s<>\"#%{}|\\\\^`]*)"
+        )
+        return urlRegex.find(text)?.value?.trim() ?: text
+    }
+
+    private suspend fun saveSummaryToHistory(
+        summaryOutput: SummaryOutput,
+        summaryLength: SummaryLength,
+        source: SummarySource,
+        provider: String,
+        model: String?,
+    ) {
+        if (source is SummarySource.None) return
+
+        val type: SummaryType
+        var subtype: VideoSubtype? = null
+        var sourceLink: String? = null
+        var sourceText: String? = null
+
+        when (source) {
+            is SummarySource.Article -> {
+                type = SummaryType.ARTICLE
+                sourceLink = source.url
+            }
+
+            is SummarySource.Document -> {
+                type = SummaryType.DOCUMENT
+                sourceLink = source.uri
+            }
+
+            is SummarySource.Text -> {
+                type = SummaryType.TEXT
+                sourceText = source.content
+            }
+
+            is SummarySource.Video -> {
+                type = SummaryType.VIDEO
+                sourceLink = source.url
+                subtype = VideoSubtype.fromUrl(source.url)
+            }
+
+            is SummarySource.None -> return
+        }
+
+        val initialResult = HistoryLengthResult(
+            length = summaryLength,
+            summary = summaryOutput.summary.trim(),
+            provider = provider,
+            model = model,
+            overview = summaryOutput.overview,
+            keyPoints = summaryOutput.keyPoints,
+            tags = summaryOutput.tags,
+        )
+
+        val summary = HistorySummary(
+            title = summaryOutput.title,
+            author = summaryOutput.author,
+            length = summaryLength,
+            type = type,
+            subtype = subtype,
+            sourceLink = sourceLink,
+            sourceText = sourceText,
+            lengthResults = mapOf(summaryLength to initialResult),
+        )
+        if (summary.summary.isNotBlank() && summary.summary != "invalid link") {
+            historyRepository.addSummary(summary)
+        }
+    }
+}

@@ -12,12 +12,12 @@ plugins {
 }
 
 android {
-    namespace = "me.nanova.summaryexpressive"
+    namespace = "io.github.utubesummary"
     compileSdk = 37
     buildToolsVersion = "37.0.0"
 
     defaultConfig {
-        applicationId = "me.nanova.summaryexpressive"
+        applicationId = "io.github.utubesummary"
         minSdk = 33
         targetSdk = 37
         versionCode = 51

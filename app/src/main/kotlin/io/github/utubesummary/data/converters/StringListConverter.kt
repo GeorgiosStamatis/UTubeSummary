@@ -1,0 +1,23 @@
+package io.github.utubesummary.data.converters
+
+import androidx.room3.ColumnTypeConverter
+import kotlinx.serialization.json.Json
+
+class StringListConverter {
+    private val json = Json { ignoreUnknownKeys = true }
+
+    @ColumnTypeConverter
+    fun fromStringList(value: List<String>?): String? {
+        return value?.let { json.encodeToString(it) }
+    }
+
+    @ColumnTypeConverter
+    fun toStringList(value: String?): List<String>? {
+        if (value.isNullOrBlank()) return null
+        return runCatching {
+            json.decodeFromString<List<String>>(value)
+        }.getOrElse {
+            value.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        }
+    }
+}

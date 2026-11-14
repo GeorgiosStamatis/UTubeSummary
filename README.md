@@ -6,7 +6,6 @@
 [![Discord](https://img.shields.io/discord/1406171833119801394?style=flat&logo=discord&link=https%3A%2F%2Fdiscord.gg%2FWjN73wKTqd)](https://discord.gg/WjN73wKTqd)
 ![GitHub License](https://img.shields.io/github/license/kid1412621/SummaryExpressive)
 [![GitHub Release](https://img.shields.io/github/v/release/kid1412621/SummaryExpressive)](https://github.com/kid1412621/SummaryExpressive/releases)
-[![Google Play Store](https://img.shields.io/badge/Google_Play-414141?logo=google-play)](https://play.google.com/store/apps/details?id=me.nanova.summaryexpressive)
 
 [![ChatGPT](https://custom-icon-badges.demolab.com/badge/ChatGPT-74aa9c?logo=openai&logoColor=white)](https://platform.openai.com)
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-886FBF?logo=googlegemini&logoColor=fff)](https://aistudio.google.com)
@@ -39,7 +38,6 @@ documents with AI/LLM.
 ## 🔗 Downloads
 
 [![Get it on Github](https://images.weserv.nl/?url=https://s1.ax1x.com/2023/01/12/pSu1a36.png&h=80)](https://github.com/kid1412621/SummaryExpressive/releases)
-[![Google Play badge](https://images.weserv.nl/?url=https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png&h=80)](https://play.google.com/store/apps/details?id=me.nanova.summaryexpressive)
 
 Minimal Android version: **13**
 

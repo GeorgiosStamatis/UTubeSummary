@@ -81,9 +81,9 @@ jobs:
 
       - name: Copy and rename artifacts
         run: |
-          cp "app/build/outputs/apk/gms/release/app-gms-release.apk" "${{ env.APK_DIR }}/SummaryExpressive-gms-${{ env.VERSION_NAME }}(${{ env.VERSION_CODE }}).apk"
-          cp "app/build/outputs/apk/standalone/release/app-standalone-release.apk" "${{ env.APK_DIR }}/SummaryExpressive-standalone-${{ env.VERSION_NAME }}(${{ env.VERSION_CODE }}).apk"
-          cp "app/build/outputs/bundle/gmsRelease/app-gms-release.aab" "${{ env.APK_DIR }}/SummaryExpressive-gms-${{ env.VERSION_NAME }}(${{ env.VERSION_CODE }}).aab"
+          cp "app/build/outputs/apk/gms/release/app-gms-release.apk" "${{ env.APK_DIR }}/UTubeSummary-gms-${{ env.VERSION_NAME }}(${{ env.VERSION_CODE }}).apk"
+          cp "app/build/outputs/apk/standalone/release/app-standalone-release.apk" "${{ env.APK_DIR }}/UTubeSummary-standalone-${{ env.VERSION_NAME }}(${{ env.VERSION_CODE }}).apk"
+          cp "app/build/outputs/bundle/gmsRelease/app-gms-release.aab" "${{ env.APK_DIR }}/UTubeSummary-gms-${{ env.VERSION_NAME }}(${{ env.VERSION_CODE }}).aab"
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v3
@@ -135,7 +135,7 @@ jobs:
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-          packageName: me.nanova.summaryexpressive
+          packageName: io.github.utubesummary
           releaseFiles: ${{ env.APK_DIR }}/*.aab
           tracks: internal
           whatsNewDirectory: whatsnew

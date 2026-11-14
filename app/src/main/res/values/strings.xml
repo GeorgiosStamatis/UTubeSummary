@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Summary Expressive</string>
+    <string name="app_name" translatable="false">UTubeSummary</string>
     <string name="short_length">Short</string>
     <string name="middle_length">Middle</string>
     <string name="long_length">Long</string>
@@ -53,7 +53,7 @@
     <string name="search">Search</string>
     <string name="searchSettings">Search settings</string>
     <string name="nothingFound">Nothing found</string>
-    <string name="welcome">Welcome to Summary Expressive!</string>
+    <string name="welcome">Welcome to UTubeSummary!</string>
     <string name="welcomeDescription">Summarize websites, articles and YouTube-Videos</string>
     <string name="onboardingLlmTitle">AI Providers &amp; Quick Switcher</string>
     <string name="onboardingLlmDescription">Bring your own API key (BYOK). Tap the switcher to select providers &amp; models, or long-press and drag (↔ provider, ↕ model) to switch instantly.</string>

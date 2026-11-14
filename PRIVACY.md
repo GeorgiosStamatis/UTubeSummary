@@ -2,7 +2,7 @@
 
 **Effective Date:** August 6, 2025
 
-Thank you for using Summary Expressive ("the App"), a service provided by NanoNova ("we," "us," or "
+Thank you for using UTubeSummary ("the App"), a service provided by NanoNova ("we," "us," or "
 our"). This Privacy Policy explains how we collect, use, disclose, and safeguard your information
 when you use our mobile application.
 

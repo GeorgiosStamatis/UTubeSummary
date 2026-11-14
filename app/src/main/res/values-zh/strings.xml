@@ -73,7 +73,7 @@
     <string name="search">搜索</string>
     <string name="searchSettings">搜索设置</string>
     <string name="nothingFound">未找到任何内容</string>
-    <string name="welcome">欢迎使用Summary Expressive！</string>
+    <string name="welcome">欢迎使用UTubeSummary！</string>
     <string name="welcomeDescription">总结网站、文章和YouTube视频</string>
     <string name="onboardingLlmTitle">AI 模型配置与快速切换</string>
     <string name="onboardingLlmDescription">支持自带 API 密钥 (BYOK)。点击切换器呼出面板选择模型，或长按滑动（↔ 提供商，↕ 模型）即时切换。</string>
