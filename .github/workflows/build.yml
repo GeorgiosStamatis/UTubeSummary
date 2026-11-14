@@ -38,5 +38,20 @@ jobs:
       - name: Run unit tests
         run: ./gradlew clean test
 
-      - name: Build debug APK (for testing build process)
+      - name: Build debug APK
         run: ./gradlew clean assembleDebug
+
+      - name: Upload debug APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: UTubeSummary-debug-apks
+          path: app/build/outputs/apk/*/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload unit test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: app/build/reports/tests/
+          if-no-files-found: ignore
