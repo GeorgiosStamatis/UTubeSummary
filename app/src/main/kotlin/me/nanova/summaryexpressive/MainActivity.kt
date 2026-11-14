@@ -136,15 +136,11 @@ class MainActivity : ComponentActivity() {
                 // To avoid re-triggering on configuration change, we clear the data.
                 intent.data = null
                 // Postpone clipboard access until the window has focus.
+                // Fill the input only; the user must tap summarize to send anything.
                 window.decorView.post {
                     val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                     clipboard.primaryClip?.getItemAt(0)?.text?.let {
-                        appViewModel.onEvent(
-                            AppStartAction(
-                                content = it.toString(),
-                                autoTrigger = true
-                            )
-                        )
+                        appViewModel.onEvent(AppStartAction(content = it.toString()))
                     }
                 }
             }

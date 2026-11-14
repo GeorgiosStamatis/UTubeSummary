@@ -1,7 +1,6 @@
 package me.nanova.summaryexpressive
 
 import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -132,10 +131,9 @@ class InstantSummaryActivity : ComponentActivity() {
                 }
             }
 
-            else -> {
-                val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-                clipboard.primaryClip?.getItemAt(0)?.text?.toString()
-            }
+            // Never read the clipboard here: this activity is exported and must not
+            // summarize clipboard contents on behalf of other apps.
+            else -> null
         }
 
         if (textToSummarize.isNullOrBlank()) {
