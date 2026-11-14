@@ -2,7 +2,7 @@
 
 **Effective Date:** August 6, 2025
 
-Thank you for using UTubeSummary ("the App"), a service provided by NanoNova ("we," "us," or "
+Thank you for using UTubeSummary ("the App"), a free and open-source app ("we," "us," or "
 our"). This Privacy Policy explains how we collect, use, disclose, and safeguard your information
 when you use our mobile application.
 
@@ -104,4 +104,4 @@ review this Privacy Policy periodically for any changes.
 
 If you have questions or comments about this Privacy Policy, please contact us at:
 
-kid1412621@gmail.com
+https://github.com/GeorgiosStamatis/UTubeSummary/issues

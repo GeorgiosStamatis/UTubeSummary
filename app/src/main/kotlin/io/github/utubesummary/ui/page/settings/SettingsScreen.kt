@@ -1,7 +1,6 @@
 package io.github.utubesummary.ui.page.settings
 
 import android.content.ClipData
-import android.content.Intent
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -44,7 +43,6 @@ import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import kotlinx.coroutines.launch
 import io.github.utubesummary.BuildConfig
 import io.github.utubesummary.R
@@ -389,10 +387,6 @@ private fun SettingsContent(
                                 )
                                 Toast.makeText(context, copiedText, Toast.LENGTH_SHORT).show()
                             }
-                        },
-                        onOpenWebsite = {
-                            val url = "https://nanova.me"
-                            context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
                         }
                     )
                 }

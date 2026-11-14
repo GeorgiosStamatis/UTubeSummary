@@ -364,7 +364,7 @@ fun HelpSettingsGroup(
                 }
             },
             onClick = {
-                val url = "https://github.com/kid1412621/SummaryExpressive"
+                val url = "https://github.com/GeorgiosStamatis/UTubeSummary"
                 context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
             }
         )

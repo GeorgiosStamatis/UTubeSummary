@@ -133,7 +133,7 @@ The app defines two product flavors under the `distribution` dimension (`app/bui
 
 ### Project Structure
 
-#### Core Application (`app/src/main/kotlin/me/nanova/utubesummary/`)
+#### Core Application (`app/src/main/kotlin/io/github/utubesummary/`)
 - **`App.kt`**: Application entry point with `@HiltAndroidApp`
 - **`MainActivity.kt`**: Main activity handling deep links, share intents, and navigation
 - **`InstantSummaryActivity.kt`**: Overlay activity for instant summarization via share sheet or text selection
