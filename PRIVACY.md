@@ -25,10 +25,9 @@ We collect the content you provide to the App for the purpose of summarization. 
 
 #### B. Data Collected Automatically
 
-* **Usage Data:** We may automatically collect information about how you access and use the App,
-  such as your device's IP address, operating system version, device type, crash logs, and a unique
-  device identifier. This data is used for analytics and to improve the stability and functionality
-  of our app.
+The App does not include analytics or crash-reporting services, and the developers do not collect
+usage data. Your settings, API keys (stored encrypted on your device) and summary history stay on
+your device.
 
 ### 2. How We Use Your Information
 
@@ -37,10 +36,6 @@ experience. Specifically, we use information collected about you via the Applica
 
 * **Provide Core Services:** To process and summarize the content (articles, documents, images,
   videos) you provide.
-* **Improve Our Application:** To analyze usage and trends to improve the App's functionality, user
-  experience, and AI model performance.
-* **Ensure Security and Stability:** To monitor for and prevent security issues, fraud, and to
-  diagnose and fix technical problems (crashes).
 
 ### 3. Sharing and Disclosure of Information
 
@@ -66,11 +61,12 @@ here:
 - [Google's Privacy Policy](https://policies.google.com/privacy)
 - [Anthropic Privacy Policy](https://www.anthropics.com/privacy/)
 
-#### B. Third-Party Analytics
+#### B. Web Content Retrieval
 
-We may use third-party service providers, such as Google Analytics for Firebase, to monitor and
-analyze the use of our Application. These services may use cookies or other tracking technologies to
-collect information about your use of the app.
+To summarize an article, the App fetches the page directly from its website. If the site denies
+access (e.g. HTTP 401/403 or anti-bot protection), the App may instead send the article URL to the
+Jina Reader service (`r.jina.ai`) to retrieve the page text. See
+[Jina AI's Privacy Policy](https://jina.ai/legal/).
 
 #### C. By Law or to Protect Rights
 
@@ -80,9 +76,9 @@ property, or (iii) protect the personal safety of users of the Application or th
 
 ### 4. Data Retention and Security
 
-* **Retention:** The content you submit for summarization (text, documents, etc.) is retained on our
-  servers only for the duration necessary to perform the summarization and is deleted shortly after.
-  We may retain anonymized usage and analytics data for a longer period to improve our service.
+* **Retention:** The developers operate no servers and receive none of your content. Summaries are
+  stored in the App's history on your device until you delete them. Content sent to third-party
+  services (section 3) is handled under those services' own policies.
 * **Security:** We use administrative, technical, and physical security measures to help protect
   your information. While we have taken reasonable steps to secure the information you provide to
   us, please be aware that despite our efforts, no security measures are perfect or impenetrable.

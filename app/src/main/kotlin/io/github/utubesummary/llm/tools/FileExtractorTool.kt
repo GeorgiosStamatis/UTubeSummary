@@ -54,29 +54,21 @@ private object PdfTextExtractor : TextExtractor {
 
                             // fallback to get content directly from text layer
                             if (pageText.isBlank()) {
-                                try {
-                                    val textContents =
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-                                            page.getTextContents()
-                                        } else {
-                                            // maybe can use this: https://developer.android.com/jetpack/androidx/releases/pdf
-                                            TODO()
-                                        }
-
-                                    if (textContents.isNotEmpty()) {
-                                        val pageLayerText =
-                                            textContents.joinToString(" ") { it.text }.trim()
+                                // Text layer access needs API 35+; older devices rely on OCR only.
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                                    try {
+                                        val pageLayerText = page.getTextContents()
+                                            .joinToString(" ") { it.text }.trim()
                                         if (pageLayerText.isNotBlank()) {
                                             pageText = pageLayerText
                                         }
+                                    } catch (e: Exception) {
+                                        Log.w(
+                                            "PdfTextExtractor",
+                                            "Failed to extract text from PDF's text layer",
+                                            e
+                                        )
                                     }
-                                } catch (e: Exception) {
-                                    Log.w(
-                                        "PdfTextExtractor",
-                                        "Failed to extract text from PDF's text layer (might be API limitation or other issue)",
-                                        e
-                                    )
-                                    // Ignore, fallback only
                                 }
                             }
 
