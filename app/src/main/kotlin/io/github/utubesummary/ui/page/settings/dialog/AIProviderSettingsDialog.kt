@@ -289,9 +289,16 @@ private fun ProviderTestResultText(state: ProviderTestState) {
         ProviderTestState.Idle -> return
         ProviderTestState.Testing -> stringResource(R.string.testingConnection) to false
         is ProviderTestState.Done -> when (val result = state.result) {
-            is ProviderTestResult.Success -> stringResource(
-                if (result.keyChecked) R.string.testSuccessKey else R.string.testSuccess
-            ) to false
+            is ProviderTestResult.Success -> {
+                val base = stringResource(
+                    if (result.keyChecked) R.string.testSuccessKey else R.string.testSuccess
+                )
+                if (result.models.isEmpty()) {
+                    base to false
+                } else {
+                    "$base " + stringResource(R.string.testModelsLoaded, result.models.size) to false
+                }
+            }
 
             is ProviderTestResult.AuthFailed ->
                 stringResource(R.string.testAuthFailed, result.statusCode) to true

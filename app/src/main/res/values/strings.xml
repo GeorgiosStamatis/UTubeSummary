@@ -26,6 +26,7 @@
     <string name="testingConnection">Testing…</string>
     <string name="testSuccess">Connection successful.</string>
     <string name="testSuccessKey">Connection successful. The API key was accepted.</string>
+    <string name="testModelsLoaded">%1$d models loaded.</string>
     <string name="testAuthFailed">Authentication failed (HTTP %1$d). Check the API key.</string>
     <string name="testEndpointNotFound">Endpoint not found (HTTP 404). Check the URL.</string>
     <string name="testHttpError">The server returned HTTP %1$d.</string>

@@ -164,7 +164,10 @@ class SettingsViewModelTest {
                     ): ProviderTestResult {
                         lastCheckedUrl = baseUrl
                         lastCheckedKey = apiKey
-                        return ProviderTestResult.Success(keyChecked = apiKey.isNotBlank())
+                        return ProviderTestResult.Success(
+                            keyChecked = apiKey.isNotBlank(),
+                            models = fetchedModels,
+                        )
                     }
                 },
                 appLocaleProvider = object : AppLocaleProvider {
@@ -173,6 +176,7 @@ class SettingsViewModelTest {
             )
         )
 
+    private var fetchedModels: List<String> = emptyList()
     private var lastCheckedUrl: String? = null
     private var lastCheckedKey: String? = null
 
@@ -460,4 +464,42 @@ class SettingsViewModelTest {
             viewModel.clearProviderTest()
             assertEquals(ProviderTestState.Idle, viewModel.providerTestState.value)
         }
+
+    @Test
+    fun `test successful provider test populates the model list`() = runTest(testDispatcher) {
+        fetchedModels = listOf("model-a", "model-b")
+        val viewModel = createViewModel()
+
+        viewModel.testProviderConnection(AIProvider.LM_STUDIO, "http://pc:1234/v1", "")
+
+        val config = fakeConfigRepo.getConfig("LM_STUDIO")
+        assertEquals(listOf("model-a", "model-b"), config?.models)
+        assertEquals("model-a", config?.activeModel)
+    }
+
+    @Test
+    fun `test fetched models keep the currently selected model`() = runTest(testDispatcher) {
+        fakeConfigRepo.saveConfig(
+            "LM_STUDIO",
+            ProviderConfig(activeModel = "my-alias", models = listOf("my-alias"))
+        )
+        fetchedModels = listOf("model-a")
+        val viewModel = createViewModel()
+
+        viewModel.testProviderConnection(AIProvider.LM_STUDIO, "http://pc:1234/v1", "")
+
+        val config = fakeConfigRepo.getConfig("LM_STUDIO")
+        assertEquals(listOf("my-alias", "model-a"), config?.models)
+        assertEquals("my-alias", config?.activeModel)
+    }
+
+    @Test
+    fun `test saving provider config refreshes the model list`() = runTest(testDispatcher) {
+        fetchedModels = listOf("model-a")
+        val viewModel = createViewModel()
+
+        viewModel.setProviderConfig("LM_STUDIO", "192.168.1.10:1234/v1", "", null)
+
+        assertEquals(listOf("model-a"), fakeConfigRepo.getConfig("LM_STUDIO")?.models)
+    }
 }

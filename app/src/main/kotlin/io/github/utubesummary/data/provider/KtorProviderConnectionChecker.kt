@@ -3,10 +3,18 @@ package io.github.utubesummary.data.provider
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import io.github.utubesummary.domain.provider.ProviderConnectionChecker
 import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.model.ProviderTestResult
@@ -92,12 +100,12 @@ internal fun buildConnectionRequest(
         )
 
         AIProvider.CLAUDE -> ConnectionRequest(
-            modelsUrl(base("https://api.anthropic.com"), "v1"),
+            modelsUrl(base("https://api.anthropic.com"), "v1") + "?limit=1000",
             mapOf("x-api-key" to apiKey, "anthropic-version" to "2023-06-01")
         )
 
         AIProvider.GEMINI -> ConnectionRequest(
-            modelsUrl(base("https://generativelanguage.googleapis.com"), "v1beta"),
+            modelsUrl(base("https://generativelanguage.googleapis.com"), "v1beta") + "?pageSize=1000",
             mapOf("x-goog-api-key" to apiKey)
         )
 
@@ -117,14 +125,19 @@ class KtorProviderConnectionChecker @Inject constructor(
     ): ProviderTestResult = withContext(Dispatchers.IO) {
         try {
             val request = buildConnectionRequest(provider, baseUrl, apiKey, locale)
-            val status = withTimeoutOrNull(TIMEOUT_MS) {
-                httpClient.get(request.url) {
+            val (status, body) = withTimeoutOrNull(TIMEOUT_MS) {
+                val response = httpClient.get(request.url) {
                     request.headers.forEach { (name, value) -> header(name, value) }
-                }.status.value
+                }
+                response.status.value to
+                        if (response.status.value in 200..299) response.bodyAsText() else ""
             } ?: return@withContext ProviderTestResult.Unreachable
 
             when (status) {
-                in 200..299 -> ProviderTestResult.Success(keyChecked = apiKey.isNotBlank())
+                in 200..299 -> ProviderTestResult.Success(
+                    keyChecked = apiKey.isNotBlank(),
+                    models = parseModelIds(provider, body),
+                )
                 401, 403 -> ProviderTestResult.AuthFailed(status)
                 404 -> ProviderTestResult.EndpointNotFound
                 else -> ProviderTestResult.HttpError(status)
@@ -135,4 +148,40 @@ class KtorProviderConnectionChecker @Inject constructor(
             ProviderTestResult.Unreachable
         }
     }
+}
+
+private val OPENAI_NON_CHAT_MODEL = Regex(
+    "embed|whisper|tts|dall-e|moderation|audio|realtime|transcribe|image|davinci|babbage|sora",
+    RegexOption.IGNORE_CASE
+)
+
+/** Extracts a sorted, de-duplicated list of chat-capable model ids from a "list models" body. */
+internal fun parseModelIds(provider: AIProvider, body: String): List<String> {
+    val root: JsonElement = runCatching { Json.parseToJsonElement(body) }.getOrNull()
+        ?: return emptyList()
+
+    fun JsonElement.items(key: String): List<JsonObject> =
+        (this as? JsonObject)?.get(key)?.let { it as? JsonArray }
+            ?.mapNotNull { it as? JsonObject }.orEmpty()
+
+    fun JsonObject.text(key: String): String? =
+        (get(key) as? JsonPrimitive)?.contentOrNull
+
+    val ids = when (provider) {
+        AIProvider.OLLAMA -> root.items("models").mapNotNull { it.text("name") }
+
+        AIProvider.GEMINI -> root.items("models")
+            .filter { model ->
+                val methods = (model["supportedGenerationMethods"] as? JsonArray)
+                    ?.map { it.jsonPrimitive.content }
+                methods == null || "generateContent" in methods
+            }
+            .mapNotNull { it.text("name")?.removePrefix("models/") }
+
+        AIProvider.OPENAI -> root.items("data").mapNotNull { it.text("id") }
+            .filterNot { OPENAI_NON_CHAT_MODEL.containsMatchIn(it) }
+
+        else -> root.items("data").mapNotNull { it.text("id") }
+    }
+    return ids.filter { it.isNotBlank() }.distinct().sorted()
 }

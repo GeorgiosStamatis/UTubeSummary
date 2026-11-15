@@ -106,6 +106,21 @@ class UpdateProviderConfigUseCase @Inject constructor(
         }
     }
 
+    /**
+     * Replaces the provider's model list with models reported by the server. The currently
+     * selected model is kept (even if the server doesn't list it, e.g. an alias).
+     */
+    suspend fun applyFetchedModels(provider: String, fetchedModels: List<String>) {
+        if (fetchedModels.isEmpty()) return
+        val active = aiProviderConfigRepository.getConfig(provider)?.activeModel.orEmpty()
+        val models = if (active.isNotBlank() && active !in fetchedModels) {
+            listOf(active) + fetchedModels
+        } else {
+            fetchedModels
+        }
+        setProviderModels(provider, models)
+    }
+
     suspend fun resetProviderModelsToDefault(provider: String) {
         val aiProvider = AIProvider.entries.find { it.name == provider } ?: return
         val defaultModels = aiProvider.defaultModelIds

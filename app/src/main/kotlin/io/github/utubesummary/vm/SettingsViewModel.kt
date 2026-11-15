@@ -15,6 +15,7 @@ import io.github.utubesummary.domain.usecase.TestProviderConnectionUseCase
 import io.github.utubesummary.domain.usecase.UpdateProviderConfigUseCase
 import io.github.utubesummary.domain.usecase.UpdateUserPreferencesUseCase
 import io.github.utubesummary.llm.AIProvider
+import io.github.utubesummary.model.ProviderTestResult
 import io.github.utubesummary.model.SummaryLength
 import javax.inject.Inject
 
@@ -36,6 +37,9 @@ class SettingsViewModel @Inject constructor(
         _providerTestState.value = ProviderTestState.Testing
         providerTestJob = viewModelScope.launch {
             val result = testProviderConnectionUseCase(provider, baseUrl, apiKey)
+            if (result is ProviderTestResult.Success) {
+                updateProviderConfigUseCase.applyFetchedModels(provider.name, result.models)
+            }
             _providerTestState.value = ProviderTestState.Done(result)
         }
     }
@@ -161,6 +165,13 @@ class SettingsViewModel @Inject constructor(
                 apiKey = apiKey,
                 providerOrder = providerOrder,
             )
+            // Best effort: refresh the model list from the server; failures are ignored.
+            if (providerEnum != null && (baseUrl.isNotBlank() || !providerEnum.isMandatoryBaseUrl)) {
+                val result = testProviderConnectionUseCase(providerEnum, baseUrl, apiKey)
+                if (result is ProviderTestResult.Success) {
+                    updateProviderConfigUseCase.applyFetchedModels(provider, result.models)
+                }
+            }
         }
     }
 

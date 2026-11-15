@@ -32,12 +32,12 @@ class ProviderConnectionRequestTest {
     @Test
     fun `claude and gemini use their own auth headers`() {
         val claude = build(AIProvider.CLAUDE)
-        assertEquals("https://api.anthropic.com/v1/models", claude.url)
+        assertEquals("https://api.anthropic.com/v1/models?limit=1000", claude.url)
         assertEquals("k", claude.headers["x-api-key"])
         assertEquals("2023-06-01", claude.headers["anthropic-version"])
 
         val gemini = build(AIProvider.GEMINI)
-        assertEquals("https://generativelanguage.googleapis.com/v1beta/models", gemini.url)
+        assertEquals("https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000", gemini.url)
         assertEquals("k", gemini.headers["x-goog-api-key"])
     }
 
@@ -50,5 +50,32 @@ class ProviderConnectionRequestTest {
         )
         assertEquals("https://api.moonshot.cn/v1/models", zh.url)
         assertEquals("https://api.moonshot.ai/v1/models", build(AIProvider.KIMI).url)
+    }
+
+    @Test
+    fun `parses model ids per provider`() {
+        val openAi = """{"data":[{"id":"gpt-5"},{"id":"text-embedding-3-small"},{"id":"gpt-4o"},{"id":"whisper-1"}]}"""
+        assertEquals(listOf("gpt-4o", "gpt-5"), parseModelIds(AIProvider.OPENAI, openAi))
+
+        // Non-OpenAI providers are not filtered.
+        assertEquals(
+            listOf("a-embed", "b"),
+            parseModelIds(AIProvider.LM_STUDIO, """{"data":[{"id":"b"},{"id":"a-embed"},{"id":"b"}]}""")
+        )
+
+        val gemini = """{"models":[{"name":"models/gemini-pro","supportedGenerationMethods":["generateContent"]},""" +
+                """{"name":"models/embedding-001","supportedGenerationMethods":["embedContent"]}]}"""
+        assertEquals(listOf("gemini-pro"), parseModelIds(AIProvider.GEMINI, gemini))
+
+        assertEquals(
+            listOf("llama3", "qwen3"),
+            parseModelIds(AIProvider.OLLAMA, """{"models":[{"name":"qwen3"},{"name":"llama3"}]}""")
+        )
+    }
+
+    @Test
+    fun `invalid bodies give no models`() {
+        assertTrue(parseModelIds(AIProvider.OPENAI, "not json").isEmpty())
+        assertTrue(parseModelIds(AIProvider.OPENAI, "{}").isEmpty())
     }
 }
