@@ -59,6 +59,10 @@ import androidx.compose.ui.unit.dp
 import io.github.utubesummary.R
 import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.model.ProviderConfig
+import io.github.utubesummary.vm.ProviderTestState
+import io.github.utubesummary.model.ProviderTestResult
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import io.github.utubesummary.ui.component.ClickablePasteIcon
 import io.github.utubesummary.ui.component.ReorderDragHandle
 import io.github.utubesummary.ui.component.ReorderableItem
@@ -74,6 +78,9 @@ fun AIProviderSettingsDialog(
     providerOrder: List<String> = emptyList(),
     onConfirm: (provider: AIProvider, baseUrl: String, apiKey: String, providerOrder: List<String>) -> Unit,
     onNext: (provider: AIProvider, baseUrl: String, apiKey: String, providerOrder: List<String>) -> Unit,
+    testState: ProviderTestState = ProviderTestState.Idle,
+    onTest: (provider: AIProvider, baseUrl: String, apiKey: String) -> Unit = { _, _, _ -> },
+    onTestReset: () -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -113,9 +120,14 @@ fun AIProviderSettingsDialog(
     val configChanged =
         baseUrlTextFieldValue != (providerConfigs[selectedProvider.name]?.baseUrl ?: "") ||
                 apiKeyTextFieldValue != (providerConfigs[selectedProvider.name]?.apiKey ?: "")
-    val isChanged = providerChanged || orderChanged || configChanged
 
     val canSubmit = if (providerChanged || configChanged) formValid else orderChanged
+
+    // A previous test result no longer applies once the inputs change or the dialog closes.
+    LaunchedEffect(selectedProvider, baseUrlTextFieldValue, apiKeyTextFieldValue) {
+        onTestReset()
+    }
+    DisposableEffect(Unit) { onDispose { onTestReset() } }
 
     val submit = {
         val orderNames = providersList.map { it.name }
@@ -238,6 +250,8 @@ fun AIProviderSettingsDialog(
                         )
                     )
                 }
+
+                ProviderTestResultText(testState)
             }
         },
         confirmButton = {
@@ -255,20 +269,47 @@ fun AIProviderSettingsDialog(
             ) {
                 TextButton(
                     onClick = {
-                        selectedProvider = initialProvider
-                        providersList = initialEffectiveProviders
-                        baseUrlTextFieldValue = providerConfigs[initialProvider.name]?.baseUrl ?: ""
-                        apiKeyTextFieldValue = providerConfigs[initialProvider.name]?.apiKey ?: ""
+                        onTest(selectedProvider, baseUrlTextFieldValue, apiKeyTextFieldValue)
                     },
-                    enabled = isChanged
+                    enabled = formValid && testState !is ProviderTestState.Testing
                 ) {
-                    Text(stringResource(id = R.string.reset))
+                    Text(stringResource(id = R.string.testConnection))
                 }
                 TextButton(onClick = onDismissRequest) {
                     Text(stringResource(id = R.string.cancel))
                 }
             }
         },
+    )
+}
+
+@Composable
+private fun ProviderTestResultText(state: ProviderTestState) {
+    val (text, isError) = when (state) {
+        ProviderTestState.Idle -> return
+        ProviderTestState.Testing -> stringResource(R.string.testingConnection) to false
+        is ProviderTestState.Done -> when (val result = state.result) {
+            is ProviderTestResult.Success -> stringResource(
+                if (result.keyChecked) R.string.testSuccessKey else R.string.testSuccess
+            ) to false
+
+            is ProviderTestResult.AuthFailed ->
+                stringResource(R.string.testAuthFailed, result.statusCode) to true
+
+            ProviderTestResult.EndpointNotFound ->
+                stringResource(R.string.testEndpointNotFound) to true
+
+            is ProviderTestResult.HttpError ->
+                stringResource(R.string.testHttpError, result.statusCode) to true
+
+            ProviderTestResult.Unreachable -> stringResource(R.string.testUnreachable) to true
+        }
+    }
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodySmall,
+        color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(top = 8.dp)
     )
 }
 

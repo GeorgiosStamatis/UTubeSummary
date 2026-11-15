@@ -179,7 +179,11 @@ fun SettingsScreen(
         }
 
         DialogState.Provider -> {
+            val testState by settingsViewModel.providerTestState.collectAsState()
             AIProviderSettingsDialog(
+                testState = testState,
+                onTest = settingsViewModel::testProviderConnection,
+                onTestReset = settingsViewModel::clearProviderTest,
                 initialProvider = state.activeProvider ?: AIProvider.OPENAI,
                 providerConfigs = state.providerConfigs,
                 providerOrder = state.providerOrder,

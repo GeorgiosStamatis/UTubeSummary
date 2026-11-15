@@ -8,8 +8,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import io.github.utubesummary.domain.usecase.GetUserSettingsUseCase
+import io.github.utubesummary.domain.usecase.TestProviderConnectionUseCase
 import io.github.utubesummary.domain.usecase.UpdateProviderConfigUseCase
 import io.github.utubesummary.domain.usecase.UpdateUserPreferencesUseCase
 import io.github.utubesummary.llm.AIProvider
@@ -21,7 +23,27 @@ class SettingsViewModel @Inject constructor(
     getUserSettingsUseCase: GetUserSettingsUseCase,
     private val updateUserPreferencesUseCase: UpdateUserPreferencesUseCase,
     private val updateProviderConfigUseCase: UpdateProviderConfigUseCase,
+    private val testProviderConnectionUseCase: TestProviderConnectionUseCase,
 ) : ViewModel() {
+
+    private val _providerTestState = MutableStateFlow<ProviderTestState>(ProviderTestState.Idle)
+    val providerTestState: StateFlow<ProviderTestState> = _providerTestState
+    private var providerTestJob: Job? = null
+
+    /** Checks the URL and key without saving them. */
+    fun testProviderConnection(provider: AIProvider, baseUrl: String, apiKey: String) {
+        providerTestJob?.cancel()
+        _providerTestState.value = ProviderTestState.Testing
+        providerTestJob = viewModelScope.launch {
+            val result = testProviderConnectionUseCase(provider, baseUrl, apiKey)
+            _providerTestState.value = ProviderTestState.Done(result)
+        }
+    }
+
+    fun clearProviderTest() {
+        providerTestJob?.cancel()
+        _providerTestState.value = ProviderTestState.Idle
+    }
 
     private val _summaryLength = MutableStateFlow<SummaryLength?>(null)
     private val _activeProvider = MutableStateFlow<AIProvider?>(null)

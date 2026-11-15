@@ -16,6 +16,11 @@ import io.github.utubesummary.domain.usecase.GetUserSettingsUseCase
 import io.github.utubesummary.domain.usecase.UpdateProviderConfigUseCase
 import io.github.utubesummary.domain.usecase.UpdateUserPreferencesUseCase
 import io.github.utubesummary.llm.AIProvider
+import java.util.Locale
+import io.github.utubesummary.model.ProviderTestResult
+import io.github.utubesummary.domain.usecase.TestProviderConnectionUseCase
+import io.github.utubesummary.domain.provider.ProviderConnectionChecker
+import io.github.utubesummary.domain.provider.AppLocaleProvider
 import io.github.utubesummary.llm.defaultSystemPromptPlaceholder
 import io.github.utubesummary.model.ProviderConfig
 import io.github.utubesummary.model.SummaryLength
@@ -145,7 +150,31 @@ class SettingsViewModelTest {
     }
 
     private fun createViewModel(): SettingsViewModel =
-        SettingsViewModel(getUserSettingsUseCase, updateUserPreferencesUseCase, updateConfigUseCase)
+        SettingsViewModel(
+            getUserSettingsUseCase,
+            updateUserPreferencesUseCase,
+            updateConfigUseCase,
+            TestProviderConnectionUseCase(
+                checker = object : ProviderConnectionChecker {
+                    override suspend fun check(
+                        provider: AIProvider,
+                        baseUrl: String,
+                        apiKey: String,
+                        locale: Locale,
+                    ): ProviderTestResult {
+                        lastCheckedUrl = baseUrl
+                        lastCheckedKey = apiKey
+                        return ProviderTestResult.Success(keyChecked = apiKey.isNotBlank())
+                    }
+                },
+                appLocaleProvider = object : AppLocaleProvider {
+                    override fun getCurrentLocale(): Locale = Locale.ENGLISH
+                },
+            )
+        )
+
+    private var lastCheckedUrl: String? = null
+    private var lastCheckedKey: String? = null
 
     @AfterEach
     fun tearDown() {
@@ -412,4 +441,23 @@ class SettingsViewModelTest {
         viewModel.setBaseUrlValue("llm.example.com/v1")
         assertEquals("https://llm.example.com/v1", fakeConfigRepo.getConfig("LM_STUDIO")?.baseUrl)
     }
+
+    @Test
+    fun `test provider connection test exposes state and normalizes inputs`() =
+        runTest(testDispatcher) {
+            val viewModel = createViewModel()
+            assertEquals(ProviderTestState.Idle, viewModel.providerTestState.value)
+
+            viewModel.testProviderConnection(AIProvider.LM_STUDIO, " 192.168.1.10:1234/v1 ", " key ")
+
+            assertEquals(
+                ProviderTestState.Done(ProviderTestResult.Success(keyChecked = true)),
+                viewModel.providerTestState.value
+            )
+            assertEquals("http://192.168.1.10:1234/v1", lastCheckedUrl)
+            assertEquals("key", lastCheckedKey)
+
+            viewModel.clearProviderTest()
+            assertEquals(ProviderTestState.Idle, viewModel.providerTestState.value)
+        }
 }

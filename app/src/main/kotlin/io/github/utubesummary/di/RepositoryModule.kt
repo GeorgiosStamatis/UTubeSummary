@@ -10,6 +10,8 @@ import io.github.utubesummary.data.repository.AIProviderConfigRepositoryImpl
 import io.github.utubesummary.data.repository.HistoryRepositoryImpl
 import io.github.utubesummary.data.repository.UserPreferencesRepositoryImpl
 import io.github.utubesummary.domain.provider.AppLocaleProvider
+import io.github.utubesummary.domain.provider.ProviderConnectionChecker
+import io.github.utubesummary.data.provider.KtorProviderConnectionChecker
 import io.github.utubesummary.domain.provider.DocumentMetadataProvider
 import io.github.utubesummary.domain.repository.AIProviderConfigRepository
 import io.github.utubesummary.domain.repository.HistoryRepository
@@ -41,6 +43,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAppLocaleProvider(impl: AndroidAppLocaleProvider): AppLocaleProvider
+
+    @Binds
+    @Singleton
+    abstract fun bindProviderConnectionChecker(impl: KtorProviderConnectionChecker): ProviderConnectionChecker
 
     @Binds
     @Singleton

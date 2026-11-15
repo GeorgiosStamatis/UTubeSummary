@@ -3,6 +3,7 @@ package io.github.utubesummary.vm
 import io.github.utubesummary.exception.SummaryException
 import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.model.ProviderConfig
+import io.github.utubesummary.model.ProviderTestResult
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
 
@@ -39,3 +40,10 @@ data class SummarizationState(
     val error: SummaryException? = null,
     val lengthResults: Map<SummaryLength, SummaryOutput> = emptyMap(),
 )
+
+/** State of the "Test" button in the AI provider dialog. */
+sealed interface ProviderTestState {
+    data object Idle : ProviderTestState
+    data object Testing : ProviderTestState
+    data class Done(val result: ProviderTestResult) : ProviderTestState
+}

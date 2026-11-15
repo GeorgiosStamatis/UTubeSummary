@@ -11,29 +11,31 @@ private val privateIpv4 = Regex(
     "^(127|10)(\\.\\d{1,3}){3}$|^192\\.168(\\.\\d{1,3}){2}$|^172\\.(1[6-9]|2\\d|3[01])(\\.\\d{1,3}){2}$"
 )
 
+fun normalizeProviderBaseUrl(url: String): String {
+    val trimmed = url.trim()
+    return when {
+        trimmed.isBlank() -> ""
+        trimmed.startsWith("http://", ignoreCase = true) || trimmed.startsWith(
+            "https://",
+            ignoreCase = true
+        ) -> trimmed
+
+        // Local / LAN servers (e.g. LM Studio, Ollama) rarely have TLS.
+        isLocalHost(trimmed) -> "http://$trimmed"
+        else -> "https://$trimmed"
+    }
+}
+
+private fun isLocalHost(url: String): Boolean {
+    val host = url.substringBefore('/').substringBefore(':').lowercase()
+    return host == "localhost" || host.endsWith(".local") || privateIpv4.matches(host)
+}
+
 class UpdateProviderConfigUseCase @Inject constructor(
     private val aiProviderConfigRepository: AIProviderConfigRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
 ) {
-    fun normalizeBaseUrl(url: String): String {
-        val trimmed = url.trim()
-        return when {
-            trimmed.isBlank() -> ""
-            trimmed.startsWith("http://", ignoreCase = true) || trimmed.startsWith(
-                "https://",
-                ignoreCase = true
-            ) -> trimmed
-
-            // Local / LAN servers (e.g. LM Studio, Ollama) rarely have TLS.
-            isLocalHost(trimmed) -> "http://$trimmed"
-            else -> "https://$trimmed"
-        }
-    }
-
-    private fun isLocalHost(url: String): Boolean {
-        val host = url.substringBefore('/').substringBefore(':').lowercase()
-        return host == "localhost" || host.endsWith(".local") || privateIpv4.matches(host)
-    }
+    fun normalizeBaseUrl(url: String): String = normalizeProviderBaseUrl(url)
 
     suspend fun updateApiKey(provider: String? = null, apiKey: String) {
         val targetProvider = provider
