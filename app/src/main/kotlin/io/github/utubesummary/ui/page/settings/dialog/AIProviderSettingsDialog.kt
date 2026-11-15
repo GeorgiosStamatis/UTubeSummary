@@ -41,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -165,6 +166,9 @@ fun AIProviderSettingsDialog(
                     singleLine = true,
                     shape = MaterialTheme.shapes.large,
                     modifier = Modifier.fillMaxWidth(),
+                    placeholder = selectedProvider.baseUrlPlaceholder?.let { hint ->
+                        @Composable { Text(hint, modifier = Modifier.alpha(0.5f)) }
+                    },
                     leadingIcon = { Icon(Icons.Rounded.Link, contentDescription = "Base Url") },
                     trailingIcon = {
                         ClickablePasteIcon(
@@ -184,7 +188,7 @@ fun AIProviderSettingsDialog(
 
                 Spacer(modifier = Modifier.height(9.dp))
 
-                if (selectedProvider.isRequiredApiKey) {
+                if (selectedProvider.showsApiKeyField) {
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -198,7 +202,18 @@ fun AIProviderSettingsDialog(
                                 contentDescription = "API Key"
                             )
                         },
-                        label = { Text("* " + stringResource(R.string.setApiKey)) },
+                        label = {
+                            Text(
+                                if (selectedProvider.isRequiredApiKey) {
+                                    "* " + stringResource(R.string.setApiKey)
+                                } else {
+                                    stringResource(
+                                        R.string.apiKeyOptional,
+                                        stringResource(R.string.setApiKey)
+                                    )
+                                }
+                            )
+                        },
                         shape = MaterialTheme.shapes.large,
                         trailingIcon = {
                             ClickablePasteIcon(

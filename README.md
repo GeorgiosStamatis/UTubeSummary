@@ -86,6 +86,8 @@ package previously.
   - Mistral
   - OpenRouter
   - Ollama
+  - LM Studio
+  - Custom provider (any OpenAI-compatible endpoint, URL + optional token)
   - Custom OpenAI-compatible endpoints
 
 - **Custom Model Management**: Add, edit, delete, and drag-and-drop reorder models per provider with fallback to Koog defaults

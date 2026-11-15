@@ -19,6 +19,7 @@ import ai.koog.prompt.executor.llms.MultiLLMPromptExecutor
 import ai.koog.prompt.executor.model.PromptExecutor
 import ai.koog.prompt.executor.ollama.client.OllamaClient
 import io.ktor.client.HttpClient
+import java.net.URI
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
@@ -74,6 +75,8 @@ class LLMExecutorFactory(
             AIProvider.KIMI -> createKimiExecutor(apiKey, baseUrl, appLanguage)
             AIProvider.MINIMAX -> createMiniMaxExecutor(apiKey, baseUrl, appLanguage)
             AIProvider.ZHIPU -> createZhipuExecutor(apiKey, baseUrl, appLanguage)
+            AIProvider.LM_STUDIO, AIProvider.CUSTOM ->
+                createOpenAICompatibleExecutor(provider, apiKey, baseUrl)
         }
     }
 
@@ -255,5 +258,32 @@ class LLMExecutorFactory(
             httpClientFactory = koogHttpClientFactory
         )
         return MultiLLMPromptExecutor(AIProvider.ZHIPU.id to client)
+    }
+
+    /**
+     * Executor for self-hosted / third-party OpenAI-compatible servers (LM Studio, custom).
+     *
+     * The URL may be given with or without a path prefix: a bare host (`http://pc:1234`) uses
+     * `/v1/chat/completions`, while a URL that already has a path (`http://pc:1234/v1`) uses
+     * `<path>/chat/completions`. The API key is optional; local servers usually ignore it.
+     */
+    private fun createOpenAICompatibleExecutor(
+        provider: AIProvider,
+        apiKey: String,
+        baseUrl: String?,
+    ): PromptExecutor {
+        val url = baseUrl?.trim()?.trimEnd('/')?.takeIf { it.isNotBlank() }
+            ?: throw IllegalArgumentException("Base URL is required for ${provider.id.display}")
+        val hasPath = runCatching { URI(url).path }.getOrNull().isNullOrEmpty().not()
+
+        val client = OpenAILLMClient(
+            apiKey.ifBlank { "not-needed" },
+            settings = OpenAIClientSettings(
+                baseUrl = url,
+                chatCompletionsPath = if (hasPath) "chat/completions" else "v1/chat/completions",
+            ),
+            httpClientFactory = koogHttpClientFactory
+        )
+        return MultiLLMPromptExecutor(provider.id to client)
     }
 }

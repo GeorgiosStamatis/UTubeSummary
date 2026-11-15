@@ -49,8 +49,10 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             } ?: throw SummaryException.NoKeyException()
 
             val providerConfig = providerConfigs[activeProviderEnum.name]
-            val apiKey = providerConfig?.apiKey?.takeIf { it.isNotBlank() }
-                ?: throw SummaryException.NoKeyException()
+            val apiKey = providerConfig?.apiKey.orEmpty()
+            if (activeProviderEnum.isRequiredApiKey && apiKey.isBlank()) {
+                throw SummaryException.NoKeyException()
+            }
 
             val source = resolveSummarySource(text, prefs.autoExtractUrl)
             if (source is SummarySource.None) {
@@ -68,8 +70,8 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             val agent = llmHandler.getSummarizationAgent(
                 provider = activeProviderEnum,
                 apiKey = apiKey,
-                baseUrl = providerConfig.baseUrl.takeIf { it.isNotBlank() },
-                model = providerConfig.activeModel.takeIf { it.isNotBlank() },
+                baseUrl = providerConfig?.baseUrl?.takeIf { it.isNotBlank() },
+                model = providerConfig?.activeModel?.takeIf { it.isNotBlank() },
                 summaryLength = targetLength,
                 showLength = prefs.showLength,
                 useContentLanguage = prefs.useOriginalLanguage,
@@ -86,7 +88,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
                 summaryLength = targetLength,
                 source = source,
                 provider = activeProviderEnum.name,
-                model = providerConfig.activeModel.takeIf { it.isNotBlank() },
+                model = providerConfig?.activeModel?.takeIf { it.isNotBlank() },
             )
 
             summaryOutput

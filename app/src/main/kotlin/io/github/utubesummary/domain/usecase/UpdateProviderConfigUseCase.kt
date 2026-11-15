@@ -7,6 +7,10 @@ import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.model.ProviderConfig
 import javax.inject.Inject
 
+private val privateIpv4 = Regex(
+    "^(127|10)(\\.\\d{1,3}){3}$|^192\\.168(\\.\\d{1,3}){2}$|^172\\.(1[6-9]|2\\d|3[01])(\\.\\d{1,3}){2}$"
+)
+
 class UpdateProviderConfigUseCase @Inject constructor(
     private val aiProviderConfigRepository: AIProviderConfigRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
@@ -20,8 +24,15 @@ class UpdateProviderConfigUseCase @Inject constructor(
                 ignoreCase = true
             ) -> trimmed
 
+            // Local / LAN servers (e.g. LM Studio, Ollama) rarely have TLS.
+            isLocalHost(trimmed) -> "http://$trimmed"
             else -> "https://$trimmed"
         }
+    }
+
+    private fun isLocalHost(url: String): Boolean {
+        val host = url.substringBefore('/').substringBefore(':').lowercase()
+        return host == "localhost" || host.endsWith(".local") || privateIpv4.matches(host)
     }
 
     suspend fun updateApiKey(provider: String? = null, apiKey: String) {

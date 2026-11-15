@@ -134,5 +134,41 @@ class AIProviderConfigTest {
             )
         }
     }
-}
 
+    @Test
+    fun `test LM Studio and Custom providers need a URL and take an optional token`() {
+        listOf(AIProvider.LM_STUDIO, AIProvider.CUSTOM).forEach { provider ->
+            assertTrue(provider.isMandatoryBaseUrl)
+            assertFalse(provider.isRequiredApiKey)
+            assertTrue(provider.showsApiKeyField)
+            assertTrue(provider.defaultModelIds.isEmpty())
+            assertEquals("", provider.getEffectiveModel(null))
+
+            val customModel =
+                io.github.utubesummary.llm.CustomLLModel(provider, "my-model").toLLModel()
+            assertTrue(
+                customModel.supports(ai.koog.prompt.llm.LLMCapability.OpenAIEndpoint.Completions)
+            )
+        }
+        assertEquals("LM Studio", AIProvider.LM_STUDIO.id.display)
+        assertEquals("Custom Provider", AIProvider.CUSTOM.id.display)
+        // Ollama keeps its URL-only form, hosted providers keep a required key.
+        assertFalse(AIProvider.OLLAMA.showsApiKeyField)
+        assertTrue(AIProvider.OPENAI.showsApiKeyField)
+    }
+
+    @Test
+    fun `test resolveModel without a model name fails for providers without defaults`() {
+        listOf(AIProvider.LM_STUDIO, AIProvider.CUSTOM).forEach { provider ->
+            org.junit.jupiter.api.Assertions.assertThrows(
+                io.github.utubesummary.exception.SummaryException.ModelNotFoundException::class.java
+            ) {
+                io.github.utubesummary.llm.AgentConfigFactory.resolveModel(provider, null)
+            }
+            assertEquals(
+                "my-model",
+                io.github.utubesummary.llm.AgentConfigFactory.resolveModel(provider, "my-model").id
+            )
+        }
+    }
+}

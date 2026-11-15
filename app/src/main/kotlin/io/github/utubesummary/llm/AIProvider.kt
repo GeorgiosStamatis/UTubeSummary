@@ -28,6 +28,8 @@ enum class AIProvider(
     val icon: Int,
     val isMonochromeIcon: Boolean = false,
     val models: List<LLModel> = emptyList(),
+    val isApiKeyOptional: Boolean = false,
+    val baseUrlPlaceholder: String? = null,
 ) {
     OPENAI(
         LLMProvider.OpenAI,
@@ -110,6 +112,16 @@ enum class AIProvider(
                 contextLength = 32_768,
             )
         )
+    ),
+    LM_STUDIO(
+        LLMProvider("lmstudio", "LM Studio"),
+        true,
+        false,
+        R.drawable.lmstudio,
+        true,
+        emptyList(),
+        isApiKeyOptional = true,
+        baseUrlPlaceholder = "http://192.168.1.10:1234/v1",
     ),
     OPEN_ROUTER(
         LLMProvider.OpenRouter,
@@ -278,7 +290,21 @@ enum class AIProvider(
                 contextLength = 64_000,
             ),
         )
+    ),
+    CUSTOM(
+        LLMProvider("custom", "Custom Provider"),
+        true,
+        false,
+        R.drawable.custom_provider,
+        true,
+        emptyList(),
+        isApiKeyOptional = true,
+        baseUrlPlaceholder = "https://example.com/v1",
     );
+
+    /** Whether the settings dialog shows an API key / token field for this provider. */
+    val showsApiKeyField: Boolean
+        get() = isRequiredApiKey || isApiKeyOptional
 
     val defaultModelIds: List<String>
         get() = models.map { it.id }

@@ -11,6 +11,7 @@ import ai.koog.prompt.executor.clients.openai.OpenAIModels
 import ai.koog.prompt.executor.clients.openrouter.OpenRouterModels
 import ai.koog.prompt.executor.ollama.client.OllamaModels
 import ai.koog.prompt.llm.LLModel
+import io.github.utubesummary.exception.SummaryException
 
 object AgentConfigFactory {
 
@@ -29,6 +30,8 @@ object AgentConfigFactory {
             AIProvider.KIMI -> AIProvider.KIMI.models.first()
             AIProvider.MINIMAX -> AIProvider.MINIMAX.models.first()
             AIProvider.ZHIPU -> AIProvider.ZHIPU.models.first()
+            // No built-in models: the user must add a model name in Settings.
+            AIProvider.LM_STUDIO, AIProvider.CUSTOM -> throw SummaryException.ModelNotFoundException()
         }
     }
 

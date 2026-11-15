@@ -393,4 +393,23 @@ class SettingsViewModelTest {
             viewModel.setBaseUrlValue("api.anthropic.com")
             assertEquals("https://api.anthropic.com", fakeConfigRepo.getConfig("CLAUDE")?.baseUrl)
         }
+
+    @Test
+    fun `test local and LAN URLs without protocol default to http`() = runTest(testDispatcher) {
+        fakePrefsRepo.prefs.value = UserPreferences(activeProvider = "LM_STUDIO")
+        val viewModel = createViewModel()
+
+        viewModel.setBaseUrlValue("192.168.1.10:1234/v1")
+        assertEquals("http://192.168.1.10:1234/v1", fakeConfigRepo.getConfig("LM_STUDIO")?.baseUrl)
+
+        viewModel.setBaseUrlValue("localhost:1234")
+        assertEquals("http://localhost:1234", fakeConfigRepo.getConfig("LM_STUDIO")?.baseUrl)
+
+        viewModel.setBaseUrlValue("my-pc.local:1234/v1")
+        assertEquals("http://my-pc.local:1234/v1", fakeConfigRepo.getConfig("LM_STUDIO")?.baseUrl)
+
+        // Public hosts still default to https.
+        viewModel.setBaseUrlValue("llm.example.com/v1")
+        assertEquals("https://llm.example.com/v1", fakeConfigRepo.getConfig("LM_STUDIO")?.baseUrl)
+    }
 }

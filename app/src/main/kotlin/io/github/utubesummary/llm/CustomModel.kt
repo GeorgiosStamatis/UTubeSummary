@@ -3,6 +3,15 @@ package io.github.utubesummary.llm
 import ai.koog.prompt.llm.LLMCapability
 import ai.koog.prompt.llm.LLModel
 
+private val openAIEndpointProviders = setOf(
+    AIProvider.OPENAI,
+    AIProvider.KIMI,
+    AIProvider.MINIMAX,
+    AIProvider.ZHIPU,
+    AIProvider.LM_STUDIO,
+    AIProvider.CUSTOM,
+)
+
 data class CustomLLModel(
     val provider: AIProvider,
     val name: String,
@@ -17,7 +26,7 @@ data class CustomLLModel(
             LLMCapability.Completion,
             LLMCapability.Schema.JSON.Basic,
             LLMCapability.Schema.JSON.Standard,
-            if (provider == AIProvider.OPENAI || provider == AIProvider.KIMI || provider == AIProvider.MINIMAX || provider == AIProvider.ZHIPU) {
+            if (provider in openAIEndpointProviders) {
                 LLMCapability.OpenAIEndpoint.Completions
             } else null,
             if (provider == AIProvider.OPENAI) LLMCapability.OpenAIEndpoint.Responses else null,
