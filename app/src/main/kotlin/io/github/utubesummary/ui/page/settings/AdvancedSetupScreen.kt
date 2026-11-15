@@ -52,6 +52,14 @@ import io.github.utubesummary.R
 import io.github.utubesummary.llm.defaultSystemPromptPlaceholder
 import io.github.utubesummary.llm.generateFinalPromptString
 import io.github.utubesummary.vm.SettingsViewModel
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,6 +70,16 @@ fun AdvancedSummarySetupScreen(
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val state by settingsViewModel.settingsUiState.collectAsState()
+    // Edit locally and persist in the background: binding the text field straight to the
+    // DataStore-backed state makes typed characters lag/vanish and the cursor jump.
+    var basePrompt by rememberPersistedText(
+        saved = state.customBasePrompt,
+        onSave = settingsViewModel::setCustomBasePrompt
+    )
+    var additionalPrompt by rememberPersistedText(
+        saved = state.additionalSystemPrompt,
+        onSave = settingsViewModel::setAdditionalSystemPrompt
+    )
 
     Scaffold(
         modifier = Modifier
@@ -113,8 +131,8 @@ fun AdvancedSummarySetupScreen(
                             style = MaterialTheme.typography.titleMedium
                         )
                         OutlinedTextField(
-                            value = if (state.isAppendMode) defaultSystemPromptPlaceholder else state.customBasePrompt,
-                            onValueChange = { settingsViewModel.setCustomBasePrompt(it) },
+                            value = if (state.isAppendMode) defaultSystemPromptPlaceholder else basePrompt,
+                            onValueChange = { basePrompt = it },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .heightIn(min = 120.dp, max = 240.dp),
@@ -129,18 +147,14 @@ fun AdvancedSummarySetupScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                             ) {
                                 FilledTonalButton(
-                                    onClick = { settingsViewModel.setCustomBasePrompt("") },
-                                    enabled = state.customBasePrompt.isNotEmpty()
+                                    onClick = { basePrompt = "" },
+                                    enabled = basePrompt.isNotEmpty()
                                 ) {
                                     Text("Clear")
                                 }
                                 FilledTonalButton(
-                                    onClick = {
-                                        settingsViewModel.setCustomBasePrompt(
-                                            defaultSystemPromptPlaceholder
-                                        )
-                                    },
-                                    enabled = state.customBasePrompt != defaultSystemPromptPlaceholder
+                                    onClick = { basePrompt = defaultSystemPromptPlaceholder },
+                                    enabled = basePrompt != defaultSystemPromptPlaceholder
                                 ) {
                                     Text("Reset to Default")
                                 }
@@ -175,8 +189,8 @@ fun AdvancedSummarySetupScreen(
 
                         AnimatedVisibility(visible = state.isAppendMode) {
                             OutlinedTextField(
-                                value = state.additionalSystemPrompt,
-                                onValueChange = { settingsViewModel.setAdditionalSystemPrompt(it) },
+                                value = additionalPrompt,
+                                onValueChange = { additionalPrompt = it },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .heightIn(min = 80.dp, max = 160.dp),
@@ -248,8 +262,8 @@ fun AdvancedSummarySetupScreen(
                             useContentLanguage = state.useOriginalLanguage,
                             appLanguage = appLanguage,
                             isAppendMode = state.isAppendMode,
-                            customBasePrompt = state.customBasePrompt,
-                            additionalSystemPrompt = state.additionalSystemPrompt
+                            customBasePrompt = basePrompt,
+                            additionalSystemPrompt = additionalPrompt
                         )
 
                         Card(
@@ -274,3 +288,45 @@ fun AdvancedSummarySetupScreen(
 }
 
 
+
+private const val PERSIST_DELAY_MS = 400L
+
+/**
+ * Text state for an editable field backed by an asynchronously persisted value.
+ *
+ * The returned state updates synchronously with every keystroke and is saved after a short
+ * pause (and when leaving the screen). A new [saved] value is adopted only if it was not
+ * produced by this state's own writes, e.g. the initial load or a reset.
+ */
+@Composable
+private fun rememberPersistedText(
+    saved: String,
+    onSave: (String) -> Unit,
+): MutableState<String> {
+    val text = remember { mutableStateOf(saved) }
+    var lastSent by remember { mutableStateOf(saved) }
+    val currentOnSave by rememberUpdatedState(onSave)
+
+    LaunchedEffect(saved) {
+        if (saved != lastSent) {
+            lastSent = saved
+            text.value = saved
+        }
+    }
+    LaunchedEffect(text.value) {
+        if (text.value != lastSent) {
+            delay(PERSIST_DELAY_MS)
+            lastSent = text.value
+            currentOnSave(text.value)
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            if (text.value != lastSent) {
+                lastSent = text.value
+                currentOnSave(text.value)
+            }
+        }
+    }
+    return text
+}
