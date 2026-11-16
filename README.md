@@ -1,5 +1,5 @@
 <div style="text-align: center;">
-<img src=".github/logo.webp"  width=160 height=160 alt="logo">
+<img src=".github/logo.png"  width=160 height=160 alt="logo">
 
 # UTubeSummary
 
