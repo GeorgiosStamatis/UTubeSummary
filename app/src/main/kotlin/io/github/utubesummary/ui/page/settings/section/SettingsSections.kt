@@ -10,8 +10,10 @@ import androidx.compose.material.icons.automirrored.rounded.ShortText
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Link
+import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.StarRate
 import androidx.compose.material3.Icon
@@ -96,7 +98,7 @@ fun DisplaySettingsGroup(
         SettingItem(
             title = stringResource(id = R.string.useDynamicColor),
             subtitle = stringResource(id = R.string.useDynamicColorDescription),
-            position = GroupPosition.BOTTOM,
+            position = GroupPosition.MIDDLE,
             iconBadge = {
                 val (bg, fg) = SettingBadges.dynamicColorColors()
                 SettingIconBadge(bg, fg) {
@@ -114,6 +116,30 @@ fun DisplaySettingsGroup(
                 )
             },
             onClick = { actions.onDynamicColorChange(!state.dynamicColor) }
+        )
+
+        // Video thumbnails in History
+        SettingItem(
+            title = stringResource(id = R.string.showThumbnails),
+            subtitle = stringResource(id = R.string.showThumbnailsDescription),
+            position = GroupPosition.BOTTOM,
+            iconBadge = {
+                val (bg, fg) = SettingBadges.dynamicColorColors()
+                SettingIconBadge(bg, fg) {
+                    Icon(
+                        Icons.Rounded.Image,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            },
+            trailingContent = {
+                Switch(
+                    checked = state.showThumbnails,
+                    onCheckedChange = { actions.onShowThumbnailsChange(it) }
+                )
+            },
+            onClick = { actions.onShowThumbnailsChange(!state.showThumbnails) }
         )
     }
 }
@@ -273,6 +299,34 @@ fun ServicesSettingsGroup(
                 )
             },
             onClick = { actions.onAutoExtractUrlChange(!state.autoExtractUrl) }
+        )
+    }
+}
+
+/**
+ * History data: import summaries made with another app.
+ */
+@Composable
+fun DataSettingsGroup(
+    onImportSummaries: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    SettingsGroup(modifier = modifier) {
+        SettingItem(
+            title = stringResource(id = R.string.importSummaries),
+            subtitle = stringResource(id = R.string.importSummariesDescription),
+            position = GroupPosition.SINGLE,
+            iconBadge = {
+                val (bg, fg) = SettingBadges.advancedColors()
+                SettingIconBadge(bg, fg) {
+                    Icon(
+                        Icons.Rounded.UploadFile,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            },
+            onClick = onImportSummaries
         )
     }
 }

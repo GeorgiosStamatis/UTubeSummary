@@ -13,7 +13,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import io.github.utubesummary.R
+import io.github.utubesummary.domain.importer.InvalidBackupException
+import io.github.utubesummary.domain.provider.FileTooLargeException
 import io.github.utubesummary.domain.usecase.GetUserSettingsUseCase
+import io.github.utubesummary.domain.usecase.ImportVideoSummariesUseCase
 import io.github.utubesummary.domain.usecase.TestProviderConnectionUseCase
 import io.github.utubesummary.domain.usecase.UpdateProviderConfigUseCase
 import io.github.utubesummary.domain.usecase.UpdateUserPreferencesUseCase
@@ -29,7 +32,33 @@ class SettingsViewModel @Inject constructor(
     private val updateUserPreferencesUseCase: UpdateUserPreferencesUseCase,
     private val updateProviderConfigUseCase: UpdateProviderConfigUseCase,
     private val testProviderConnectionUseCase: TestProviderConnectionUseCase,
+    private val importVideoSummariesUseCase: ImportVideoSummariesUseCase,
 ) : ViewModel() {
+
+    private val _importState = MutableStateFlow<ImportState>(ImportState.Idle)
+    val importState: StateFlow<ImportState> = _importState
+
+    /** Imports video summaries from the JSON backup at [uri], skipping videos already in history. */
+    fun importVideoSummaries(uri: String) {
+        if (_importState.value is ImportState.Importing) return
+        _importState.value = ImportState.Importing
+        viewModelScope.launch {
+            importVideoSummariesUseCase(uri)
+                .onSuccess { _importState.value = ImportState.Done(it) }
+                .onFailure { error ->
+                    val reason = when (error) {
+                        is InvalidBackupException -> ImportFailure.INVALID_FILE
+                        is FileTooLargeException -> ImportFailure.TOO_LARGE
+                        else -> ImportFailure.UNREADABLE
+                    }
+                    _importState.value = ImportState.Failed(reason)
+                }
+        }
+    }
+
+    fun clearImportState() {
+        _importState.value = ImportState.Idle
+    }
 
     private val _userMessages = MutableSharedFlow<Int>(extraBufferCapacity = 1)
 
@@ -92,6 +121,7 @@ class SettingsViewModel @Inject constructor(
         SettingsUiState(
             useOriginalLanguage = prefs.useOriginalLanguage,
             dynamicColor = prefs.dynamicColor,
+            showThumbnails = prefs.showThumbnails,
             theme = prefs.theme,
             apiKey = providerConfig?.apiKey?.takeIf { it.isNotBlank() },
             baseUrl = providerConfig?.baseUrl?.takeIf { it.isNotBlank() },
@@ -117,6 +147,10 @@ class SettingsViewModel @Inject constructor(
     // Original Language in summary
     fun setUseOriginalLanguageValue(newValue: Boolean) =
         savePreference(updateUserPreferencesUseCase::setUseOriginalLanguage, newValue)
+
+    // Video thumbnails in History
+    fun setShowThumbnailsValue(newValue: Boolean) =
+        savePreference(updateUserPreferencesUseCase::setShowThumbnails, newValue)
 
     // Dynamic color
     fun setDynamicColorValue(newValue: Boolean) =

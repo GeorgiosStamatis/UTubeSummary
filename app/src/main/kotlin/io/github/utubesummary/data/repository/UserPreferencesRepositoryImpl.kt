@@ -67,6 +67,9 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override suspend fun setDynamicColor(value: Boolean) =
         updatePreferences { it.copy(dynamicColor = value) }
 
+    override suspend fun setShowThumbnails(value: Boolean) =
+        updatePreferences { it.copy(showThumbnails = value) }
+
     override suspend fun setTheme(value: Int) = updatePreferences { it.copy(theme = value) }
 
     override suspend fun setActiveProvider(value: String?) =

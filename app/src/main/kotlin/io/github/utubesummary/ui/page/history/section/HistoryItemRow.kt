@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.model.HistorySummary
+import io.github.utubesummary.model.youtubeThumbnailUrl
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.ui.component.ContentBadge
 import io.github.utubesummary.ui.component.extractDomain
@@ -102,6 +103,7 @@ fun HistoryItemRow(
     onClick: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    showThumbnails: Boolean = true,
 ) {
     val shape = groupShape(position)
     val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
@@ -126,6 +128,11 @@ fun HistoryItemRow(
 
     val domain = remember(summary.sourceLink) {
         extractDomain(summary.sourceLink)
+    }
+
+    // Derived from the link, so older and imported items get one too. Only for YouTube videos.
+    val thumbnailUrl = remember(summary.sourceLink, summary.isYoutubeLink, showThumbnails) {
+        if (showThumbnails && summary.isYoutubeLink) youtubeThumbnailUrl(summary.sourceLink) else null
     }
 
     SwipeToDismissBox(
@@ -156,10 +163,14 @@ fun HistoryItemRow(
                     .padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ContentBadge(
-                    summary = summary,
-                    domain = domain,
-                )
+                if (thumbnailUrl != null) {
+                    VideoThumbnail(summary = summary, url = thumbnailUrl)
+                } else {
+                    ContentBadge(
+                        summary = summary,
+                        domain = domain,
+                    )
+                }
 
                 Spacer(modifier = Modifier.width(14.dp))
 
@@ -167,6 +178,8 @@ fun HistoryItemRow(
                     summary = summary,
                     domain = domain,
                     aiProvider = aiProvider,
+                    // The thumbnail narrows the text column: let the title use a second line.
+                    titleMaxLines = if (thumbnailUrl != null) 2 else 1,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -219,6 +232,7 @@ private fun HistoryItemContent(
     domain: String?,
     aiProvider: AIProvider?,
     modifier: Modifier = Modifier,
+    titleMaxLines: Int = 1,
 ) {
     Column(
         modifier = modifier,
@@ -234,7 +248,7 @@ private fun HistoryItemContent(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
+                maxLines = titleMaxLines,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f, fill = false)
             )

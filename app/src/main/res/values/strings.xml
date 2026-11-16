@@ -39,6 +39,15 @@
     <string name="askHint">Ask a question…</string>
     <string name="askSend">Send question</string>
     <string name="askCopyAnswer">Copy answer</string>
+    <string name="importSummaries">Import video summaries</string>
+    <string name="importSummariesDescription">From a JSON backup of another app. Videos already in your history are skipped.</string>
+    <string name="importingSummaries">Importing…</string>
+    <string name="importDone">Imported %1$d. Skipped %2$d already in your history. %3$d entries could not be read.</string>
+    <string name="importInvalidFile">This file is not a valid video summaries backup.</string>
+    <string name="importTooLarge">This file is too large to import (25 MB maximum).</string>
+    <string name="importUnreadable">The file could not be read.</string>
+    <string name="showThumbnails">Video thumbnails</string>
+    <string name="showThumbnailsDescription">Show thumbnails in History, loaded from YouTube (about 10 KB each).</string>
     <string name="appVersion">Version %1$s</string>
     <string name="repository">Open Source Code</string>
     <string name="githubDescription">Our GitHub repository</string>

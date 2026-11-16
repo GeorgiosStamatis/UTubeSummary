@@ -28,6 +28,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import io.github.utubesummary.ui.page.settings.section.DataSettingsGroup
+import io.github.utubesummary.ui.page.settings.dialog.ImportSummariesDialog
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -83,6 +87,7 @@ data class SettingsActions(
     val onResetProviderModels: (String) -> Unit,
     val onUseOriginalLanguageChange: (Boolean) -> Unit,
     val onDynamicColorChange: (Boolean) -> Unit,
+    val onShowThumbnailsChange: (Boolean) -> Unit,
     val onShowLengthChange: (Boolean) -> Unit,
     val onAutoExtractUrlChange: (Boolean) -> Unit,
     val onBilibiliSessDataChange: (String, Long) -> Unit,
@@ -102,6 +107,14 @@ fun SettingsScreen(
 
     val state by settingsViewModel.settingsUiState.collectAsState()
 
+    val importState by settingsViewModel.importState.collectAsState()
+    ImportSummariesDialog(state = importState, onDismiss = settingsViewModel::clearImportState)
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) settingsViewModel.importVideoSummaries(uri.toString())
+    }
+
     val screenContext = LocalContext.current
     LaunchedEffect(settingsViewModel) {
         settingsViewModel.userMessages.collect { messageRes ->
@@ -119,6 +132,7 @@ fun SettingsScreen(
         onResetProviderModels = settingsViewModel::resetProviderModelsToDefault,
         onUseOriginalLanguageChange = settingsViewModel::setUseOriginalLanguageValue,
         onDynamicColorChange = settingsViewModel::setDynamicColorValue,
+        onShowThumbnailsChange = settingsViewModel::setShowThumbnailsValue,
         onShowLengthChange = settingsViewModel::setShowLengthValue,
         onAutoExtractUrlChange = settingsViewModel::setAutoExtractUrlValue,
         onBilibiliSessDataChange = settingsViewModel::setBilibiliSessData,
@@ -258,6 +272,7 @@ fun SettingsScreen(
             onShowModelDialog = { dialogState = DialogState.Model() },
             onShowBiliBiliLoginSheet = { showBiliBiliLoginSheet = true },
             onShowClearBilibiliSessDataDialog = { showClearBilibiliSessDataDialog = true },
+            onImportSummaries = { importLauncher.launch(arrayOf("application/json", "*/*")) },
             highlightSection = highlightSection
         )
     }
@@ -274,6 +289,7 @@ private fun SettingsContent(
     onShowModelDialog: () -> Unit,
     onShowBiliBiliLoginSheet: () -> Unit,
     onShowClearBilibiliSessDataDialog: () -> Unit,
+    onImportSummaries: () -> Unit,
     highlightSection: String?,
 ) {
     val context = LocalContext.current
@@ -289,7 +305,8 @@ private fun SettingsContent(
         onShowAIProviderDialog = onShowAIProviderDialog,
         onShowModelDialog = onShowModelDialog,
         onShowBiliBiliLoginSheet = onShowBiliBiliLoginSheet,
-        onShowClearBilibiliSessDataDialog = onShowClearBilibiliSessDataDialog
+        onShowClearBilibiliSessDataDialog = onShowClearBilibiliSessDataDialog,
+        onImportSummaries = onImportSummaries
     )
 
     LaunchedEffect(highlightSection) {
@@ -377,6 +394,11 @@ private fun SettingsContent(
                     )
                 }
 
+                // History data: import
+                item(key = "group_data") {
+                    DataSettingsGroup(onImportSummaries = onImportSummaries)
+                }
+
                 // Group 4: Help & Community
                 item(key = "group_help") {
                     HelpSettingsGroup(
@@ -431,6 +453,7 @@ private fun ScrollContentPreview() {
             onResetProviderModels = {},
             onUseOriginalLanguageChange = {},
             onDynamicColorChange = {},
+            onShowThumbnailsChange = {},
             onShowLengthChange = {},
             onAutoExtractUrlChange = {},
             onBilibiliSessDataChange = { _, _ -> },
@@ -447,7 +470,8 @@ private fun ScrollContentPreview() {
                 highlightSection = null,
                 onNav = {},
                 onShowBiliBiliLoginSheet = {},
-                onShowClearBilibiliSessDataDialog = {}
+                onShowClearBilibiliSessDataDialog = {},
+                onImportSummaries = {}
             )
         }
     }

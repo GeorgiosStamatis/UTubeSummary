@@ -42,6 +42,12 @@ class HistoryViewModelTest {
             items.add(summary)
         }
 
+        override suspend fun addSummaries(summaries: List<HistorySummary>) {
+            items.addAll(summaries)
+        }
+
+        override suspend fun getAllSourceLinks(): List<String> = items.mapNotNull { it.sourceLink }
+
         override suspend fun deleteSummary(id: String) {
             items.removeAll { it.id == id }
         }

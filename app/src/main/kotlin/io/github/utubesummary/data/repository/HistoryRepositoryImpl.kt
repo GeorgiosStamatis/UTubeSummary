@@ -44,6 +44,12 @@ class HistoryRepositoryImpl @Inject constructor(
             }
     }
 
+    override suspend fun addSummaries(summaries: List<HistorySummary>) {
+        historyDao.insertAll(summaries.map { it.toEntity() })
+    }
+
+    override suspend fun getAllSourceLinks(): List<String> = historyDao.getAllSourceLinks()
+
     override suspend fun addSummary(summary: HistorySummary) {
         val existingRecords = findExistingRecords(summary)
         if (existingRecords.isNotEmpty()) {
