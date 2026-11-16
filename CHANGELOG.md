@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- LM Studio and Custom Provider (URL + optional token)
+- Test button and automatic model list in the AI provider dialog
+
+### Fixed
+
+- PDF crash on Android 13/14
+- Ollama failing with "no API key"
+- Custom prompt fields losing typed text
+- Clipboard no longer auto-sent from exported entry points
+
 ## [2.0.0] - 2026-10-17
 
 ### Added
