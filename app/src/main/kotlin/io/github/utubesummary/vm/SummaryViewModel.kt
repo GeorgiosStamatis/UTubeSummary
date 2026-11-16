@@ -9,8 +9,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import io.github.utubesummary.domain.usecase.AskAboutContentUseCase
 import io.github.utubesummary.domain.usecase.SummarizeContentUseCase
+import io.github.utubesummary.exception.SummaryException
 import io.github.utubesummary.exception.toSummaryException
+import io.github.utubesummary.model.ChatExchange
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
 import javax.inject.Inject
@@ -18,15 +21,56 @@ import javax.inject.Inject
 @HiltViewModel
 class SummaryViewModel @Inject constructor(
     private val summarizeContentUseCase: SummarizeContentUseCase,
+    private val askAboutContentUseCase: AskAboutContentUseCase,
 ) : ViewModel() {
 
     private val _summarizationState = MutableStateFlow(SummarizationState())
     val summarizationState: StateFlow<SummarizationState> = _summarizationState.asStateFlow()
 
+    private val _chatState = MutableStateFlow(ChatState())
+    val chatState: StateFlow<ChatState> = _chatState.asStateFlow()
+
     private var currentInput: String? = null
+
+    /** Questions about the current content; the text itself stays in memory in the use case. */
+    fun askQuestion(question: String) {
+        val input = currentInput ?: return
+        val trimmed = question.trim()
+        val chat = _chatState.value
+        if (trimmed.isEmpty() || chat.isAsking || !chat.canAsk) return
+
+        val history = chat.turns.mapNotNull { turn ->
+            turn.answer?.let { ChatExchange(turn.question, it) }
+        }
+        _chatState.update { it.copy(turns = it.turns + ChatTurn(trimmed), isAsking = true) }
+
+        viewModelScope.launch {
+            askAboutContentUseCase(input, history, trimmed)
+                .onSuccess { answer -> finishLastTurn(answer = answer) }
+                .onFailure { throwable ->
+                    Log.e(TAG, "Question failed", throwable)
+                    finishLastTurn(error = throwable.toSummaryException())
+                }
+        }
+    }
+
+    private fun finishLastTurn(answer: String? = null, error: SummaryException? = null) {
+        _chatState.update { state ->
+            if (state.turns.isEmpty()) return@update state.copy(isAsking = false)
+            val updated = state.turns.last().copy(answer = answer, error = error)
+            state.copy(turns = state.turns.dropLast(1) + updated, isAsking = false)
+        }
+    }
+
+    private fun resetChat(input: String?) {
+        _chatState.value = ChatState(
+            canAsk = input != null && askAboutContentUseCase.isAvailable(input)
+        )
+    }
 
     fun clearCurrentSummary() {
         currentInput = null
+        resetChat(null)
         _summarizationState.update {
             it.copy(
                 summaryResult = null,
@@ -42,6 +86,7 @@ class SummaryViewModel @Inject constructor(
         lengthResults: Map<SummaryLength, SummaryOutput> = emptyMap(),
     ) {
         currentInput = input ?: output.sourceLink
+        resetChat(currentInput)
         _summarizationState.update {
             val combinedResults = if (lengthResults.isNotEmpty()) {
                 lengthResults + (output.length to output)
@@ -78,6 +123,7 @@ class SummaryViewModel @Inject constructor(
         viewModelScope.launch {
             if (currentInput != text) {
                 currentInput = text
+                resetChat(null)
                 _summarizationState.update {
                     it.copy(
                         isLoading = true,
@@ -97,6 +143,8 @@ class SummaryViewModel @Inject constructor(
 
             summarizeContentUseCase(text, overrideLength)
                 .onSuccess { output ->
+                    // The text of this input is now in memory: questions can be asked.
+                    _chatState.update { it.copy(canAsk = askAboutContentUseCase.isAvailable(text)) }
                     _summarizationState.update {
                         val updatedLengthResults = it.lengthResults + (output.length to output)
                         it.copy(

@@ -47,3 +47,17 @@ sealed interface ProviderTestState {
     data object Testing : ProviderTestState
     data class Done(val result: ProviderTestResult) : ProviderTestState
 }
+
+/** One question in the conversation about the current content. */
+data class ChatTurn(
+    val question: String,
+    val answer: String? = null,
+    val error: SummaryException? = null,
+)
+
+data class ChatState(
+    /** The extracted text is still in memory, so questions can be asked. */
+    val canAsk: Boolean = false,
+    val turns: List<ChatTurn> = emptyList(),
+    val isAsking: Boolean = false,
+)

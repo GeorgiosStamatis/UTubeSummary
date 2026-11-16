@@ -11,7 +11,11 @@ import io.github.utubesummary.data.repository.HistoryRepositoryImpl
 import io.github.utubesummary.data.repository.UserPreferencesRepositoryImpl
 import io.github.utubesummary.domain.provider.AppLocaleProvider
 import io.github.utubesummary.domain.provider.ProviderConnectionChecker
+import io.github.utubesummary.data.provider.InMemorySourceTextStore
 import io.github.utubesummary.data.provider.KtorProviderConnectionChecker
+import io.github.utubesummary.domain.provider.SourceTextStore
+import io.github.utubesummary.domain.usecase.AskAboutContentUseCase
+import io.github.utubesummary.domain.usecase.AskAboutContentUseCaseImpl
 import io.github.utubesummary.domain.provider.DocumentMetadataProvider
 import io.github.utubesummary.domain.repository.AIProviderConfigRepository
 import io.github.utubesummary.domain.repository.HistoryRepository
@@ -47,6 +51,14 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindProviderConnectionChecker(impl: KtorProviderConnectionChecker): ProviderConnectionChecker
+
+    @Binds
+    @Singleton
+    abstract fun bindSourceTextStore(impl: InMemorySourceTextStore): SourceTextStore
+
+    @Binds
+    @Singleton
+    abstract fun bindAskAboutContentUseCase(impl: AskAboutContentUseCaseImpl): AskAboutContentUseCase
 
     @Binds
     @Singleton

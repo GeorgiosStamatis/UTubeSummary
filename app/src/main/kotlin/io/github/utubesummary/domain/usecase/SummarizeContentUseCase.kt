@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import io.github.utubesummary.domain.provider.AppLocaleProvider
 import io.github.utubesummary.domain.provider.DocumentMetadataProvider
+import io.github.utubesummary.domain.provider.SourceTextStore
 import io.github.utubesummary.domain.repository.AIProviderConfigRepository
 import io.github.utubesummary.domain.repository.HistoryRepository
 import io.github.utubesummary.domain.repository.UserPreferencesRepository
@@ -35,6 +36,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
     private val llmHandler: LLMHandler,
     private val documentMetadataProvider: DocumentMetadataProvider,
     private val appLocaleProvider: AppLocaleProvider,
+    private val sourceTextStore: SourceTextStore,
 ) : SummarizeContentUseCase {
     override suspend operator fun invoke(
         text: String,
@@ -45,22 +47,8 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             val prefs = userPreferencesRepository.preferencesFlow.first()
             val providerConfigs = aiProviderConfigRepository.providerConfigsFlow.first()
 
-            val activeProviderEnum = prefs.activeProvider?.let { name ->
-                AIProvider.entries.find { it.name == name }
-            } ?: throw SummaryException.NoKeyException()
-
-            val providerConfig = providerConfigs[activeProviderEnum.name]
-            if (providerConfig?.keyUnreadable == true) {
-                throw SummaryException.KeyUnreadableException()
-            }
-            val apiKey = providerConfig?.apiKey.orEmpty()
-            if (activeProviderEnum.isRequiredApiKey && apiKey.isBlank()) {
-                throw SummaryException.NoKeyException()
-            }
-
-            requestContext = "Provider: ${activeProviderEnum.name}, " +
-                    "model: ${providerConfig?.activeModel?.ifBlank { null } ?: "-"}, " +
-                    "URL: ${providerConfig?.baseUrl?.ifBlank { null } ?: "default"}"
+            val active = resolveActiveProvider(prefs, providerConfigs)
+            requestContext = active.description
 
             val source = resolveSummarySource(text, prefs.autoExtractUrl)
             if (source is SummarySource.None) {
@@ -76,10 +64,10 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             }
 
             val agent = llmHandler.getSummarizationAgent(
-                provider = activeProviderEnum,
-                apiKey = apiKey,
-                baseUrl = providerConfig?.baseUrl?.takeIf { it.isNotBlank() },
-                model = providerConfig?.activeModel?.takeIf { it.isNotBlank() },
+                provider = active.provider,
+                apiKey = active.apiKey,
+                baseUrl = active.baseUrl,
+                model = active.model,
                 summaryLength = targetLength,
                 showLength = prefs.showLength,
                 useContentLanguage = prefs.useOriginalLanguage,
@@ -89,14 +77,17 @@ class SummarizeContentUseCaseImpl @Inject constructor(
                 additionalSystemPrompt = prefs.additionalSystemPrompt,
             )
 
-            val summaryOutput = agent.run(source)
+            val outcome = agent.run(source)
+            val summaryOutput = outcome.summary
+            // Kept in memory only, so questions can be asked about this content.
+            sourceTextStore.put(text, outcome.sourceText)
 
             saveSummaryToHistory(
                 summaryOutput = summaryOutput,
                 summaryLength = targetLength,
                 source = source,
-                provider = activeProviderEnum.name,
-                model = providerConfig?.activeModel?.takeIf { it.isNotBlank() },
+                provider = active.provider.name,
+                model = active.model,
             )
 
             summaryOutput
