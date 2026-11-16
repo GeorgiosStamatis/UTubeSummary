@@ -37,7 +37,7 @@ fun OnboardingStepPage(
             image = {
                 LogoIcon(
                     size = 200.dp,
-                    isRotating = true,
+                    isAnimated = true,
                 )
             },
         )
