@@ -20,7 +20,6 @@
     <string name="chooseLanguageDescription">Виберіть мову</string>
     <string name="repository">Відкритий вихідний код</string>
     <string name="githubDescription">Наш репозиторій на GitHub</string>
-    <string name="madeBy">Створено з ❤ NanoNova</string>
     <string name="useDynamicColor">Динамічний колір</string>
     <string name="useDynamicColorDescription">Використовуйте кольори зі своїх шпалер</string>
     <string name="setApiKey">Встановити ключ API</string>
@@ -35,7 +34,7 @@
     <string name="deleted">Зведення видалено</string>
     <string name="search">Пошук</string>
     <string name="nothingFound">Нічого не знайдено</string>
-    <string name="welcome">Ласкаво просимо до Summary Expressive!</string>
+    <string name="welcome">Ласкаво просимо до UTubeSummary!</string>
     <string name="welcomeDescription">Узагальнюйте веб-сайти, статті та відео на YouTube</string>
     <string name="instructionSummary">Просто вставте посилання на веб-сайт, статтю або відео на YouTube, щоб згенерувати узагальнення.</string>
     <string name="instructionsViaShare">Або легко поділіться посиланням за допомогою додатка, щоб згенерувати узагальнення.</string>

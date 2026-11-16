@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Summary Expressive</string>
+    <string name="app_name" translatable="false">UTubeSummary</string>
     <string name="short_length">Short</string>
     <string name="middle_length">Middle</string>
     <string name="long_length">Long</string>
@@ -21,9 +21,19 @@
     <string name="useOriginalLanguageDescription">Use Original Language instead of your language.</string>
     <string name="chooseLanguage">Language</string>
     <string name="chooseLanguageDescription">Choose a language</string>
+    <string name="apiKeyOptional">%1$s (optional)</string>
+    <string name="testConnection">Test</string>
+    <string name="testingConnection">Testing…</string>
+    <string name="testSuccess">Connection successful.</string>
+    <string name="testSuccessKey">Connection successful. The API key was accepted.</string>
+    <string name="testModelsLoaded">%1$d models loaded.</string>
+    <string name="testAuthFailed">Authentication failed (HTTP %1$d). Check the API key.</string>
+    <string name="testEndpointNotFound">Endpoint not found (HTTP 404). Check the URL.</string>
+    <string name="testHttpError">The server returned HTTP %1$d.</string>
+    <string name="testUnreachable">Couldn\'t reach the server. Check the URL and your network connection.</string>
+    <string name="appVersion">Version %1$s</string>
     <string name="repository">Open Source Code</string>
     <string name="githubDescription">Our GitHub repository</string>
-    <string name="madeBy">Made with ❤ by NanoNova</string>
     <string name="useDynamicColor">Dynamic Color</string>
     <string name="useDynamicColorDescription">Use colors from your wallpaper</string>
     <string name="useAutoExtractLink">Auto Extract Web Link</string>
@@ -53,7 +63,7 @@
     <string name="search">Search</string>
     <string name="searchSettings">Search settings</string>
     <string name="nothingFound">Nothing found</string>
-    <string name="welcome">Welcome to Summary Expressive!</string>
+    <string name="welcome">Welcome to UTubeSummary!</string>
     <string name="welcomeDescription">Summarize websites, articles and YouTube-Videos</string>
     <string name="onboardingLlmTitle">AI Providers &amp; Quick Switcher</string>
     <string name="onboardingLlmDescription">Bring your own API key (BYOK). Tap the switcher to select providers &amp; models, or long-press and drag (↔ provider, ↕ model) to switch instantly.</string>

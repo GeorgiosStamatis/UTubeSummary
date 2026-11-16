@@ -40,7 +40,6 @@
 
     <string name="githubDescription">Nosso repositório Github</string>
 
-    <string name="madeBy">Feito com ❤ por NanoNova</string>
 
     <string name="useDynamicColor">Cor dinâmica</string>
 
@@ -66,7 +65,7 @@
     <string name="deleted">Resumo excluído</string>
     <string name="search">Pesquisar</string>
     <string name="nothingFound">Nada encontrado</string>
-    <string name="welcome">Bem-vindo ao Summary Expressive!</string>
+    <string name="welcome">Bem-vindo ao UTubeSummary!</string>
     <string name="welcomeDescription">Resuma sites, artigos e vídeos do YouTube</string>
     <string name="instructionSummary">Basta colar o link de um site, artigo ou vídeo do YouTube para gerar um resumo.</string>
     <string name="instructionsViaShare">Ou compartilhe facilmente um link com o aplicativo para gerar um resumo.</string>

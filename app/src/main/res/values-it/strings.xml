@@ -37,7 +37,6 @@
 
     <string name="githubDescription">Il nostro repository Github</string>
 
-    <string name="madeBy">Realizzato con ❤ da NanoNova</string>
 
     <string name="useDynamicColor">Colore dinamico</string>
 
@@ -63,7 +62,7 @@
     <string name="deleted">Riassunto eliminato</string>
     <string name="search">Ricerca</string>
     <string name="nothingFound">Niente trovato</string>
-    <string name="welcome">Benvenuto su Summary Expressive!</string>
+    <string name="welcome">Benvenuto su UTubeSummary!</string>
     <string name="welcomeDescription">Sintetizza siti web, articoli e video YouTube</string>
     <string name="instructionSummary">Incolla semplicemente il link di un sito web, un articolo o un video YouTube per generare un riassunto.</string>
     <string name="instructionsViaShare">O condividi facilmente un link con l\'app per generare un riassunto.</string>

@@ -1,0 +1,48 @@
+package io.github.utubesummary.data.repository
+
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import io.github.utubesummary.data.AIProviderConfigDao
+import io.github.utubesummary.data.AIProviderConfigEntity
+import io.github.utubesummary.domain.repository.AIProviderConfigRepository
+import io.github.utubesummary.model.ProviderConfig
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class AIProviderConfigRepositoryImpl @Inject constructor(
+    private val aiProviderConfigDao: AIProviderConfigDao,
+) : AIProviderConfigRepository {
+
+    override val providerConfigsFlow: Flow<Map<String, ProviderConfig>>
+        get() = aiProviderConfigDao.getAllConfigsFlow().map { entities ->
+            entities.associate { it.provider to it.toProviderConfig() }
+        }
+
+    override fun getConfigFlow(provider: String): Flow<ProviderConfig?> =
+        aiProviderConfigDao.getConfigFlow(provider).map { it?.toProviderConfig() }
+
+    override suspend fun getConfig(provider: String): ProviderConfig? =
+        aiProviderConfigDao.getConfig(provider)?.toProviderConfig()
+
+    override suspend fun saveConfig(provider: String, config: ProviderConfig) {
+        aiProviderConfigDao.insertConfig(
+            AIProviderConfigEntity.fromProviderConfig(provider, config)
+        )
+    }
+
+    override suspend fun updateApiKey(provider: String, apiKey: String) {
+        val current = getConfig(provider) ?: ProviderConfig()
+        saveConfig(provider, current.copy(apiKey = apiKey))
+    }
+
+    override suspend fun updateBaseUrl(provider: String, baseUrl: String) {
+        val current = getConfig(provider) ?: ProviderConfig()
+        saveConfig(provider, current.copy(baseUrl = baseUrl))
+    }
+
+    override suspend fun updateModel(provider: String, model: String) {
+        val current = getConfig(provider) ?: ProviderConfig()
+        saveConfig(provider, current.copy(activeModel = model))
+    }
+}

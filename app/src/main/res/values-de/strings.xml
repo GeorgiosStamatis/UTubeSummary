@@ -23,7 +23,6 @@
     <string name="chooseLanguageDescription">Wähle eine Sprache</string>
     <string name="repository">Open Source Code</string>
     <string name="githubDescription">Unser GitHub repository</string>
-    <string name="madeBy">Made with ❤ by NanoNova</string>
     <string name="useDynamicColor">Dynamische Farben</string>
     <string name="useDynamicColorDescription">Benutze Farben von deinem Hintergrundbild</string>
     <string name="setApiKey">API-Schlüssel</string>
@@ -38,7 +37,7 @@
     <string name="deleted">Zusammenfassung gelöscht</string>
     <string name="search">Suche</string>
     <string name="nothingFound">Nichts gefunden</string>
-    <string name="welcome">Willkommen bei Summary Expressive!</string>
+    <string name="welcome">Willkommen bei UTubeSummary!</string>
     <string name="welcomeDescription">Fasse Webseiten, Artikel und YouTube-Videos zusammen</string>
     <string name="instructionSummary">Füge einfach den Link zu einer Website, einem Artikel oder einem YouTube-Video ein, um eine Zusammenfassung zu generieren.</string>
     <string name="instructionsViaShare">Oder teile einfach einen Link mit der App, um eine Zusammenfassung zu generieren.</string>

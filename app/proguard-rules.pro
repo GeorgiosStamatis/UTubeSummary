@@ -70,4 +70,4 @@
 -dontwarn org.jsoup.helper.Re2jRegex**
 
 # 5. Structured LLM response model (inspected reflectively for schema generation)
--keep class me.nanova.summaryexpressive.model.LlmSummaryResponse { *; }
+-keep class io.github.utubesummary.model.LlmSummaryResponse { *; }

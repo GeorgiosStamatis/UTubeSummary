@@ -29,7 +29,7 @@ UTubeSummary is an AI/LLM summarizer FOSS Android app that summarizes YouTube/Bi
 ./gradlew clean test
 
 # Run a specific unit test class
-./gradlew testDebugUnitTest --tests="me.nanova.summaryexpressive.ExampleUnitTest"
+./gradlew testDebugUnitTest --tests="io.github.utubesummary.ExampleUnitTest"
 
 # Run instrumented tests on connected device/emulator
 ./gradlew connectedAndroidTest
@@ -79,7 +79,7 @@ UTubeSummary is an AI/LLM summarizer FOSS Android app that summarizes YouTube/Bi
   - Repository interfaces are bound to implementations in `di/RepositoryModule.kt` via `@Binds`.
   - App-wide infrastructure (Database, DAOs, HTTP client, LLM handler) is provided in `di/AppModule.kt`.
 - **Database (Room)**:
-  - Database name: `summary_expressive_db`.
+  - Database name: `utubesummary_db`.
   - Main entity: `HistoryEntity` with `HistoryDao`. Mapped to pure domain `HistorySummary` via extension mappers.
   - Custom type converters reside in `data/converters/`.
 - **Custom Exceptions**:
@@ -89,9 +89,9 @@ UTubeSummary is an AI/LLM summarizer FOSS Android app that summarizes YouTube/Bi
 
 The app uses the [Koog Agents library](https://docs.koog.ai/) for orchestrating LLMs and multi-source tool extraction.
 
-- **Modular Components (`me.nanova.summaryexpressive.llm`)**:
+- **Modular Components (`io.github.utubesummary.llm`)**:
   - **`LLMHandler`**: Slim entry-point facade injected into `SummarizeContentUseCase`. Coordinates tools, caches, and delegates agent construction.
-  - **`LLMExecutorFactory`**: Manages instantiation and bounded LRU caching (`MAX_EXECUTOR_CACHE_SIZE = 10`) of Koog `PromptExecutor` instances across supported providers (OpenAI, Gemini with sanitizing engine, Anthropic, DeepSeek, Mistral, Qwen, Ollama, OpenRouter, Kimi, MiniMax, Zhipu).
+  - **`LLMExecutorFactory`**: Manages instantiation and bounded LRU caching (`MAX_EXECUTOR_CACHE_SIZE = 10`) of Koog `PromptExecutor` instances across supported providers (OpenAI, Gemini with sanitizing engine, Anthropic, DeepSeek, Mistral, Qwen, Ollama, LM Studio, custom OpenAI-compatible endpoint, OpenRouter, Kimi, MiniMax, Zhipu).
   - **`AgentConfigFactory`**: Resolves model IDs (`resolveModel`) and constructs `AIAgentConfig` with model capability detection.
   - **`SummarizationStrategy`**: Houses the Koog execution graph (`summarization_router_strategy`), extraction subgraph, structured output execution, and fallback strategies.
 - **Session & State Management**:
@@ -133,7 +133,7 @@ The app defines two product flavors under the `distribution` dimension (`app/bui
 
 ### Project Structure
 
-#### Core Application (`app/src/main/kotlin/me/nanova/summaryexpressive/`)
+#### Core Application (`app/src/main/kotlin/io/github/utubesummary/`)
 - **`App.kt`**: Application entry point with `@HiltAndroidApp`
 - **`MainActivity.kt`**: Main activity handling deep links, share intents, and navigation
 - **`InstantSummaryActivity.kt`**: Overlay activity for instant summarization via share sheet or text selection
@@ -235,6 +235,8 @@ The app defines two product flavors under the `distribution` dimension (`app/bui
 - **DeepSeek**
 - **Mistral**
 - **Ollama**
+- **LM Studio** (URL + optional token)
+- **Custom Provider** (any OpenAI-compatible endpoint: URL + optional token)
 - **OpenRouter**
 - **DashScope (Qwen)**
 - **Bedrock**
