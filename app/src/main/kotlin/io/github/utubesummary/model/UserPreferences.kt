@@ -9,6 +9,7 @@ data class UserPreferences(
     // settings
     val useOriginalLanguage: Boolean = true,
     val dynamicColor: Boolean = true,
+    val showThumbnails: Boolean = true,
     val theme: Int = 0,
     val activeProvider: String? = null,
     val showLength: Boolean = true,

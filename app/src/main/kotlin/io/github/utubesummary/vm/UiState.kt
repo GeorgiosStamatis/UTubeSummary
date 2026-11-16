@@ -18,6 +18,7 @@ data class AppStartAction(
 data class SettingsUiState(
     val useOriginalLanguage: Boolean = true,
     val dynamicColor: Boolean = true,
+    val showThumbnails: Boolean = true,
     val theme: Int = 0,
     val apiKey: String? = null,
     val baseUrl: String? = null,

@@ -121,6 +121,7 @@ class SettingsViewModel @Inject constructor(
         SettingsUiState(
             useOriginalLanguage = prefs.useOriginalLanguage,
             dynamicColor = prefs.dynamicColor,
+            showThumbnails = prefs.showThumbnails,
             theme = prefs.theme,
             apiKey = providerConfig?.apiKey?.takeIf { it.isNotBlank() },
             baseUrl = providerConfig?.baseUrl?.takeIf { it.isNotBlank() },
@@ -146,6 +147,10 @@ class SettingsViewModel @Inject constructor(
     // Original Language in summary
     fun setUseOriginalLanguageValue(newValue: Boolean) =
         savePreference(updateUserPreferencesUseCase::setUseOriginalLanguage, newValue)
+
+    // Video thumbnails in History
+    fun setShowThumbnailsValue(newValue: Boolean) =
+        savePreference(updateUserPreferencesUseCase::setShowThumbnails, newValue)
 
     // Dynamic color
     fun setDynamicColorValue(newValue: Boolean) =

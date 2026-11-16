@@ -12,6 +12,10 @@ class UpdateUserPreferencesUseCase @Inject constructor(
         userPreferencesRepository.setUseOriginalLanguage(value)
     }
 
+    suspend fun setShowThumbnails(value: Boolean) {
+        userPreferencesRepository.setShowThumbnails(value)
+    }
+
     suspend fun setDynamicColor(value: Boolean) {
         userPreferencesRepository.setDynamicColor(value)
     }

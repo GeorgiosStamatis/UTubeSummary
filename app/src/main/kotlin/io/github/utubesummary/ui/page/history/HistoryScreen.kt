@@ -77,6 +77,7 @@ import io.github.utubesummary.vm.HistoryViewModel
 fun HistoryScreen(
     onBack: () -> Unit = {},
     viewModel: HistoryViewModel = hiltViewModel<HistoryViewModel>(),
+    showThumbnails: Boolean = true,
 ) {
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -247,6 +248,7 @@ fun HistoryScreen(
                             HistoryItemRow(
                                 summary = summary,
                                 position = position,
+                                showThumbnails = showThumbnails,
                                 onClick = { selectedSummary = summary },
                                 onDismiss = {
                                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)

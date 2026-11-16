@@ -35,6 +35,7 @@ class AppViewModelTest {
 
         override suspend fun setUseOriginalLanguage(value: Boolean) {}
         override suspend fun setDynamicColor(value: Boolean) {}
+        override suspend fun setShowThumbnails(value: Boolean) {}
         override suspend fun setTheme(value: Int) {}
         override suspend fun setActiveProvider(value: String?) {}
         override suspend fun setProviderOrder(value: List<String>) {}

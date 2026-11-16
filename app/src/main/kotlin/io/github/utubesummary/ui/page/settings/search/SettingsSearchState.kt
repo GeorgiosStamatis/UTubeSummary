@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.rounded.ShortText
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material.icons.rounded.UploadFile
@@ -94,6 +95,8 @@ fun rememberSettingsSearchState(
     val themeTitle = stringResource(R.string.theme)
     val useDynamicColorTitle = stringResource(R.string.useDynamicColor)
     val useDynamicColorSubtitle = stringResource(R.string.useDynamicColorDescription)
+    val showThumbnailsTitle = stringResource(R.string.showThumbnails)
+    val showThumbnailsSubtitle = stringResource(R.string.showThumbnailsDescription)
     val setAIProviderTitle = stringResource(R.string.setAIProvider)
     val setModelTitle = stringResource(R.string.setModel)
     val advancedSummaryTitle = stringResource(R.string.advancedSummarySetup)
@@ -302,6 +305,29 @@ fun rememberSettingsSearchState(
                         onShowClearBilibiliSessDataDialog()
                     }
                 }
+            ),
+            SearchableSetting(
+                id = "show_thumbnails",
+                title = showThumbnailsTitle,
+                subtitle = showThumbnailsSubtitle,
+                group = "Display",
+                iconBadge = {
+                    val (bg, fg) = SettingBadges.dynamicColorColors()
+                    SettingIconBadge(bg, fg) {
+                        Icon(
+                            Icons.Rounded.Image,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                },
+                trailingContent = {
+                    Switch(
+                        checked = state.showThumbnails,
+                        onCheckedChange = { actions.onShowThumbnailsChange(it) }
+                    )
+                },
+                onClick = { actions.onShowThumbnailsChange(!state.showThumbnails) }
             ),
             SearchableSetting(
                 id = "import_summaries",

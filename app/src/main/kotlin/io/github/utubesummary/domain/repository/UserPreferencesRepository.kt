@@ -8,6 +8,7 @@ interface UserPreferencesRepository {
 
     suspend fun setUseOriginalLanguage(value: Boolean)
     suspend fun setDynamicColor(value: Boolean)
+    suspend fun setShowThumbnails(value: Boolean)
     suspend fun setTheme(value: Int)
     suspend fun setActiveProvider(value: String?)
     suspend fun setProviderOrder(value: List<String>)

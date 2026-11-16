@@ -91,6 +91,10 @@ class SettingsViewModelTest {
             prefs.value = prefs.value.copy(dynamicColor = value)
         }
 
+        override suspend fun setShowThumbnails(value: Boolean) {
+            prefs.value = prefs.value.copy(showThumbnails = value)
+        }
+
         override suspend fun setTheme(value: Int) {
             prefs.value = prefs.value.copy(theme = value)
         }
@@ -587,5 +591,18 @@ class SettingsViewModelTest {
         importOutcome = Result.failure(java.io.IOException("io"))
         viewModel.importVideoSummaries("a")
         assertEquals(ImportState.Failed(ImportFailure.UNREADABLE), viewModel.importState.value)
+    }
+
+    @Test
+    fun `test thumbnails are on by default and can be switched off`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.settingsUiState.collect {}
+        }
+        assertTrue(viewModel.settingsUiState.value.showThumbnails)
+
+        viewModel.setShowThumbnailsValue(false)
+        assertFalse(fakePrefsRepo.prefs.value.showThumbnails)
+        assertFalse(viewModel.settingsUiState.value.showThumbnails)
     }
 }
