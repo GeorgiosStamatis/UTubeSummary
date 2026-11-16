@@ -118,7 +118,7 @@ class LLMHandler(
     ): String {
         val executor = executorFactory.getOrCreateExecutor(provider, apiKey, baseUrl, appLanguage)
         val llModel = AgentConfigFactory.resolveModel(provider, model)
-        val responses = executor.execute(buildQuestionPrompt(sourceText, history, question), llModel)
-        return responses.joinToString("") { it.textContent() }.trim()
+        val response = executor.execute(buildQuestionPrompt(sourceText, history, question), llModel)
+        return response.content.trim()
     }
 }

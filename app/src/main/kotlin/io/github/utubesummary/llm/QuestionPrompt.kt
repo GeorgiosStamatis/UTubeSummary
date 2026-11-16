@@ -1,6 +1,5 @@
 package io.github.utubesummary.llm
 
-import ai.koog.prompt.dsl.Prompt
 import ai.koog.prompt.dsl.prompt
 import io.github.utubesummary.model.ChatExchange
 
@@ -16,7 +15,7 @@ fun buildQuestionPrompt(
     sourceText: String,
     history: List<ChatExchange>,
     question: String,
-): Prompt = prompt("content-question") {
+) = prompt("content-question") {
     system(
         """
         You answer questions about the content between the CONTENT markers.
