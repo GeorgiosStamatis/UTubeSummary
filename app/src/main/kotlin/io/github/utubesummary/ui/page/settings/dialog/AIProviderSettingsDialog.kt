@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -95,12 +96,22 @@ fun AIProviderSettingsDialog(
         mutableStateOf(initialEffectiveProviders)
     }
 
+    // Built-in providers show their official URL (editable); it is saved as "default".
+    val locale = LocalConfiguration.current.locales[0]
+    val defaultBaseUrl = selectedProvider.defaultBaseUrl(locale).orEmpty()
+    val initialBaseUrl = providerConfigs[selectedProvider.name]?.baseUrl
+        ?.takeIf { it.isNotBlank() } ?: defaultBaseUrl
+
     var baseUrlTextFieldValue by remember(selectedProvider) {
-        mutableStateOf(providerConfigs[selectedProvider.name]?.baseUrl ?: "")
+        mutableStateOf(initialBaseUrl)
     }
     var apiKeyTextFieldValue by remember(selectedProvider) {
         mutableStateOf(providerConfigs[selectedProvider.name]?.apiKey ?: "")
     }
+
+    // The saved key can't be decrypted any more: ask for it again until one is entered.
+    val keyUnreadable = providerConfigs[selectedProvider.name]?.keyUnreadable == true &&
+            apiKeyTextFieldValue.isBlank()
 
     val lazyListState = rememberLazyListState()
     val reorderState = rememberReorderableListState(lazyListState) { fromIndex, toIndex ->
@@ -118,10 +129,17 @@ fun AIProviderSettingsDialog(
     val providerChanged = selectedProvider != initialProvider
     val orderChanged = providersList != initialEffectiveProviders
     val configChanged =
-        baseUrlTextFieldValue != (providerConfigs[selectedProvider.name]?.baseUrl ?: "") ||
+        baseUrlTextFieldValue != initialBaseUrl ||
                 apiKeyTextFieldValue != (providerConfigs[selectedProvider.name]?.apiKey ?: "")
 
-    val canSubmit = if (providerChanged || configChanged) formValid else orderChanged
+    val buttons = providerDialogButtons(
+        providerChanged = providerChanged,
+        configChanged = configChanged,
+        orderChanged = orderChanged,
+        formValid = formValid,
+        testState = testState,
+    )
+    val canSubmit = buttons.canSubmit
 
     // A previous test result no longer applies once the inputs change or the dialog closes.
     LaunchedEffect(selectedProvider, baseUrlTextFieldValue, apiKeyTextFieldValue) {
@@ -178,7 +196,7 @@ fun AIProviderSettingsDialog(
                     singleLine = true,
                     shape = MaterialTheme.shapes.large,
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = selectedProvider.baseUrlPlaceholder?.let { hint ->
+                    placeholder = (defaultBaseUrl.ifBlank { null } ?: selectedProvider.baseUrlPlaceholder)?.let { hint ->
                         @Composable { Text(hint, modifier = Modifier.alpha(0.5f)) }
                     },
                     leadingIcon = { Icon(Icons.Rounded.Link, contentDescription = "Base Url") },
@@ -213,6 +231,16 @@ fun AIProviderSettingsDialog(
                                 Icons.Rounded.VpnKey,
                                 contentDescription = "API Key"
                             )
+                        },
+                        supportingText = if (keyUnreadable) {
+                            @Composable {
+                                Text(
+                                    text = stringResource(R.string.keyUnreadable),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        } else {
+                            null
                         },
                         label = {
                             Text(
@@ -271,7 +299,7 @@ fun AIProviderSettingsDialog(
                     onClick = {
                         onTest(selectedProvider, baseUrlTextFieldValue, apiKeyTextFieldValue)
                     },
-                    enabled = formValid && testState !is ProviderTestState.Testing
+                    enabled = buttons.canTest
                 ) {
                     Text(stringResource(id = R.string.testConnection))
                 }

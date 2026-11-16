@@ -16,6 +16,7 @@ import io.github.utubesummary.domain.usecase.GetUserSettingsUseCase
 import io.github.utubesummary.domain.usecase.UpdateProviderConfigUseCase
 import io.github.utubesummary.domain.usecase.UpdateUserPreferencesUseCase
 import io.github.utubesummary.llm.AIProvider
+import io.github.utubesummary.util.SecureStorageException
 import java.util.Locale
 import io.github.utubesummary.model.ProviderTestResult
 import io.github.utubesummary.domain.usecase.TestProviderConnectionUseCase
@@ -50,7 +51,10 @@ class SettingsViewModelTest {
         override suspend fun getConfig(provider: String): ProviderConfig? =
             configs.value[provider]
 
+        var failSave = false
+
         override suspend fun saveConfig(provider: String, config: ProviderConfig) {
+            if (failSave) throw SecureStorageException("Encryption failed")
             configs.value += (provider to config)
         }
 
@@ -230,8 +234,12 @@ class SettingsViewModelTest {
         assertEquals("sk-test-key", fakeConfigRepo.getConfig("OPENAI")?.apiKey)
 
         // URL without protocol
+        // The version path is added by the client, and the official URL is stored as "default".
         viewModel.setBaseUrlValue("api.openai.com/v1")
-        assertEquals("https://api.openai.com/v1", fakeConfigRepo.getConfig("OPENAI")?.baseUrl)
+        assertEquals("", fakeConfigRepo.getConfig("OPENAI")?.baseUrl)
+
+        viewModel.setBaseUrlValue("proxy.example.com/v1")
+        assertEquals("https://proxy.example.com", fakeConfigRepo.getConfig("OPENAI")?.baseUrl)
 
         // URL with http protocol
         viewModel.setBaseUrlValue("http://localhost:11434")
@@ -423,8 +431,12 @@ class SettingsViewModelTest {
             assertEquals("claude-secret-key", fakeConfigRepo.getConfig("CLAUDE")?.apiKey)
             assertNull(fakeConfigRepo.getConfig("OPENAI")?.apiKey)
 
+            // The official endpoint is stored as "" (= use the default)
             viewModel.setBaseUrlValue("api.anthropic.com")
-            assertEquals("https://api.anthropic.com", fakeConfigRepo.getConfig("CLAUDE")?.baseUrl)
+            assertEquals("", fakeConfigRepo.getConfig("CLAUDE")?.baseUrl)
+
+            viewModel.setBaseUrlValue("proxy.example.com")
+            assertEquals("https://proxy.example.com", fakeConfigRepo.getConfig("CLAUDE")?.baseUrl)
         }
 
     @Test
@@ -502,4 +514,32 @@ class SettingsViewModelTest {
 
         assertEquals(listOf("model-a"), fakeConfigRepo.getConfig("LM_STUDIO")?.models)
     }
+
+    @Test
+    fun `test OpenRouter docs URL is stored as default`() = runTest(testDispatcher) {
+        fakePrefsRepo.prefs.value = UserPreferences(activeProvider = "OPEN_ROUTER")
+        val viewModel = createViewModel()
+
+        viewModel.setBaseUrlValue("https://openrouter.ai/api/v1")
+        assertEquals("", fakeConfigRepo.getConfig("OPEN_ROUTER")?.baseUrl)
+
+        viewModel.setBaseUrlValue("https://gateway.example.com/api/v1")
+        assertEquals("https://gateway.example.com", fakeConfigRepo.getConfig("OPEN_ROUTER")?.baseUrl)
+    }
+
+    @Test
+    fun `test secure storage failure is reported instead of crashing`() =
+        runTest(testDispatcher) {
+            fakePrefsRepo.prefs.value = UserPreferences(activeProvider = "OPENAI")
+            val viewModel = createViewModel()
+            val messages = mutableListOf<Int>()
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.userMessages.collect { messages.add(it) }
+            }
+
+            fakeConfigRepo.failSave = true
+            viewModel.setApiKeyValue("sk-new")
+
+            assertEquals(listOf(io.github.utubesummary.R.string.secureStorageFailed), messages)
+        }
 }

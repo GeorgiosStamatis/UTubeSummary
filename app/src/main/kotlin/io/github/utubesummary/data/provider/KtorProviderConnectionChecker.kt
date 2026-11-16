@@ -17,6 +17,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import io.github.utubesummary.domain.provider.ProviderConnectionChecker
 import io.github.utubesummary.llm.AIProvider
+import io.github.utubesummary.llm.isSimplifiedChinese
 import io.github.utubesummary.model.ProviderTestResult
 import java.net.URI
 import java.util.Locale
@@ -36,12 +37,14 @@ internal fun buildConnectionRequest(
     apiKey: String,
     locale: Locale,
 ): ConnectionRequest {
-    val isSimplifiedChinese = locale.language == "zh" && locale.script == "Hans"
-    val custom = baseUrl.trim().trimEnd('/')
-    fun base(default: String) = custom.ifBlank { default }
+    // Custom URL if given, otherwise the provider's official endpoint.
+    // Same normalization as the real client, so Test hits the same host and path.
+    val root = provider.normalizeRootUrl(
+        baseUrl.ifBlank { provider.defaultBaseUrl(locale).orEmpty() }
+    )
 
     // "<host>" -> "<host>/<versioned>/models", "<host>/<path>" -> "<host>/<path>/models"
-    fun modelsUrl(root: String, versionedPath: String): String {
+    fun modelsUrl(versionedPath: String): String {
         val hasPath = runCatching { URI(root).path }.getOrNull().isNullOrEmpty().not()
         return if (hasPath) "$root/models" else "$root/$versionedPath/models"
     }
@@ -49,67 +52,39 @@ internal fun buildConnectionRequest(
     val bearer = if (apiKey.isNotBlank()) mapOf("Authorization" to "Bearer $apiKey") else emptyMap()
 
     return when (provider) {
-        AIProvider.OPENAI -> ConnectionRequest(
-            modelsUrl(base("https://api.openai.com"), "v1"), bearer
-        )
+        AIProvider.OPENAI -> ConnectionRequest("$root/v1/models", bearer)
 
-        AIProvider.DEEPSEEK -> ConnectionRequest(
-            modelsUrl(base("https://api.deepseek.com"), "v1"), bearer
-        )
+        AIProvider.DEEPSEEK, AIProvider.MISTRAL,
+        AIProvider.LM_STUDIO, AIProvider.CUSTOM -> ConnectionRequest(modelsUrl("v1"), bearer)
 
-        AIProvider.MISTRAL -> ConnectionRequest(
-            modelsUrl(base("https://api.mistral.ai"), "v1"), bearer
-        )
-
-        AIProvider.OPEN_ROUTER -> ConnectionRequest(
-            modelsUrl(base("https://openrouter.ai/api"), "v1"), bearer
-        )
+        // Koog (and so the base URL) is host-level for OpenRouter; the API lives under /api/v1.
+        AIProvider.OPEN_ROUTER -> ConnectionRequest("$root/api/v1/models", bearer)
 
         AIProvider.QWEN -> {
-            val root = if (isSimplifiedChinese) {
-                "https://dashscope.aliyuncs.com"
+            // Simplified Chinese always uses the mainland endpoint (same as the executor).
+            val host = if (locale.isSimplifiedChinese()) {
+                provider.defaultBaseUrl(locale).orEmpty()
             } else {
-                base("https://dashscope-intl.aliyuncs.com")
+                root
             }
-            ConnectionRequest("$root/compatible-mode/v1/models", bearer)
+            ConnectionRequest("$host/compatible-mode/v1/models", bearer)
         }
 
-        AIProvider.KIMI -> ConnectionRequest(
-            modelsUrl(
-                base(if (isSimplifiedChinese) "https://api.moonshot.cn/v1" else "https://api.moonshot.ai/v1"),
-                "v1"
-            ), bearer
-        )
+        AIProvider.KIMI, AIProvider.MINIMAX -> ConnectionRequest(modelsUrl("v1"), bearer)
 
-        AIProvider.MINIMAX -> ConnectionRequest(
-            modelsUrl(
-                base(if (isSimplifiedChinese) "https://api.minimaxi.com/v1" else "https://api.minimax.io/v1"),
-                "v1"
-            ), bearer
-        )
-
-        AIProvider.ZHIPU -> ConnectionRequest(
-            modelsUrl(
-                base(if (isSimplifiedChinese) "https://open.bigmodel.cn/api/paas/v4" else "https://api.z.ai/api/paas/v4"),
-                "v4"
-            ), bearer
-        )
-
-        AIProvider.LM_STUDIO, AIProvider.CUSTOM -> ConnectionRequest(
-            modelsUrl(custom, "v1"), bearer
-        )
+        AIProvider.ZHIPU -> ConnectionRequest(modelsUrl("v4"), bearer)
 
         AIProvider.CLAUDE -> ConnectionRequest(
-            modelsUrl(base("https://api.anthropic.com"), "v1") + "?limit=1000",
+            "$root/v1/models?limit=1000",
             mapOf("x-api-key" to apiKey, "anthropic-version" to "2023-06-01")
         )
 
         AIProvider.GEMINI -> ConnectionRequest(
-            modelsUrl(base("https://generativelanguage.googleapis.com"), "v1beta") + "?pageSize=1000",
+            "$root/v1beta/models?pageSize=1000",
             mapOf("x-goog-api-key" to apiKey)
         )
 
-        AIProvider.OLLAMA -> ConnectionRequest("$custom/api/tags", emptyMap())
+        AIProvider.OLLAMA -> ConnectionRequest("$root/api/tags", emptyMap())
     }
 }
 

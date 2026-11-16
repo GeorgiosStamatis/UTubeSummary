@@ -1,15 +1,21 @@
 package io.github.utubesummary.data.repository
 
 import android.content.Context
+import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import io.github.utubesummary.data.local.datastore.userPreferencesDataStore
 import io.github.utubesummary.domain.repository.UserPreferencesRepository
 import io.github.utubesummary.model.UserPreferences
+import io.github.utubesummary.util.DecodedSecret
+import io.github.utubesummary.util.SecurityUtil
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private const val TAG = "UserPreferencesRepo"
 
 @Singleton
 class UserPreferencesRepositoryImpl @Inject constructor(
@@ -17,13 +23,39 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 ) : UserPreferencesRepository {
 
     override val preferencesFlow: Flow<UserPreferences>
-        get() = context.userPreferencesDataStore.data.catch { exception ->
-            if (exception is IOException) {
-                emit(UserPreferences())
-            } else {
-                throw exception
+        get() = context.userPreferencesDataStore.data
+            .catch { exception ->
+                if (exception is IOException) {
+                    emit(UserPreferences())
+                } else {
+                    throw exception
+                }
+            }
+            .map { it.withDecryptedCookie() }
+
+    /**
+     * The BiliBili cookie is stored encrypted; callers always see the plain value.
+     * An old plain-text cookie is encrypted on first read, and one that can no longer be
+     * decrypted is dropped, which is the same as being logged out.
+     */
+    private suspend fun UserPreferences.withDecryptedCookie(): UserPreferences {
+        if (bilibiliSessData.isEmpty()) return this
+        return when (val decoded = SecurityUtil.codec.decode(bilibiliSessData, legacyIsPlain = true)) {
+            is DecodedSecret.Value -> {
+                if (decoded.needsMigration) {
+                    runCatching { setBilibiliSessData(decoded.text, bilibiliSessDataExpires) }
+                        .onFailure { Log.w(TAG, "Could not encrypt the stored BiliBili cookie", it) }
+                }
+                copy(bilibiliSessData = decoded.text)
+            }
+
+            DecodedSecret.Unreadable -> {
+                Log.w(TAG, "Stored BiliBili cookie can't be decrypted; clearing it")
+                clearBilibiliSessData()
+                copy(bilibiliSessData = "", bilibiliSessDataExpires = 0L)
             }
         }
+    }
 
     private suspend fun updatePreferences(transform: suspend (UserPreferences) -> UserPreferences) {
         context.userPreferencesDataStore.updateData { transform(it) }
@@ -55,8 +87,11 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override suspend fun setAutoExtractUrl(value: Boolean) =
         updatePreferences { it.copy(autoExtractUrl = value) }
 
-    override suspend fun setBilibiliSessData(data: String, expires: Long) =
-        updatePreferences { it.copy(bilibiliSessData = data, bilibiliSessDataExpires = expires) }
+    override suspend fun setBilibiliSessData(data: String, expires: Long) {
+        // Throws SecureStorageException if it can't be encrypted: never store it as plain text.
+        val encrypted = SecurityUtil.codec.encode(data)
+        updatePreferences { it.copy(bilibiliSessData = encrypted, bilibiliSessDataExpires = expires) }
+    }
 
     override suspend fun clearBilibiliSessData() =
         updatePreferences { it.copy(bilibiliSessData = "", bilibiliSessDataExpires = 0L) }

@@ -78,4 +78,27 @@ class ProviderConnectionRequestTest {
         assertTrue(parseModelIds(AIProvider.OPENAI, "not json").isEmpty())
         assertTrue(parseModelIds(AIProvider.OPENAI, "{}").isEmpty())
     }
+
+    @Test
+    fun `openrouter uses host level base and api v1 path`() {
+        assertEquals("https://openrouter.ai/api/v1/models", build(AIProvider.OPEN_ROUTER).url)
+        assertEquals(
+            "https://proxy.example.com/api/v1/models",
+            build(AIProvider.OPEN_ROUTER, "https://proxy.example.com/").url
+        )
+    }
+
+    @Test
+    fun `urls pasted with the version path hit the same endpoint as the client`() {
+        assertEquals(
+            "https://openrouter.ai/api/v1/models",
+            build(AIProvider.OPEN_ROUTER, "https://openrouter.ai/api/v1").url
+        )
+        assertEquals("https://api.openai.com/v1/models", build(AIProvider.OPENAI, "https://api.openai.com/v1/").url)
+        assertEquals("https://api.openai.com/v1/models", build(AIProvider.OPENAI, "https://api.openai.com").url)
+        assertEquals(
+            "https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000",
+            build(AIProvider.GEMINI, "https://generativelanguage.googleapis.com/v1beta").url
+        )
+    }
 }

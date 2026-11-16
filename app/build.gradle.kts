@@ -33,6 +33,14 @@ android {
             keyProperties.load(FileInputStream(keyPropertiesFile))
         }
 
+        // Shared, public debug key: every CI build is signed alike, so APKs update in place.
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+
         create("release") {
             keyAlias = keyProperties.getProperty("keyAlias")
             keyPassword = keyProperties.getProperty("keyPassword")
@@ -45,6 +53,10 @@ android {
         debug {
             isDebuggable = true
             applicationIdSuffix = ".debug"
+            // CI builds show their run number and commit in Settings, so you can tell them apart.
+            val runNumber = System.getenv("GITHUB_RUN_NUMBER")
+            val commit = System.getenv("GITHUB_SHA")?.take(7)
+            versionNameSuffix = if (runNumber != null && commit != null) "-ci$runNumber+$commit" else "-dev"
         }
         release {
             isMinifyEnabled = true

@@ -171,4 +171,37 @@ class AIProviderConfigTest {
             )
         }
     }
+
+    @Test
+    fun `built-in providers have an official default URL and self-hosted ones do not`() {
+        val en = java.util.Locale.ENGLISH
+        val zh = java.util.Locale.forLanguageTag("zh-Hans")
+
+        assertEquals("https://api.openai.com", AIProvider.OPENAI.defaultBaseUrl(en))
+        assertEquals("https://openrouter.ai", AIProvider.OPEN_ROUTER.defaultBaseUrl(en))
+        assertEquals("https://api.moonshot.ai/v1", AIProvider.KIMI.defaultBaseUrl(en))
+        assertEquals("https://api.moonshot.cn/v1", AIProvider.KIMI.defaultBaseUrl(zh))
+        assertTrue(AIProvider.KIMI.officialBaseUrls.contains("https://api.moonshot.cn/v1"))
+
+        listOf(AIProvider.OLLAMA, AIProvider.LM_STUDIO, AIProvider.CUSTOM).forEach {
+            assertEquals(null, it.defaultBaseUrl(en))
+            assertTrue(it.officialBaseUrls.isEmpty())
+        }
+        // Every provider is either mandatory-URL or has a default.
+        AIProvider.entries.forEach {
+            assertEquals(it.isMandatoryBaseUrl, it.defaultBaseUrl(en) == null, it.name)
+        }
+    }
+
+    @Test
+    fun `normalizeRootUrl strips the version path Koog adds itself`() {
+        assertEquals("https://openrouter.ai", AIProvider.OPEN_ROUTER.normalizeRootUrl("https://openrouter.ai/api/v1/"))
+        assertEquals("https://openrouter.ai", AIProvider.OPEN_ROUTER.normalizeRootUrl("https://openrouter.ai/api"))
+        assertEquals("https://api.openai.com", AIProvider.OPENAI.normalizeRootUrl("https://api.openai.com/v1"))
+        assertEquals("https://api.anthropic.com", AIProvider.CLAUDE.normalizeRootUrl("https://api.anthropic.com/v1"))
+        assertEquals("https://g.example.com", AIProvider.GEMINI.normalizeRootUrl("https://g.example.com/v1beta"))
+        // Providers whose URL works as typed are left alone.
+        assertEquals("https://api.deepseek.com/v1", AIProvider.DEEPSEEK.normalizeRootUrl("https://api.deepseek.com/v1"))
+        assertEquals("http://pc:1234/v1", AIProvider.LM_STUDIO.normalizeRootUrl("http://pc:1234/v1/"))
+    }
 }

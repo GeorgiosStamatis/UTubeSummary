@@ -3,13 +3,16 @@ package io.github.utubesummary.vm
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import io.github.utubesummary.R
 import io.github.utubesummary.domain.usecase.GetUserSettingsUseCase
 import io.github.utubesummary.domain.usecase.TestProviderConnectionUseCase
 import io.github.utubesummary.domain.usecase.UpdateProviderConfigUseCase
@@ -17,6 +20,7 @@ import io.github.utubesummary.domain.usecase.UpdateUserPreferencesUseCase
 import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.model.ProviderTestResult
 import io.github.utubesummary.model.SummaryLength
+import io.github.utubesummary.util.SecureStorageException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,6 +31,19 @@ class SettingsViewModel @Inject constructor(
     private val testProviderConnectionUseCase: TestProviderConnectionUseCase,
 ) : ViewModel() {
 
+    private val _userMessages = MutableSharedFlow<Int>(extraBufferCapacity = 1)
+
+    /** One-shot messages for the UI (string resource ids), e.g. a failed secure save. */
+    val userMessages: SharedFlow<Int> = _userMessages
+
+    private fun launchSecure(block: suspend () -> Unit): Job = viewModelScope.launch {
+        try {
+            block()
+        } catch (e: SecureStorageException) {
+            _userMessages.tryEmit(R.string.secureStorageFailed)
+        }
+    }
+
     private val _providerTestState = MutableStateFlow<ProviderTestState>(ProviderTestState.Idle)
     val providerTestState: StateFlow<ProviderTestState> = _providerTestState
     private var providerTestJob: Job? = null
@@ -35,7 +52,7 @@ class SettingsViewModel @Inject constructor(
     fun testProviderConnection(provider: AIProvider, baseUrl: String, apiKey: String) {
         providerTestJob?.cancel()
         _providerTestState.value = ProviderTestState.Testing
-        providerTestJob = viewModelScope.launch {
+        providerTestJob = launchSecure {
             val result = testProviderConnectionUseCase(provider, baseUrl, apiKey)
             if (result is ProviderTestResult.Success) {
                 updateProviderConfigUseCase.applyFetchedModels(provider.name, result.models)
@@ -111,7 +128,7 @@ class SettingsViewModel @Inject constructor(
 
     // API Key
     fun setApiKeyValue(newValue: String, provider: String? = null) {
-        viewModelScope.launch {
+        launchSecure {
             val targetProvider = provider
                 ?: _activeProvider.value?.name
                 ?: settingsUiState.value.activeProvider?.name
@@ -121,7 +138,7 @@ class SettingsViewModel @Inject constructor(
 
     // API base url
     fun setBaseUrlValue(newValue: String, provider: String? = null) {
-        viewModelScope.launch {
+        launchSecure {
             val targetProvider = provider
                 ?: _activeProvider.value?.name
                 ?: settingsUiState.value.activeProvider?.name
@@ -141,7 +158,7 @@ class SettingsViewModel @Inject constructor(
         _activeProvider.value = provider
         _activeModel.value = model
         savePreference(updateUserPreferencesUseCase::setActiveProvider, provider.name)
-        viewModelScope.launch {
+        launchSecure {
             updateModelForProvider(provider.name, model)
         }
     }
@@ -158,7 +175,7 @@ class SettingsViewModel @Inject constructor(
         val providerEnum = AIProvider.entries.find { it.name == provider }
         _activeProvider.value = providerEnum
         _activeModel.value = null
-        viewModelScope.launch {
+        launchSecure {
             updateProviderConfigUseCase.setProviderConfig(
                 provider = provider,
                 baseUrl = baseUrl,
@@ -178,7 +195,7 @@ class SettingsViewModel @Inject constructor(
     // Model
     fun setModel(newValue: String, provider: AIProvider? = null) {
         _activeModel.value = newValue
-        viewModelScope.launch {
+        launchSecure {
             val targetProvider = provider
                 ?: _activeProvider.value
                 ?: settingsUiState.value.activeProvider
@@ -192,7 +209,7 @@ class SettingsViewModel @Inject constructor(
         if (currentActive == provider) {
             _activeModel.value = model
         }
-        viewModelScope.launch {
+        launchSecure {
             updateModelForProvider(provider, model)
         }
     }
@@ -214,7 +231,7 @@ class SettingsViewModel @Inject constructor(
                 _activeProvider.value = AIProvider.entries.find { it.name == provider }
             }
         }
-        viewModelScope.launch {
+        launchSecure {
             updateProviderConfigUseCase.setProviderModels(provider, models, selectedModel)
         }
     }
@@ -226,7 +243,7 @@ class SettingsViewModel @Inject constructor(
             val aiProvider = AIProvider.entries.find { it.name == provider }
             _activeModel.value = aiProvider?.defaultModelIds?.firstOrNull()
         }
-        viewModelScope.launch {
+        launchSecure {
             updateProviderConfigUseCase.resetProviderModelsToDefault(provider)
         }
     }
@@ -247,20 +264,20 @@ class SettingsViewModel @Inject constructor(
 
     // BiliBili SESSDATA
     fun setBilibiliSessData(data: String, expires: Long) {
-        viewModelScope.launch {
+        launchSecure {
             updateUserPreferencesUseCase.setBilibiliSessData(data, expires)
         }
     }
 
     fun clearBilibiliSessData() {
-        viewModelScope.launch {
+        launchSecure {
             updateUserPreferencesUseCase.clearBilibiliSessData()
         }
     }
 
     // Advanced Setup
     fun setIsAppendMode(newValue: Boolean) {
-        viewModelScope.launch {
+        launchSecure {
             updateUserPreferencesUseCase.setIsAppendMode(newValue)
         }
     }
@@ -273,7 +290,7 @@ class SettingsViewModel @Inject constructor(
 
     // --- Preference Handling Helpers ---
     private fun <T> savePreference(setter: suspend (T) -> Unit, value: T) {
-        viewModelScope.launch {
+        launchSecure {
             setter(value)
         }
     }

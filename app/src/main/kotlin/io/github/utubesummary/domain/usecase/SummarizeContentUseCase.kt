@@ -40,6 +40,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
         text: String,
         overrideLength: SummaryLength?,
     ): Result<SummaryOutput> = withContext(Dispatchers.IO) {
+        var requestContext = ""
         runCatching {
             val prefs = userPreferencesRepository.preferencesFlow.first()
             val providerConfigs = aiProviderConfigRepository.providerConfigsFlow.first()
@@ -49,10 +50,17 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             } ?: throw SummaryException.NoKeyException()
 
             val providerConfig = providerConfigs[activeProviderEnum.name]
+            if (providerConfig?.keyUnreadable == true) {
+                throw SummaryException.KeyUnreadableException()
+            }
             val apiKey = providerConfig?.apiKey.orEmpty()
             if (activeProviderEnum.isRequiredApiKey && apiKey.isBlank()) {
                 throw SummaryException.NoKeyException()
             }
+
+            requestContext = "Provider: ${activeProviderEnum.name}, " +
+                    "model: ${providerConfig?.activeModel?.ifBlank { null } ?: "-"}, " +
+                    "URL: ${providerConfig?.baseUrl?.ifBlank { null } ?: "default"}"
 
             val source = resolveSummarySource(text, prefs.autoExtractUrl)
             if (source is SummarySource.None) {
@@ -94,7 +102,14 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             summaryOutput
         }.fold(
             onSuccess = { Result.success(it) },
-            onFailure = { Result.failure(it.toSummaryException()) }
+            onFailure = { error ->
+                val summaryException = error.toSummaryException()
+                if (requestContext.isNotEmpty()) {
+                    summaryException.technicalDetails =
+                        requestContext + "\n" + summaryException.technicalDetails.orEmpty()
+                }
+                Result.failure(summaryException)
+            }
         )
     }
 

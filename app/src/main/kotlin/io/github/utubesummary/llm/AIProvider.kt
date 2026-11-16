@@ -13,6 +13,9 @@ import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
 import io.github.utubesummary.R
 import io.github.utubesummary.model.ProviderConfig
+import java.util.Locale
+
+internal fun Locale.isSimplifiedChinese(): Boolean = language == "zh" && script == "Hans"
 
 private val openAICompatibleCapabilities = listOf(
     LLMCapability.Completion,
@@ -305,6 +308,51 @@ enum class AIProvider(
     /** Whether the settings dialog shows an API key / token field for this provider. */
     val showsApiKeyField: Boolean
         get() = isRequiredApiKey || isApiKeyOptional
+
+    /**
+     * The provider's official endpoint, or null when the user must supply one (self-hosted).
+     * Some defaults differ for Simplified Chinese users.
+     */
+    fun defaultBaseUrl(locale: Locale): String? {
+        val chinese = locale.isSimplifiedChinese()
+        return when (this) {
+            OPENAI -> "https://api.openai.com"
+            GEMINI -> "https://generativelanguage.googleapis.com"
+            CLAUDE -> "https://api.anthropic.com"
+            DEEPSEEK -> "https://api.deepseek.com"
+            MISTRAL -> "https://api.mistral.ai"
+            OPEN_ROUTER -> "https://openrouter.ai"
+            QWEN -> if (chinese) "https://dashscope.aliyuncs.com" else "https://dashscope-intl.aliyuncs.com"
+            KIMI -> if (chinese) "https://api.moonshot.cn/v1" else "https://api.moonshot.ai/v1"
+            MINIMAX -> if (chinese) "https://api.minimaxi.com/v1" else "https://api.minimax.io/v1"
+            ZHIPU -> if (chinese) "https://open.bigmodel.cn/api/paas/v4" else "https://api.z.ai/api/paas/v4"
+            OLLAMA, LM_STUDIO, CUSTOM -> null
+        }
+    }
+
+    /**
+     * Reduces [url] to the root Koog expects. Koog adds the version path itself for these
+     * providers (OpenAI `v1/...`, Anthropic `v1/...`, Gemini `v1beta/...`, OpenRouter
+     * `api/v1/...`), so a pasted `https://openrouter.ai/api/v1` would otherwise end up as
+     * `.../api/v1/api/v1/chat/completions` (HTTP 404). Other providers keep their URL as typed.
+     */
+    fun normalizeRootUrl(url: String): String {
+        val trimmed = url.trim().trimEnd('/')
+        val suffixes = when (this) {
+            OPENAI, CLAUDE -> listOf("/v1")
+            GEMINI -> listOf("/v1beta", "/v1")
+            OPEN_ROUTER -> listOf("/api/v1", "/api")
+            else -> emptyList()
+        }
+        val suffix = suffixes.firstOrNull { trimmed.endsWith(it, ignoreCase = true) }
+        return if (suffix != null) trimmed.dropLast(suffix.length) else trimmed
+    }
+
+    /** Every official endpoint this provider can default to, across locales. */
+    val officialBaseUrls: Set<String>
+        get() = listOf(Locale.ENGLISH, Locale.forLanguageTag("zh-Hans"))
+            .mapNotNull { defaultBaseUrl(it)?.trimEnd('/') }
+            .toSet()
 
     val defaultModelIds: List<String>
         get() = models.map { it.id }

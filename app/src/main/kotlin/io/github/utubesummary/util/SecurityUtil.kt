@@ -1,16 +1,21 @@
 package io.github.utubesummary.util
 
 import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import android.util.Log
+import java.security.InvalidKeyException
 import java.security.KeyStore
+import java.security.UnrecoverableKeyException
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-object SecurityUtil {
+/** AES-256-GCM with a non-exportable Android Keystore key. Never logs secrets. */
+object SecurityUtil : SecretCipher {
+    private const val TAG = "SecurityUtil"
     private const val ANDROID_KEYSTORE = "AndroidKeyStore"
     private const val KEY_ALIAS = "utubesummary_api_key_alias"
     private const val TRANSFORMATION = "AES/GCM/NoPadding"
@@ -18,6 +23,9 @@ object SecurityUtil {
     private const val TAG_SIZE = 128
 
     private var cachedKey: SecretKey? = null
+
+    /** Encodes/decodes secrets for storage; see [SecureValueCodec]. */
+    val codec = SecureValueCodec(this)
 
     @Synchronized
     private fun getSecretKey(): SecretKey {
@@ -41,38 +49,62 @@ object SecurityUtil {
         return (keyStore.getKey(KEY_ALIAS, null) as SecretKey).also { cachedKey = it }
     }
 
-    fun encrypt(plainText: String): String {
-        if (plainText.isEmpty()) return ""
-        return try {
-            val cipher = Cipher.getInstance(TRANSFORMATION)
-            cipher.init(Cipher.ENCRYPT_MODE, getSecretKey())
-            val iv = cipher.iv
-            val encryptedBytes = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
-            val combined = ByteArray(iv.size + encryptedBytes.size)
-            System.arraycopy(iv, 0, combined, 0, iv.size)
-            System.arraycopy(encryptedBytes, 0, combined, iv.size, encryptedBytes.size)
-            Base64.encodeToString(combined, Base64.DEFAULT)
-        } catch (e: Exception) {
-            Log.e("SecurityUtil", "Encryption failed", e)
-            ""
+    /** Deletes an unusable key so a new one is created on next use. */
+    @Synchronized
+    private fun resetKey() {
+        cachedKey = null
+        runCatching {
+            KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }.deleteEntry(KEY_ALIAS)
         }
     }
 
-    fun decrypt(encryptedText: String): String {
+    override fun encrypt(plainText: String): String {
+        if (plainText.isEmpty()) return ""
+        return try {
+            encryptOnce(plainText)
+        } catch (e: Exception) {
+            if (e is KeyPermanentlyInvalidatedException ||
+                e is UnrecoverableKeyException ||
+                e is InvalidKeyException
+            ) {
+                // The key can no longer be used: start over with a new one, once.
+                Log.w(TAG, "Keystore key unusable, creating a new one", e)
+                resetKey()
+                try {
+                    encryptOnce(plainText)
+                } catch (retryError: Exception) {
+                    throw SecureStorageException("Encryption failed", retryError)
+                }
+            } else {
+                throw SecureStorageException("Encryption failed", e)
+            }
+        }
+    }
+
+    private fun encryptOnce(plainText: String): String {
+        val cipher = Cipher.getInstance(TRANSFORMATION)
+        cipher.init(Cipher.ENCRYPT_MODE, getSecretKey())
+        val iv = cipher.iv
+        val encryptedBytes = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
+        val combined = ByteArray(iv.size + encryptedBytes.size)
+        System.arraycopy(iv, 0, combined, 0, iv.size)
+        System.arraycopy(encryptedBytes, 0, combined, iv.size, encryptedBytes.size)
+        return Base64.encodeToString(combined, Base64.NO_WRAP)
+    }
+
+    override fun decrypt(encryptedText: String): String {
         if (encryptedText.isEmpty()) return ""
         return try {
             val combined = Base64.decode(encryptedText, Base64.DEFAULT)
-            if (combined.size < IV_SIZE) return encryptedText // Not encrypted or corrupted
+            if (combined.size <= IV_SIZE) throw IllegalArgumentException("Value too short")
             val cipher = Cipher.getInstance(TRANSFORMATION)
             val iv = combined.copyOfRange(0, IV_SIZE)
             val encryptedBytes = combined.copyOfRange(IV_SIZE, combined.size)
-            val spec = GCMParameterSpec(TAG_SIZE, iv)
-            cipher.init(Cipher.DECRYPT_MODE, getSecretKey(), spec)
-            val decryptedBytes = cipher.doFinal(encryptedBytes)
-            String(decryptedBytes, Charsets.UTF_8)
+            cipher.init(Cipher.DECRYPT_MODE, getSecretKey(), GCMParameterSpec(TAG_SIZE, iv))
+            String(cipher.doFinal(encryptedBytes), Charsets.UTF_8)
         } catch (e: Exception) {
-            Log.e("SecurityUtil", "Decryption failed", e)
-            ""
+            Log.e(TAG, "Decryption failed", e)
+            throw SecureStorageException("Decryption failed", e)
         }
     }
 }
