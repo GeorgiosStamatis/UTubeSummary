@@ -93,6 +93,10 @@ sealed class SummaryException(message: String) : Exception(message) {
         override fun getUserMessageResId(apiKey: String?) = R.string.noKey
     }
 
+    class KeyUnreadableException : SummaryException("The saved API key can no longer be read.") {
+        override fun getUserMessageResId(apiKey: String?) = R.string.keyUnreadable
+    }
+
     class BiliBiliLoginRequiredException :
         SummaryException("BiliBili login required. Please log in via settings.")
 

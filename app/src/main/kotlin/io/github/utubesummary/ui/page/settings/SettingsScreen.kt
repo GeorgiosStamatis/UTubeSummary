@@ -101,6 +101,14 @@ fun SettingsScreen(
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
     val state by settingsViewModel.settingsUiState.collectAsState()
+
+    val screenContext = LocalContext.current
+    LaunchedEffect(settingsViewModel) {
+        settingsViewModel.userMessages.collect { messageRes ->
+            Toast.makeText(screenContext, messageRes, Toast.LENGTH_LONG).show()
+        }
+    }
+
     val actions = SettingsActions(
         onThemeChange = settingsViewModel::setTheme,
         onApiKeyChange = settingsViewModel::setApiKeyValue,

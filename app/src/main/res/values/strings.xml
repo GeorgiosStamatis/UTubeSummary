@@ -33,6 +33,8 @@
     <string name="testUnreachable">Couldn\'t reach the server. Check the URL and your network connection.</string>
     <string name="showErrorDetails">Show details</string>
     <string name="hideErrorDetails">Hide details</string>
+    <string name="keyUnreadable">The saved API key can\'t be read anymore (the device\'s secure storage was reset, e.g. after a restore). Please enter the key again in Settings.</string>
+    <string name="secureStorageFailed">Couldn\'t store this securely on your device, so it was not saved.</string>
     <string name="appVersion">Version %1$s</string>
     <string name="repository">Open Source Code</string>
     <string name="githubDescription">Our GitHub repository</string>

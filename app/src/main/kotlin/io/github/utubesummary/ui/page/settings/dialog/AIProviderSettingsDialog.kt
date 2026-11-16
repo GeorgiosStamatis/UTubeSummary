@@ -109,6 +109,10 @@ fun AIProviderSettingsDialog(
         mutableStateOf(providerConfigs[selectedProvider.name]?.apiKey ?: "")
     }
 
+    // The saved key can't be decrypted any more: ask for it again until one is entered.
+    val keyUnreadable = providerConfigs[selectedProvider.name]?.keyUnreadable == true &&
+            apiKeyTextFieldValue.isBlank()
+
     val lazyListState = rememberLazyListState()
     val reorderState = rememberReorderableListState(lazyListState) { fromIndex, toIndex ->
         val updatedList = providersList.toMutableList()
@@ -227,6 +231,16 @@ fun AIProviderSettingsDialog(
                                 Icons.Rounded.VpnKey,
                                 contentDescription = "API Key"
                             )
+                        },
+                        supportingText = if (keyUnreadable) {
+                            @Composable {
+                                Text(
+                                    text = stringResource(R.string.keyUnreadable),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        } else {
+                            null
                         },
                         label = {
                             Text(

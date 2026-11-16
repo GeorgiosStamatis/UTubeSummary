@@ -50,6 +50,9 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             } ?: throw SummaryException.NoKeyException()
 
             val providerConfig = providerConfigs[activeProviderEnum.name]
+            if (providerConfig?.keyUnreadable == true) {
+                throw SummaryException.KeyUnreadableException()
+            }
             val apiKey = providerConfig?.apiKey.orEmpty()
             if (activeProviderEnum.isRequiredApiKey && apiKey.isBlank()) {
                 throw SummaryException.NoKeyException()

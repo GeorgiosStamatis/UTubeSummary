@@ -6,6 +6,7 @@ import androidx.room3.Entity
 import androidx.room3.PrimaryKey
 import io.github.utubesummary.data.converters.StringListConverter
 import io.github.utubesummary.model.ProviderConfig
+import io.github.utubesummary.util.DecodedSecret
 import io.github.utubesummary.util.SecurityUtil
 
 @Entity(tableName = "ai_provider_config")
@@ -18,8 +19,10 @@ data class AIProviderConfigEntity(
     val models: List<String>? = null,
 ) {
     fun toProviderConfig(): ProviderConfig {
+        val decoded = SecurityUtil.codec.decode(apiKey, legacyIsPlain = false)
         return ProviderConfig(
-            apiKey = SecurityUtil.decrypt(apiKey),
+            apiKey = (decoded as? DecodedSecret.Value)?.text.orEmpty(),
+            keyUnreadable = decoded is DecodedSecret.Unreadable,
             baseUrl = baseUrl,
             activeModel = activeModel,
             models = models ?: emptyList()
@@ -30,7 +33,7 @@ data class AIProviderConfigEntity(
         fun fromProviderConfig(provider: String, config: ProviderConfig): AIProviderConfigEntity {
             return AIProviderConfigEntity(
                 provider = provider,
-                apiKey = SecurityUtil.encrypt(config.apiKey),
+                apiKey = SecurityUtil.codec.encode(config.apiKey),
                 baseUrl = config.baseUrl,
                 activeModel = config.activeModel,
                 models = config.models.takeIf { it.isNotEmpty() }

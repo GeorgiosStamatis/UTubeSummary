@@ -16,6 +16,7 @@ import io.github.utubesummary.domain.usecase.GetUserSettingsUseCase
 import io.github.utubesummary.domain.usecase.UpdateProviderConfigUseCase
 import io.github.utubesummary.domain.usecase.UpdateUserPreferencesUseCase
 import io.github.utubesummary.llm.AIProvider
+import io.github.utubesummary.util.SecureStorageException
 import java.util.Locale
 import io.github.utubesummary.model.ProviderTestResult
 import io.github.utubesummary.domain.usecase.TestProviderConnectionUseCase
@@ -50,7 +51,10 @@ class SettingsViewModelTest {
         override suspend fun getConfig(provider: String): ProviderConfig? =
             configs.value[provider]
 
+        var failSave = false
+
         override suspend fun saveConfig(provider: String, config: ProviderConfig) {
+            if (failSave) throw SecureStorageException("Encryption failed")
             configs.value += (provider to config)
         }
 
@@ -522,4 +526,20 @@ class SettingsViewModelTest {
         viewModel.setBaseUrlValue("https://gateway.example.com/api/v1")
         assertEquals("https://gateway.example.com", fakeConfigRepo.getConfig("OPEN_ROUTER")?.baseUrl)
     }
+
+    @Test
+    fun `test secure storage failure is reported instead of crashing`() =
+        runTest(testDispatcher) {
+            fakePrefsRepo.prefs.value = UserPreferences(activeProvider = "OPENAI")
+            val viewModel = createViewModel()
+            val messages = mutableListOf<Int>()
+            backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+                viewModel.userMessages.collect { messages.add(it) }
+            }
+
+            fakeConfigRepo.failSave = true
+            viewModel.setApiKeyValue("sk-new")
+
+            assertEquals(listOf(io.github.utubesummary.R.string.secureStorageFailed), messages)
+        }
 }
