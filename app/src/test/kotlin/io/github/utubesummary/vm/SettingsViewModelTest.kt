@@ -423,8 +423,12 @@ class SettingsViewModelTest {
             assertEquals("claude-secret-key", fakeConfigRepo.getConfig("CLAUDE")?.apiKey)
             assertNull(fakeConfigRepo.getConfig("OPENAI")?.apiKey)
 
+            // The official endpoint is stored as "" (= use the default)
             viewModel.setBaseUrlValue("api.anthropic.com")
-            assertEquals("https://api.anthropic.com", fakeConfigRepo.getConfig("CLAUDE")?.baseUrl)
+            assertEquals("", fakeConfigRepo.getConfig("CLAUDE")?.baseUrl)
+
+            viewModel.setBaseUrlValue("proxy.example.com")
+            assertEquals("https://proxy.example.com", fakeConfigRepo.getConfig("CLAUDE")?.baseUrl)
         }
 
     @Test

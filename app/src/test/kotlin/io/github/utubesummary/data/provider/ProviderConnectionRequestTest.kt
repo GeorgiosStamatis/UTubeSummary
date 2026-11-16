@@ -78,4 +78,13 @@ class ProviderConnectionRequestTest {
         assertTrue(parseModelIds(AIProvider.OPENAI, "not json").isEmpty())
         assertTrue(parseModelIds(AIProvider.OPENAI, "{}").isEmpty())
     }
+
+    @Test
+    fun `openrouter uses host level base and api v1 path`() {
+        assertEquals("https://openrouter.ai/api/v1/models", build(AIProvider.OPEN_ROUTER).url)
+        assertEquals(
+            "https://proxy.example.com/api/v1/models",
+            build(AIProvider.OPEN_ROUTER, "https://proxy.example.com/").url
+        )
+    }
 }

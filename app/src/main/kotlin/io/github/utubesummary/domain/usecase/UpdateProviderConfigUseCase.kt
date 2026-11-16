@@ -37,6 +37,13 @@ class UpdateProviderConfigUseCase @Inject constructor(
 ) {
     fun normalizeBaseUrl(url: String): String = normalizeProviderBaseUrl(url)
 
+    /** Normalizes [url]; the provider's official endpoint is stored as "" (meaning "default"). */
+    private fun storableBaseUrl(provider: String, url: String): String {
+        val normalized = normalizeBaseUrl(url)
+        val official = AIProvider.entries.find { it.name == provider }?.officialBaseUrls.orEmpty()
+        return if (normalized.trimEnd('/') in official) "" else normalized
+    }
+
     suspend fun updateApiKey(provider: String? = null, apiKey: String) {
         val targetProvider = provider
             ?: userPreferencesRepository.preferencesFlow.first().activeProvider
@@ -48,7 +55,7 @@ class UpdateProviderConfigUseCase @Inject constructor(
         val targetProvider = provider
             ?: userPreferencesRepository.preferencesFlow.first().activeProvider
             ?: return
-        aiProviderConfigRepository.updateBaseUrl(targetProvider, normalizeBaseUrl(baseUrl))
+        aiProviderConfigRepository.updateBaseUrl(targetProvider, storableBaseUrl(targetProvider, baseUrl))
     }
 
     suspend fun setProviderConfig(
@@ -57,7 +64,7 @@ class UpdateProviderConfigUseCase @Inject constructor(
         apiKey: String,
         providerOrder: List<String>? = null,
     ) {
-        val normalizedBaseUrl = normalizeBaseUrl(baseUrl)
+        val normalizedBaseUrl = storableBaseUrl(provider, baseUrl)
         val currentConfig = aiProviderConfigRepository.getConfig(provider) ?: ProviderConfig()
         aiProviderConfigRepository.saveConfig(
             provider,

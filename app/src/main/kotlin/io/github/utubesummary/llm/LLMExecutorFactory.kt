@@ -155,10 +155,9 @@ class LLMExecutorFactory(
         baseUrl: String?,
         appLanguage: Locale,
     ): PromptExecutor {
-        val isSimplifiedChinese = appLanguage.language == "zh" && appLanguage.script == "Hans"
-
-        val finalBaseUrl = if (isSimplifiedChinese) {
-            "https://dashscope.aliyuncs.com"
+        // Simplified Chinese always uses the mainland endpoint.
+        val finalBaseUrl = if (appLanguage.isSimplifiedChinese()) {
+            AIProvider.QWEN.defaultBaseUrl(appLanguage)
         } else {
             baseUrl
         }
@@ -202,9 +201,7 @@ class LLMExecutorFactory(
         baseUrl: String?,
         appLanguage: Locale,
     ): PromptExecutor {
-        val isSimplifiedChinese = appLanguage.language == "zh" && appLanguage.script == "Hans"
-        val defaultBaseUrl =
-            if (isSimplifiedChinese) "https://api.moonshot.cn/v1" else "https://api.moonshot.ai/v1"
+        val defaultBaseUrl = AIProvider.KIMI.defaultBaseUrl(appLanguage)!!
         val finalBaseUrl = (baseUrl?.takeIf { it.isNotBlank() } ?: defaultBaseUrl).trimEnd('/')
 
         val client = OpenAILLMClient(
@@ -223,9 +220,7 @@ class LLMExecutorFactory(
         baseUrl: String?,
         appLanguage: Locale,
     ): PromptExecutor {
-        val isSimplifiedChinese = appLanguage.language == "zh" && appLanguage.script == "Hans"
-        val defaultBaseUrl =
-            if (isSimplifiedChinese) "https://api.minimaxi.com/v1" else "https://api.minimax.io/v1"
+        val defaultBaseUrl = AIProvider.MINIMAX.defaultBaseUrl(appLanguage)!!
         val finalBaseUrl = (baseUrl?.takeIf { it.isNotBlank() } ?: defaultBaseUrl).trimEnd('/')
 
         val client = OpenAILLMClient(
@@ -244,9 +239,7 @@ class LLMExecutorFactory(
         baseUrl: String?,
         appLanguage: Locale,
     ): PromptExecutor {
-        val isSimplifiedChinese = appLanguage.language == "zh" && appLanguage.script == "Hans"
-        val defaultBaseUrl =
-            if (isSimplifiedChinese) "https://open.bigmodel.cn/api/paas/v4" else "https://api.z.ai/api/paas/v4"
+        val defaultBaseUrl = AIProvider.ZHIPU.defaultBaseUrl(appLanguage)!!
         val finalBaseUrl = (baseUrl?.takeIf { it.isNotBlank() } ?: defaultBaseUrl).trimEnd('/')
 
         val client = OpenAILLMClient(

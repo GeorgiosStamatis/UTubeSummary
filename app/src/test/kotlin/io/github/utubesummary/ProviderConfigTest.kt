@@ -171,4 +171,25 @@ class AIProviderConfigTest {
             )
         }
     }
+
+    @Test
+    fun `built-in providers have an official default URL and self-hosted ones do not`() {
+        val en = java.util.Locale.ENGLISH
+        val zh = java.util.Locale.forLanguageTag("zh-Hans")
+
+        assertEquals("https://api.openai.com", AIProvider.OPENAI.defaultBaseUrl(en))
+        assertEquals("https://openrouter.ai", AIProvider.OPEN_ROUTER.defaultBaseUrl(en))
+        assertEquals("https://api.moonshot.ai/v1", AIProvider.KIMI.defaultBaseUrl(en))
+        assertEquals("https://api.moonshot.cn/v1", AIProvider.KIMI.defaultBaseUrl(zh))
+        assertTrue(AIProvider.KIMI.officialBaseUrls.contains("https://api.moonshot.cn/v1"))
+
+        listOf(AIProvider.OLLAMA, AIProvider.LM_STUDIO, AIProvider.CUSTOM).forEach {
+            assertEquals(null, it.defaultBaseUrl(en))
+            assertTrue(it.officialBaseUrls.isEmpty())
+        }
+        // Every provider is either mandatory-URL or has a default.
+        AIProvider.entries.forEach {
+            assertEquals(it.isMandatoryBaseUrl, it.defaultBaseUrl(en) == null, it.name)
+        }
+    }
 }

@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -95,8 +96,14 @@ fun AIProviderSettingsDialog(
         mutableStateOf(initialEffectiveProviders)
     }
 
+    // Built-in providers show their official URL (editable); it is saved as "default".
+    val locale = LocalConfiguration.current.locales[0]
+    val defaultBaseUrl = selectedProvider.defaultBaseUrl(locale).orEmpty()
+    val initialBaseUrl = providerConfigs[selectedProvider.name]?.baseUrl
+        ?.takeIf { it.isNotBlank() } ?: defaultBaseUrl
+
     var baseUrlTextFieldValue by remember(selectedProvider) {
-        mutableStateOf(providerConfigs[selectedProvider.name]?.baseUrl ?: "")
+        mutableStateOf(initialBaseUrl)
     }
     var apiKeyTextFieldValue by remember(selectedProvider) {
         mutableStateOf(providerConfigs[selectedProvider.name]?.apiKey ?: "")
@@ -118,7 +125,7 @@ fun AIProviderSettingsDialog(
     val providerChanged = selectedProvider != initialProvider
     val orderChanged = providersList != initialEffectiveProviders
     val configChanged =
-        baseUrlTextFieldValue != (providerConfigs[selectedProvider.name]?.baseUrl ?: "") ||
+        baseUrlTextFieldValue != initialBaseUrl ||
                 apiKeyTextFieldValue != (providerConfigs[selectedProvider.name]?.apiKey ?: "")
 
     val canSubmit = if (providerChanged || configChanged) formValid else orderChanged
@@ -178,7 +185,7 @@ fun AIProviderSettingsDialog(
                     singleLine = true,
                     shape = MaterialTheme.shapes.large,
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = selectedProvider.baseUrlPlaceholder?.let { hint ->
+                    placeholder = (defaultBaseUrl.ifBlank { null } ?: selectedProvider.baseUrlPlaceholder)?.let { hint ->
                         @Composable { Text(hint, modifier = Modifier.alpha(0.5f)) }
                     },
                     leadingIcon = { Icon(Icons.Rounded.Link, contentDescription = "Base Url") },
