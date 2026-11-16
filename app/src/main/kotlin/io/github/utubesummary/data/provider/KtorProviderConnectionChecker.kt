@@ -38,8 +38,10 @@ internal fun buildConnectionRequest(
     locale: Locale,
 ): ConnectionRequest {
     // Custom URL if given, otherwise the provider's official endpoint.
-    val root = baseUrl.trim().trimEnd('/')
-        .ifBlank { provider.defaultBaseUrl(locale).orEmpty().trimEnd('/') }
+    // Same normalization as the real client, so Test hits the same host and path.
+    val root = provider.normalizeRootUrl(
+        baseUrl.ifBlank { provider.defaultBaseUrl(locale).orEmpty() }
+    )
 
     // "<host>" -> "<host>/<versioned>/models", "<host>/<path>" -> "<host>/<path>/models"
     fun modelsUrl(versionedPath: String): String {
@@ -50,7 +52,9 @@ internal fun buildConnectionRequest(
     val bearer = if (apiKey.isNotBlank()) mapOf("Authorization" to "Bearer $apiKey") else emptyMap()
 
     return when (provider) {
-        AIProvider.OPENAI, AIProvider.DEEPSEEK, AIProvider.MISTRAL,
+        AIProvider.OPENAI -> ConnectionRequest("$root/v1/models", bearer)
+
+        AIProvider.DEEPSEEK, AIProvider.MISTRAL,
         AIProvider.LM_STUDIO, AIProvider.CUSTOM -> ConnectionRequest(modelsUrl("v1"), bearer)
 
         // Koog (and so the base URL) is host-level for OpenRouter; the API lives under /api/v1.
@@ -71,12 +75,12 @@ internal fun buildConnectionRequest(
         AIProvider.ZHIPU -> ConnectionRequest(modelsUrl("v4"), bearer)
 
         AIProvider.CLAUDE -> ConnectionRequest(
-            modelsUrl("v1") + "?limit=1000",
+            "$root/v1/models?limit=1000",
             mapOf("x-api-key" to apiKey, "anthropic-version" to "2023-06-01")
         )
 
         AIProvider.GEMINI -> ConnectionRequest(
-            modelsUrl("v1beta") + "?pageSize=1000",
+            "$root/v1beta/models?pageSize=1000",
             mapOf("x-goog-api-key" to apiKey)
         )
 

@@ -80,8 +80,11 @@ class LLMExecutorFactory(
         }
     }
 
+    private fun rootUrlOrNull(provider: AIProvider, baseUrl: String?): String? =
+        baseUrl?.let { provider.normalizeRootUrl(it) }?.takeIf { it.isNotBlank() }
+
     private fun createOpenAIExecutor(apiKey: String, baseUrl: String?): PromptExecutor {
-        val client = baseUrl?.takeIf { it.isNotBlank() }
+        val client = rootUrlOrNull(AIProvider.OPENAI, baseUrl)
             ?.let {
                 OpenAILLMClient(
                     apiKey,
@@ -95,7 +98,7 @@ class LLMExecutorFactory(
     }
 
     private fun createGeminiExecutor(apiKey: String, baseUrl: String?): PromptExecutor {
-        val client = baseUrl?.takeIf { it.isNotBlank() }
+        val client = rootUrlOrNull(AIProvider.GEMINI, baseUrl)
             ?.let {
                 GoogleLLMClient(
                     apiKey,
@@ -109,7 +112,7 @@ class LLMExecutorFactory(
     }
 
     private fun createClaudeExecutor(apiKey: String, baseUrl: String?): PromptExecutor {
-        val client = baseUrl?.takeIf { it.isNotBlank() }
+        val client = rootUrlOrNull(AIProvider.CLAUDE, baseUrl)
             ?.let {
                 AnthropicLLMClient(
                     apiKey,
@@ -183,7 +186,7 @@ class LLMExecutorFactory(
     }
 
     private fun createOpenRouterExecutor(apiKey: String, baseUrl: String?): PromptExecutor {
-        val client = baseUrl?.takeIf { it.isNotBlank() }
+        val client = rootUrlOrNull(AIProvider.OPEN_ROUTER, baseUrl)
             ?.let {
                 OpenRouterLLMClient(
                     apiKey,

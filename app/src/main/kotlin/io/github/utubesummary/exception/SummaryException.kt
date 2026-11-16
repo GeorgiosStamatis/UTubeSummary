@@ -211,7 +211,10 @@ fun Throwable.toSummaryException(): SummaryException {
                     errorCode == "not_found_error" ||
                     (rawLower.contains("model") && rawLower.contains("not found")) ||
                     rawLower.contains("does not exist") -> {
-                SummaryException.ModelNotFoundException(detail = cleanMsg)
+                // A bare HTTP reason phrase says nothing; use the localized hint instead.
+                SummaryException.ModelNotFoundException(
+                    detail = cleanMsg?.takeUnless { it.trim().equals("Not Found", ignoreCase = true) }
+                )
             }
 
             statusCode == 429 ||

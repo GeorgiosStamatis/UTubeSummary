@@ -40,8 +40,9 @@ class UpdateProviderConfigUseCase @Inject constructor(
     /** Normalizes [url]; the provider's official endpoint is stored as "" (meaning "default"). */
     private fun storableBaseUrl(provider: String, url: String): String {
         val normalized = normalizeBaseUrl(url)
-        val official = AIProvider.entries.find { it.name == provider }?.officialBaseUrls.orEmpty()
-        return if (normalized.trimEnd('/') in official) "" else normalized
+        val aiProvider = AIProvider.entries.find { it.name == provider } ?: return normalized
+        val root = aiProvider.normalizeRootUrl(normalized)
+        return if (root.isBlank() || root in aiProvider.officialBaseUrls) "" else root
     }
 
     suspend fun updateApiKey(provider: String? = null, apiKey: String) {

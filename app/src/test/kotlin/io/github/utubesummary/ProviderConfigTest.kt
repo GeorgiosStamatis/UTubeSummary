@@ -192,4 +192,16 @@ class AIProviderConfigTest {
             assertEquals(it.isMandatoryBaseUrl, it.defaultBaseUrl(en) == null, it.name)
         }
     }
+
+    @Test
+    fun `normalizeRootUrl strips the version path Koog adds itself`() {
+        assertEquals("https://openrouter.ai", AIProvider.OPEN_ROUTER.normalizeRootUrl("https://openrouter.ai/api/v1/"))
+        assertEquals("https://openrouter.ai", AIProvider.OPEN_ROUTER.normalizeRootUrl("https://openrouter.ai/api"))
+        assertEquals("https://api.openai.com", AIProvider.OPENAI.normalizeRootUrl("https://api.openai.com/v1"))
+        assertEquals("https://api.anthropic.com", AIProvider.CLAUDE.normalizeRootUrl("https://api.anthropic.com/v1"))
+        assertEquals("https://g.example.com", AIProvider.GEMINI.normalizeRootUrl("https://g.example.com/v1beta"))
+        // Providers whose URL works as typed are left alone.
+        assertEquals("https://api.deepseek.com/v1", AIProvider.DEEPSEEK.normalizeRootUrl("https://api.deepseek.com/v1"))
+        assertEquals("http://pc:1234/v1", AIProvider.LM_STUDIO.normalizeRootUrl("http://pc:1234/v1/"))
+    }
 }

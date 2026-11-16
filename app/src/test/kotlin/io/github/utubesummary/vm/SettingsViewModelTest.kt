@@ -230,8 +230,12 @@ class SettingsViewModelTest {
         assertEquals("sk-test-key", fakeConfigRepo.getConfig("OPENAI")?.apiKey)
 
         // URL without protocol
+        // The version path is added by the client, and the official URL is stored as "default".
         viewModel.setBaseUrlValue("api.openai.com/v1")
-        assertEquals("https://api.openai.com/v1", fakeConfigRepo.getConfig("OPENAI")?.baseUrl)
+        assertEquals("", fakeConfigRepo.getConfig("OPENAI")?.baseUrl)
+
+        viewModel.setBaseUrlValue("proxy.example.com/v1")
+        assertEquals("https://proxy.example.com", fakeConfigRepo.getConfig("OPENAI")?.baseUrl)
 
         // URL with http protocol
         viewModel.setBaseUrlValue("http://localhost:11434")
@@ -505,5 +509,17 @@ class SettingsViewModelTest {
         viewModel.setProviderConfig("LM_STUDIO", "192.168.1.10:1234/v1", "", null)
 
         assertEquals(listOf("model-a"), fakeConfigRepo.getConfig("LM_STUDIO")?.models)
+    }
+
+    @Test
+    fun `test OpenRouter docs URL is stored as default`() = runTest(testDispatcher) {
+        fakePrefsRepo.prefs.value = UserPreferences(activeProvider = "OPEN_ROUTER")
+        val viewModel = createViewModel()
+
+        viewModel.setBaseUrlValue("https://openrouter.ai/api/v1")
+        assertEquals("", fakeConfigRepo.getConfig("OPEN_ROUTER")?.baseUrl)
+
+        viewModel.setBaseUrlValue("https://gateway.example.com/api/v1")
+        assertEquals("https://gateway.example.com", fakeConfigRepo.getConfig("OPEN_ROUTER")?.baseUrl)
     }
 }

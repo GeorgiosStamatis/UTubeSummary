@@ -330,6 +330,24 @@ enum class AIProvider(
         }
     }
 
+    /**
+     * Reduces [url] to the root Koog expects. Koog adds the version path itself for these
+     * providers (OpenAI `v1/...`, Anthropic `v1/...`, Gemini `v1beta/...`, OpenRouter
+     * `api/v1/...`), so a pasted `https://openrouter.ai/api/v1` would otherwise end up as
+     * `.../api/v1/api/v1/chat/completions` (HTTP 404). Other providers keep their URL as typed.
+     */
+    fun normalizeRootUrl(url: String): String {
+        val trimmed = url.trim().trimEnd('/')
+        val suffixes = when (this) {
+            OPENAI, CLAUDE -> listOf("/v1")
+            GEMINI -> listOf("/v1beta", "/v1")
+            OPEN_ROUTER -> listOf("/api/v1", "/api")
+            else -> emptyList()
+        }
+        val suffix = suffixes.firstOrNull { trimmed.endsWith(it, ignoreCase = true) }
+        return if (suffix != null) trimmed.dropLast(suffix.length) else trimmed
+    }
+
     /** Every official endpoint this provider can default to, across locales. */
     val officialBaseUrls: Set<String>
         get() = listOf(Locale.ENGLISH, Locale.forLanguageTag("zh-Hans"))
