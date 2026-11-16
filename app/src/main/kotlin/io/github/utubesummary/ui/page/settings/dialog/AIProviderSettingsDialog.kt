@@ -128,9 +128,14 @@ fun AIProviderSettingsDialog(
         baseUrlTextFieldValue != initialBaseUrl ||
                 apiKeyTextFieldValue != (providerConfigs[selectedProvider.name]?.apiKey ?: "")
 
-    // A successful Test validates the current inputs: allow OK, and don't offer Test again.
-    val testPassed = (testState as? ProviderTestState.Done)?.result is ProviderTestResult.Success
-    val canSubmit = if (providerChanged || configChanged) formValid else (orderChanged || testPassed)
+    val buttons = providerDialogButtons(
+        providerChanged = providerChanged,
+        configChanged = configChanged,
+        orderChanged = orderChanged,
+        formValid = formValid,
+        testState = testState,
+    )
+    val canSubmit = buttons.canSubmit
 
     // A previous test result no longer applies once the inputs change or the dialog closes.
     LaunchedEffect(selectedProvider, baseUrlTextFieldValue, apiKeyTextFieldValue) {
@@ -280,7 +285,7 @@ fun AIProviderSettingsDialog(
                     onClick = {
                         onTest(selectedProvider, baseUrlTextFieldValue, apiKeyTextFieldValue)
                     },
-                    enabled = formValid && testState !is ProviderTestState.Testing && !testPassed
+                    enabled = buttons.canTest
                 ) {
                     Text(stringResource(id = R.string.testConnection))
                 }

@@ -10,6 +10,9 @@ import java.net.UnknownHostException
 
 sealed class SummaryException(message: String) : Exception(message) {
 
+    /** Raw technical cause (status, server message, ...) shown behind "Show details". */
+    var technicalDetails: String? = null
+
     @StringRes
     open fun getUserMessageResId(apiKey: String? = null): Int? = null
 
@@ -104,7 +107,10 @@ sealed class SummaryException(message: String) : Exception(message) {
     }
 
     companion object {
-        fun fromMessage(message: String): SummaryException {
+        fun fromMessage(message: String): SummaryException =
+            classify(message).also { it.technicalDetails = message.take(MAX_DETAILS_LENGTH) }
+
+        private fun classify(message: String): SummaryException {
             val parsed = LlmErrorParser.parse(message)
             val clean = parsed.cleanMessage ?: message
             return when {
@@ -153,8 +159,26 @@ sealed class SummaryException(message: String) : Exception(message) {
     }
 }
 
+private const val MAX_DETAILS_LENGTH = 600
+
 fun Throwable.toSummaryException(): SummaryException {
     if (this is SummaryException) return this
+    return convertToSummaryException().also { it.technicalDetails = technicalDetailsOf(this) }
+}
+
+/** "Type: message" for the throwable and its causes, trimmed. */
+private fun technicalDetailsOf(throwable: Throwable): String = buildString {
+    var current: Throwable? = throwable
+    var depth = 0
+    while (current != null && depth < 4) {
+        if (isNotEmpty()) append("\n<- ")
+        append(current::class.simpleName).append(": ").append(current.message.orEmpty())
+        current = current.cause?.takeIf { it !== current }
+        depth++
+    }
+}.take(MAX_DETAILS_LENGTH)
+
+private fun Throwable.convertToSummaryException(): SummaryException {
 
     val msg = message ?: ""
 

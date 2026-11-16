@@ -1,10 +1,17 @@
 package io.github.utubesummary.ui.component
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,14 +42,39 @@ fun ErrorMessage(
 ) {
     if (error == null) return
     val errMsg = error.resolveUserErrorMessage(apiKey)
-    Text(
-        text = errMsg,
-        color = MaterialTheme.colorScheme.error,
-        style = MaterialTheme.typography.bodySmall,
-        maxLines = 4,
-        overflow = TextOverflow.Ellipsis,
+    val details = remember(error) { error.toSummaryException().technicalDetails }
+    var showDetails by remember(error) { mutableStateOf(false) }
+
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
-    )
+    ) {
+        Text(
+            text = errMsg,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall,
+            maxLines = 4,
+            overflow = TextOverflow.Ellipsis,
+        )
+        if (!details.isNullOrBlank()) {
+            TextButton(onClick = { showDetails = !showDetails }) {
+                Text(
+                    stringResource(
+                        if (showDetails) R.string.hideErrorDetails else R.string.showErrorDetails
+                    )
+                )
+            }
+            if (showDetails) {
+                // Selectable so it can be copied and shared when reporting a problem.
+                SelectionContainer {
+                    Text(
+                        text = details,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+        }
+    }
 }
