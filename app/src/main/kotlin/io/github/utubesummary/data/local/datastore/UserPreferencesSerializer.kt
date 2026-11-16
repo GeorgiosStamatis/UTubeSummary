@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.Serializer
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -16,7 +17,9 @@ import java.io.OutputStream
 
 val Context.userPreferencesDataStore: DataStore<UserPreferences> by dataStore(
     fileName = "user_prefs.pb",
-    serializer = UserPreferencesSerializer
+    serializer = UserPreferencesSerializer,
+    // An unreadable settings file must never crash the app: start again from the defaults.
+    corruptionHandler = ReplaceFileCorruptionHandler { UserPreferences() }
 )
 
 object UserPreferencesSerializer : Serializer<UserPreferences> {
