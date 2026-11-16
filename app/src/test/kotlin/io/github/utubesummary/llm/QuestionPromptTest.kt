@@ -1,6 +1,5 @@
 package io.github.utubesummary.llm
 
-import ai.koog.prompt.message.Message
 import io.github.utubesummary.model.ChatExchange
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -17,10 +16,11 @@ class QuestionPromptTest {
         )
         val messages = prompt.messages
 
-        assertTrue(messages.first() is Message.System)
-        assertTrue(messages.first().content.contains("THE TRANSCRIPT"))
-        assertEquals(listOf("q1", "a1", "q2"), messages.drop(1).map { it.content })
-        assertTrue(messages.last() is Message.User)
+        assertEquals(listOf("System", "User", "Assistant", "User"), messages.map { it::class.simpleName })
+        assertTrue(messages.first().toString().contains("THE TRANSCRIPT"))
+        assertTrue(messages[1].toString().contains("q1"))
+        assertTrue(messages[2].toString().contains("a1"))
+        assertTrue(messages.last().toString().contains("q2"))
     }
 
     @Test
@@ -30,6 +30,6 @@ class QuestionPromptTest {
 
         // system + 10 exchanges (2 messages each) + the new question
         assertEquals(1 + MAX_HISTORY_EXCHANGES * 2 + 1, messages.size)
-        assertEquals("q6", messages[1].content)
+        assertTrue(messages[1].toString().contains("q6"))
     }
 }
