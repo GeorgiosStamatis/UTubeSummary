@@ -17,6 +17,7 @@ import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
 import io.github.utubesummary.ui.component.SummaryCard
 import io.github.utubesummary.ui.theme.UTubeSummaryTheme
+import io.github.utubesummary.vm.ChatState
 import io.github.utubesummary.vm.SummarizationState
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -28,6 +29,9 @@ fun SummaryResultSection(
     onShowSnackBar: (String) -> Unit,
     onPlaySummary: () -> Unit,
     modifier: Modifier = Modifier,
+    chatState: ChatState = ChatState(),
+    onAskQuestion: (String) -> Unit = {},
+    onCopyAnswer: (String) -> Unit = {},
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         if (summarizationState.isLoading) {
@@ -50,6 +54,15 @@ fun SummaryResultSection(
                     onShowSnackbar = onShowSnackBar,
                     isPlaying = isPlaying,
                     onPlayRequest = onPlaySummary
+                )
+            }
+
+            if (chatState.canAsk && !summarizationState.isLoading) {
+                QuestionSection(
+                    chatState = chatState,
+                    onAsk = onAskQuestion,
+                    onCopyAnswer = onCopyAnswer,
+                    modifier = Modifier.padding(top = 8.dp)
                 )
             }
         }

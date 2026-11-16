@@ -35,6 +35,12 @@ data class ExtractedPayload(
     val isBiliBili: Boolean = false,
 )
 
+/** The summary plus the extracted text it was made from (kept in memory for follow-up questions). */
+data class SummarizationOutcome(
+    val summary: SummaryOutput,
+    val sourceText: String,
+)
+
 data class SummarizationResult(
     val summaryText: String,
     val structured: LlmSummaryResponse? = null,
@@ -48,7 +54,7 @@ fun createSummarizationStrategy(
     youTubeTranscriptTool: YouTubeTranscriptTool,
     bilibiliSubtitleTool: BiliBiliSubtitleTool,
     fileExtractorTool: FileExtractorTool,
-): AIAgentGraphStrategy<SummarySource, SummaryOutput> =
+): AIAgentGraphStrategy<SummarySource, SummarizationOutcome> =
     strategy("summarization_router_strategy") {
         val contentExtractorSubgraph by subgraph<SummarySource, ExtractedPayload>("content_extractor") {
             val nodeExtractArticle by node<SummarySource.Article, ExtractedPayload>("extract_article") { source ->
@@ -128,7 +134,7 @@ fun createSummarizationStrategy(
             edge(nodePreparePlainText forwardTo nodeFinish)
         }
 
-        val nodeSummarize by node<ExtractedPayload, SummaryOutput>("summarize_extracted_text") { payload ->
+        val nodeSummarize by node<ExtractedPayload, SummarizationOutcome>("summarize_extracted_text") { payload ->
             val textToSummarize = payload.content.content
             if (textToSummarize.isBlank()) {
                 throw SummaryException.NoContentException()
@@ -171,7 +177,7 @@ fun createSummarizationStrategy(
                     ?.takeIf { !isUnknownAuthor(it) }
             val finalAuthor = if (isUnknownAuthor(rawAuthor)) "" else rawAuthor?.trim().orEmpty()
 
-            SummaryOutput(
+            val output = SummaryOutput(
                 title = finalTitle,
                 author = finalAuthor,
                 summary = summaryText.trim(),
@@ -187,6 +193,8 @@ fun createSummarizationStrategy(
                 detectedLanguage = structuredResult?.detectedLanguage,
                 errorReason = structuredResult?.errorReason,
             )
+
+            SummarizationOutcome(summary = output, sourceText = textToSummarize)
         }
 
         edge(nodeStart forwardTo contentExtractorSubgraph)

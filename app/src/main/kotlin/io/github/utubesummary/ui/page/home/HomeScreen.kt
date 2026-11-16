@@ -74,6 +74,7 @@ import io.github.utubesummary.ui.theme.UTubeSummaryTheme
 import io.github.utubesummary.vm.AppViewModel
 import io.github.utubesummary.vm.SettingsUiState
 import io.github.utubesummary.vm.SettingsViewModel
+import io.github.utubesummary.vm.ChatState
 import io.github.utubesummary.vm.SummarizationState
 import io.github.utubesummary.vm.SummaryViewModel
 
@@ -105,6 +106,7 @@ data class HomeActions(
     val onShowProviderModelSheet: () -> Unit,
     val onDismissProviderModelSheet: () -> Unit,
     val onSelectProviderAndModel: (AIProvider, String) -> Unit = { _, _ -> },
+    val onAskQuestion: (String) -> Unit = {},
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -132,6 +134,7 @@ fun HomeScreen(
 
     val settings by settingsViewModel.settingsUiState.collectAsState()
     val summarizationState by summaryViewModel.summarizationState.collectAsState()
+    val chatState by summaryViewModel.chatState.collectAsState()
     val appStartAction by appViewModel.appStartAction.collectAsState()
 
     fun summarize() {
@@ -319,6 +322,7 @@ fun HomeScreen(
         },
         onShowProviderModelSheet = { showProviderModelSheet = true },
         onDismissProviderModelSheet = { showProviderModelSheet = false },
+        onAskQuestion = summaryViewModel::askQuestion,
     )
 
     if (showProviderModelSheet) {
@@ -372,7 +376,8 @@ fun HomeScreen(
             settings = settings,
             summarizationState = summarizationState,
             isPlaying = isPlaying,
-            actions = actions
+            actions = actions,
+            chatState = chatState,
         )
     }
 }
@@ -389,6 +394,7 @@ private fun HomeContent(
     isPlaying: Boolean,
     actions: HomeActions,
     modifier: Modifier = Modifier,
+    chatState: ChatState = ChatState(),
 ) {
     val lengthOptions = listOf(
         stringResource(id = R.string.short_length),
@@ -443,7 +449,10 @@ private fun HomeContent(
                         isPlaying = isPlaying,
                         onCopySummary = actions.onCopySummary,
                         onShowSnackBar = actions.onShowSnackBar,
-                        onPlaySummary = actions.onPlaySummary
+                        onPlaySummary = actions.onPlaySummary,
+                        chatState = chatState,
+                        onAskQuestion = actions.onAskQuestion,
+                        onCopyAnswer = actions.onCopySummary,
                     )
 
                     Spacer(modifier = Modifier.height(88.dp))

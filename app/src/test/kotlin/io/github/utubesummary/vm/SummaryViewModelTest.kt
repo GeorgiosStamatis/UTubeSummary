@@ -7,7 +7,9 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.serialization.json.Json
+import io.github.utubesummary.domain.usecase.AskAboutContentUseCase
 import io.github.utubesummary.domain.usecase.SummarizeContentUseCase
+import io.github.utubesummary.model.ChatExchange
 import io.github.utubesummary.exception.SummaryException
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
@@ -44,6 +46,26 @@ class SummaryViewModelTest {
         }
     }
 
+    private class FakeAskAboutContentUseCase : AskAboutContentUseCase {
+        val availableInputs = mutableSetOf<String>()
+        var answer: Result<String> = Result.success("The answer")
+        var lastHistory: List<ChatExchange> = emptyList()
+        var lastQuestion: String? = null
+
+        override fun isAvailable(input: String) = input in availableInputs
+
+        override suspend fun invoke(
+            input: String,
+            history: List<ChatExchange>,
+            question: String,
+        ): Result<String> {
+            lastHistory = history
+            lastQuestion = question
+            return answer
+        }
+    }
+
+    private lateinit var fakeAsk: FakeAskAboutContentUseCase
     private lateinit var fakeUseCase: FakeSummarizeContentUseCase
     private lateinit var viewModel: SummaryViewModel
 
@@ -51,7 +73,8 @@ class SummaryViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeUseCase = FakeSummarizeContentUseCase()
-        viewModel = SummaryViewModel(fakeUseCase)
+        fakeAsk = FakeAskAboutContentUseCase()
+        viewModel = SummaryViewModel(fakeUseCase, fakeAsk)
     }
 
     @AfterEach
@@ -224,5 +247,73 @@ class SummaryViewModelTest {
                 length = length,
             )
         }
+    }
+
+    @Test
+    fun `test questions are available only when the text is in memory`() = runTest(testDispatcher) {
+        viewModel.summarize("https://example.com/a")
+        assertFalse(viewModel.chatState.value.canAsk)
+
+        fakeAsk.availableInputs += "https://example.com/b"
+        viewModel.summarize("https://example.com/b")
+        assertTrue(viewModel.chatState.value.canAsk)
+    }
+
+    @Test
+    fun `test asking appends turns and sends earlier answers as history`() = runTest(testDispatcher) {
+        fakeAsk.availableInputs += "https://example.com/a"
+        viewModel.summarize("https://example.com/a")
+
+        viewModel.askQuestion("  What is it about?  ")
+        var chat = viewModel.chatState.value
+        assertEquals(listOf(ChatTurn("What is it about?", "The answer")), chat.turns)
+        assertFalse(chat.isAsking)
+        assertEquals(emptyList<ChatExchange>(), fakeAsk.lastHistory)
+
+        fakeAsk.answer = Result.success("Second answer")
+        viewModel.askQuestion("And then?")
+        chat = viewModel.chatState.value
+        assertEquals(2, chat.turns.size)
+        assertEquals("Second answer", chat.turns.last().answer)
+        assertEquals(listOf(ChatExchange("What is it about?", "The answer")), fakeAsk.lastHistory)
+    }
+
+    @Test
+    fun `test failed question keeps the turn with its error`() = runTest(testDispatcher) {
+        fakeAsk.availableInputs += "https://example.com/a"
+        viewModel.summarize("https://example.com/a")
+        fakeAsk.answer = Result.failure(RuntimeException("boom"))
+
+        viewModel.askQuestion("Why?")
+
+        val turn = viewModel.chatState.value.turns.single()
+        assertNull(turn.answer)
+        assertNotNull(turn.error)
+        assertFalse(viewModel.chatState.value.isAsking)
+    }
+
+    @Test
+    fun `test blank questions and unavailable content are ignored`() = runTest(testDispatcher) {
+        viewModel.summarize("https://example.com/a") // not available
+        viewModel.askQuestion("Hello?")
+        assertTrue(viewModel.chatState.value.turns.isEmpty())
+
+        fakeAsk.availableInputs += "https://example.com/b"
+        viewModel.summarize("https://example.com/b")
+        viewModel.askQuestion("   ")
+        assertTrue(viewModel.chatState.value.turns.isEmpty())
+        assertNull(fakeAsk.lastQuestion)
+    }
+
+    @Test
+    fun `test chat is cleared for a new input`() = runTest(testDispatcher) {
+        fakeAsk.availableInputs += "https://example.com/a"
+        viewModel.summarize("https://example.com/a")
+        viewModel.askQuestion("Question")
+        assertEquals(1, viewModel.chatState.value.turns.size)
+
+        viewModel.summarize("https://example.com/other")
+        assertTrue(viewModel.chatState.value.turns.isEmpty())
+        assertFalse(viewModel.chatState.value.canAsk)
     }
 }

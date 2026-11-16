@@ -10,7 +10,7 @@ import io.github.utubesummary.llm.tools.BiliBiliSubtitleTool
 import io.github.utubesummary.llm.tools.FileExtractorTool
 import io.github.utubesummary.llm.tools.YouTubeTranscriptTool
 import io.github.utubesummary.model.SummaryLength
-import io.github.utubesummary.model.SummaryOutput
+import io.github.utubesummary.model.ChatExchange
 import io.github.utubesummary.model.SummarySource
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
@@ -46,7 +46,7 @@ class LLMHandler(
     }
 
     private val agentCache =
-        ConcurrentHashMap<AgentCacheKey, AIAgent<SummarySource, SummaryOutput>>()
+        ConcurrentHashMap<AgentCacheKey, AIAgent<SummarySource, SummarizationOutcome>>()
 
     fun getSummarizationAgent(
         provider: AIProvider,
@@ -60,7 +60,7 @@ class LLMHandler(
         isAppendMode: Boolean = true,
         customBasePrompt: String = "",
         additionalSystemPrompt: String = "",
-    ): AIAgent<SummarySource, SummaryOutput> {
+    ): AIAgent<SummarySource, SummarizationOutcome> {
         val promptString = generateFinalPromptString(
             length = summaryLength,
             showLength = showLength,
@@ -103,5 +103,22 @@ class LLMHandler(
                 toolRegistry = toolRegistry,
             )
         }
+    }
+
+    /** Answers [question] about [sourceText] with a plain request (no agent, no tools). */
+    suspend fun askQuestion(
+        provider: AIProvider,
+        apiKey: String,
+        baseUrl: String?,
+        model: String?,
+        appLanguage: Locale,
+        sourceText: String,
+        history: List<ChatExchange>,
+        question: String,
+    ): String {
+        val executor = executorFactory.getOrCreateExecutor(provider, apiKey, baseUrl, appLanguage)
+        val llModel = AgentConfigFactory.resolveModel(provider, model)
+        val response = executor.execute(buildQuestionPrompt(sourceText, history, question), llModel)
+        return response.textContent().trim()
     }
 }
