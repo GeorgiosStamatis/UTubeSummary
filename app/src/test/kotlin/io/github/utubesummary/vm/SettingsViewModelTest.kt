@@ -21,6 +21,10 @@ import java.util.Locale
 import io.github.utubesummary.model.ProviderTestResult
 import io.github.utubesummary.domain.usecase.TestProviderConnectionUseCase
 import io.github.utubesummary.domain.provider.ProviderConnectionChecker
+import io.github.utubesummary.domain.usecase.ImportVideoSummariesUseCase
+import io.github.utubesummary.domain.importer.InvalidBackupException
+import io.github.utubesummary.domain.provider.FileTooLargeException
+import io.github.utubesummary.model.ImportResult
 import io.github.utubesummary.domain.provider.AppLocaleProvider
 import io.github.utubesummary.llm.defaultSystemPromptPlaceholder
 import io.github.utubesummary.model.ProviderConfig
@@ -177,8 +181,17 @@ class SettingsViewModelTest {
                 appLocaleProvider = object : AppLocaleProvider {
                     override fun getCurrentLocale(): Locale = Locale.ENGLISH
                 },
-            )
+            ),
+            object : ImportVideoSummariesUseCase {
+                override suspend fun invoke(uri: String): Result<ImportResult> {
+                    lastImportUri = uri
+                    return importOutcome
+                }
+            },
         )
+
+    private var lastImportUri: String? = null
+    private var importOutcome: Result<ImportResult> = Result.success(ImportResult(2, 1, 0))
 
     private var fetchedModels: List<String> = emptyList()
     private var lastCheckedUrl: String? = null
@@ -542,4 +555,37 @@ class SettingsViewModelTest {
 
             assertEquals(listOf(io.github.utubesummary.R.string.secureStorageFailed), messages)
         }
+
+    @Test
+    fun `test import reports the result`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        assertEquals(ImportState.Idle, viewModel.importState.value)
+
+        viewModel.importVideoSummaries("content://backup.json")
+
+        assertEquals("content://backup.json", lastImportUri)
+        assertEquals(ImportState.Done(ImportResult(2, 1, 0)), viewModel.importState.value)
+
+        viewModel.clearImportState()
+        assertEquals(ImportState.Idle, viewModel.importState.value)
+    }
+
+    @Test
+    fun `test import failures are mapped to reasons`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+
+        importOutcome = Result.failure(InvalidBackupException("nope"))
+        viewModel.importVideoSummaries("a")
+        assertEquals(ImportState.Failed(ImportFailure.INVALID_FILE), viewModel.importState.value)
+        viewModel.clearImportState()
+
+        importOutcome = Result.failure(FileTooLargeException(10))
+        viewModel.importVideoSummaries("a")
+        assertEquals(ImportState.Failed(ImportFailure.TOO_LARGE), viewModel.importState.value)
+        viewModel.clearImportState()
+
+        importOutcome = Result.failure(java.io.IOException("io"))
+        viewModel.importVideoSummaries("a")
+        assertEquals(ImportState.Failed(ImportFailure.UNREADABLE), viewModel.importState.value)
+    }
 }

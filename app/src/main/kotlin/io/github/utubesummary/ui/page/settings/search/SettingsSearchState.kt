@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Link
+import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.StarRate
 import androidx.compose.material3.Icon
@@ -82,6 +83,7 @@ fun rememberSettingsSearchState(
     onShowModelDialog: () -> Unit,
     onShowBiliBiliLoginSheet: () -> Unit,
     onShowClearBilibiliSessDataDialog: () -> Unit,
+    onImportSummaries: () -> Unit,
 ): SettingsSearchState {
     val context = LocalContext.current
     var query by rememberSaveable { mutableStateOf("") }
@@ -96,6 +98,8 @@ fun rememberSettingsSearchState(
     val setModelTitle = stringResource(R.string.setModel)
     val advancedSummaryTitle = stringResource(R.string.advancedSummarySetup)
     val advancedSummarySubtitle = stringResource(R.string.advancedSummarySetupDescription)
+    val importSummariesTitle = stringResource(R.string.importSummaries)
+    val importSummariesSubtitle = stringResource(R.string.importSummariesDescription)
     val useAutoExtractLinkTitle = stringResource(R.string.useAutoExtractLink)
     val useAutoExtractLinkSubtitle = stringResource(R.string.useAutoExtractLinkDescription)
     val tutorialTitle = stringResource(R.string.tutorial)
@@ -298,6 +302,23 @@ fun rememberSettingsSearchState(
                         onShowClearBilibiliSessDataDialog()
                     }
                 }
+            ),
+            SearchableSetting(
+                id = "import_summaries",
+                title = importSummariesTitle,
+                subtitle = importSummariesSubtitle,
+                group = "History data",
+                iconBadge = {
+                    val (bg, fg) = SettingBadges.advancedColors()
+                    SettingIconBadge(bg, fg) {
+                        Icon(
+                            Icons.Rounded.UploadFile,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                },
+                onClick = onImportSummaries
             ),
             SearchableSetting(
                 id = "auto_extract_url",

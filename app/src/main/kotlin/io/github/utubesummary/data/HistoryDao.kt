@@ -26,6 +26,12 @@ interface HistoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(summary: HistoryEntity)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(summaries: List<HistoryEntity>)
+
+    @Query("SELECT sourceLink FROM history WHERE sourceLink IS NOT NULL")
+    suspend fun getAllSourceLinks(): List<String>
+
     @Query("SELECT * FROM history WHERE sourceLink = :link ORDER BY createdOn DESC")
     suspend fun getAllBySourceLink(link: String): List<HistoryEntity>
 

@@ -2,6 +2,7 @@ package io.github.utubesummary.vm
 
 import io.github.utubesummary.exception.SummaryException
 import io.github.utubesummary.llm.AIProvider
+import io.github.utubesummary.model.ImportResult
 import io.github.utubesummary.model.ProviderConfig
 import io.github.utubesummary.model.ProviderTestResult
 import io.github.utubesummary.model.SummaryLength
@@ -61,3 +62,13 @@ data class ChatState(
     val turns: List<ChatTurn> = emptyList(),
     val isAsking: Boolean = false,
 )
+
+enum class ImportFailure { INVALID_FILE, TOO_LARGE, UNREADABLE }
+
+/** Progress of importing video summaries from a backup file (Settings). */
+sealed interface ImportState {
+    data object Idle : ImportState
+    data object Importing : ImportState
+    data class Done(val result: ImportResult) : ImportState
+    data class Failed(val reason: ImportFailure) : ImportState
+}

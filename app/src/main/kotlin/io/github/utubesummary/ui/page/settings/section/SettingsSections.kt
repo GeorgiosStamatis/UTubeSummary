@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Link
+import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.StarRate
 import androidx.compose.material3.Icon
@@ -273,6 +274,34 @@ fun ServicesSettingsGroup(
                 )
             },
             onClick = { actions.onAutoExtractUrlChange(!state.autoExtractUrl) }
+        )
+    }
+}
+
+/**
+ * History data: import summaries made with another app.
+ */
+@Composable
+fun DataSettingsGroup(
+    onImportSummaries: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    SettingsGroup(modifier = modifier) {
+        SettingItem(
+            title = stringResource(id = R.string.importSummaries),
+            subtitle = stringResource(id = R.string.importSummariesDescription),
+            position = GroupPosition.SINGLE,
+            iconBadge = {
+                val (bg, fg) = SettingBadges.advancedColors()
+                SettingIconBadge(bg, fg) {
+                    Icon(
+                        Icons.Rounded.UploadFile,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            },
+            onClick = onImportSummaries
         )
     }
 }

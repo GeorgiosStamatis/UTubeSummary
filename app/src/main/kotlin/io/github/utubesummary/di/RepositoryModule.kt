@@ -11,7 +11,11 @@ import io.github.utubesummary.data.repository.HistoryRepositoryImpl
 import io.github.utubesummary.data.repository.UserPreferencesRepositoryImpl
 import io.github.utubesummary.domain.provider.AppLocaleProvider
 import io.github.utubesummary.domain.provider.ProviderConnectionChecker
+import io.github.utubesummary.data.provider.AndroidTextFileReader
 import io.github.utubesummary.data.provider.InMemorySourceTextStore
+import io.github.utubesummary.domain.provider.TextFileReader
+import io.github.utubesummary.domain.usecase.ImportVideoSummariesUseCase
+import io.github.utubesummary.domain.usecase.ImportVideoSummariesUseCaseImpl
 import io.github.utubesummary.data.provider.KtorProviderConnectionChecker
 import io.github.utubesummary.domain.provider.SourceTextStore
 import io.github.utubesummary.domain.usecase.AskAboutContentUseCase
@@ -59,6 +63,14 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAskAboutContentUseCase(impl: AskAboutContentUseCaseImpl): AskAboutContentUseCase
+
+    @Binds
+    @Singleton
+    abstract fun bindTextFileReader(impl: AndroidTextFileReader): TextFileReader
+
+    @Binds
+    @Singleton
+    abstract fun bindImportVideoSummariesUseCase(impl: ImportVideoSummariesUseCaseImpl): ImportVideoSummariesUseCase
 
     @Binds
     @Singleton
