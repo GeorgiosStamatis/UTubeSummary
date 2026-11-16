@@ -10,6 +10,7 @@
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-886FBF?logo=googlegemini&logoColor=fff)](https://aistudio.google.com)
 [![Claude](https://img.shields.io/badge/Claude-D97757?logo=claude&logoColor=fff)](https://platform.claude.com/)
 [![Ollama](https://img.shields.io/badge/Ollama-fff?logo=ollama&logoColor=000)](https://ollama.com/)
+[![LM Studio](https://img.shields.io/badge/LM%20Studio-5B4FE9)](https://lmstudio.ai/)
 [![OpenRouter](https://img.shields.io/badge/OpenRouter-94A3B8?logo=openrouter&logoColor=fff)](https://openrouter.ai)
 [![Mistral AI](https://img.shields.io/badge/Mistral%20AI-FA520F?logo=mistral-ai&logoColor=fff)](https://mistral.ai/pricing/api/)
 [![Deepseek](https://custom-icon-badges.demolab.com/badge/Deepseek-4D6BFF?logo=deepseek&logoColor=fff)](https://platform.deepseek.com)
@@ -19,6 +20,11 @@
 [![Qwen](https://img.shields.io/badge/Qwen-605CEC?logo=qwen&logoColor=fff)](https://qwen.ai/apiplatform)
 
 </div>
+
+> **UTubeSummary is a fork of [SummaryExpressive](https://github.com/kid1412621/SummaryExpressive)**
+> by [kid1412621](https://github.com/kid1412621) and contributors, licensed under the
+> [GNU GPL v3](LICENSE.txt). Full credit for the original app goes to them. See
+> [What's different in this fork](#-whats-different-in-this-fork) for the changes made here.
 
 A modern, BYOK and FOSS android app to summarize videos(YouTube, BiliBili), articles, images and
 documents with AI/LLM.
@@ -34,12 +40,12 @@ documents with AI/LLM.
   <img src=".github/screenshots/dark.png" alt="Dark Mode" width="24%">
 </div>
 
-> UTubeSummary is a fork of [SummaryExpressive](https://github.com/kid1412621/SummaryExpressive)
-> by kid1412621 and contributors, licensed under the
-> [GNU GPL v3](LICENSE.txt). This fork modifies the original (renamed app and package, security
-> and bug fixes); see the git history for details.
-
 ## 🔗 Downloads
+
+> ⚠️ **Coming soon for this fork.** UTubeSummary has no published release and no Play Store listing
+> yet. The sections below describe how releases are packaged. Until then you can try the latest
+> build: open the **Actions** tab, pick the latest **Build** run and download the
+> `UTubeSummary-debug-apks` artifact (debug APKs, GitHub login required).
 
 [![Get it on Github](https://images.weserv.nl/?url=https://s1.ax1x.com/2023/01/12/pSu1a36.png&h=80)](https://github.com/GeorgiosStamatis/UTubeSummary/releases)
 
@@ -77,18 +83,16 @@ package previously.
   - OpenAI ChatGPT
   - Google Gemini
   - Anthropic Claude
-  - Alibaba Qwen
   - DeepSeek
   - Kimi
   - MiniMax
   - Zhipu
-  - Qwen
+  - Alibaba Qwen
   - Mistral
   - OpenRouter
   - Ollama
   - LM Studio
-  - Custom provider (any OpenAI-compatible endpoint, URL + optional token)
-  - Custom OpenAI-compatible endpoints
+  - Custom provider (any OpenAI-compatible endpoint: URL + optional token)
 
 - **Custom Model Management**: Add, edit, delete, and drag-and-drop reorder models per provider with fallback to Koog defaults
 
@@ -105,6 +109,36 @@ package previously.
 
 - **History search**
 
+- **Private by design**: no analytics or tracking; your keys stay encrypted on your device. Content is
+  only sent to the LLM provider you configure (and, if a site blocks direct access, the article URL
+  goes to the [Jina Reader](https://jina.ai/reader/) service). See [PRIVACY.md](PRIVACY.md).
+
+## 🍴 What's different in this fork
+
+**New**
+
+- **LM Studio** and **Custom Provider** (any OpenAI-compatible server) with a URL and an optional token
+- **Test** button in the AI provider dialog: checks that the URL is reachable and the API key is valid
+- Model list is **filled in automatically** from the provider when you press Test or OK
+- Local and LAN addresses typed without a scheme (e.g. `192.168.1.10:1234`) default to `http://`
+
+**Fixes**
+
+- PDF text extraction crashed on Android 13/14 for scanned pages
+- Providers without an API key (e.g. Ollama) failed with "you have to provide an API key"
+- Custom prompt fields lost typed text and the cursor got stuck
+
+**Security & privacy**
+
+- Exported entry points no longer read the clipboard or auto-summarize it on behalf of other apps
+- Privacy policy rewritten to match what the app actually does
+
+**Project**
+
+- Renamed to UTubeSummary with a new app id (`io.github.utubesummary`): it installs next to the
+  original app and does not share its data
+- CI uploads installable debug APKs on every build
+
 ## 🏗️ Architecture
 
 The app follows Google's [official Android Architecture Recommendations](https://developer.android.com/topic/architecture/recommendations) and [Modern Android Development (MAD)](https://developer.android.com/courses/pathways/android-architecture) best practices:
@@ -118,8 +152,17 @@ The app follows Google's [official Android Architecture Recommendations](https:/
 
 ## 🌟 Credits
 
+- [SummaryExpressive](https://github.com/kid1412621/SummaryExpressive) by
+  [kid1412621](https://github.com/kid1412621): the app this fork is based on
+
 - The [original idea](https://github.com/talosross/SummaryYou)
   from [talosross](https://github.com/talosross)
 
 - [Koog](https://koog.ai) for kotlin-based LLM interactions
 
+## 🤝 Contributing & License
+
+Bug reports and ideas are welcome in the
+[issues](https://github.com/GeorgiosStamatis/UTubeSummary/issues).
+
+Licensed under the [GNU General Public License v3.0](LICENSE.txt).
