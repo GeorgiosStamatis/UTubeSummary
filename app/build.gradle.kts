@@ -112,6 +112,17 @@ android {
     }
 }
 
+// Every CI debug build gets its own, increasing versionCode, so a new APK always installs as an
+// update over the previous one. Release builds keep the versionCode from defaultConfig.
+androidComponents {
+    onVariants(selector().withBuildType("debug")) { variant ->
+        val runNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()
+        if (runNumber != null) {
+            variant.outputs.forEach { output -> output.versionCode.set(100 + runNumber) }
+        }
+    }
+}
+
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(25))

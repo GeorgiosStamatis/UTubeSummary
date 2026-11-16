@@ -67,6 +67,14 @@ The Play Store release bundled with gms version. This package is signed by Googl
 simplicity, which means it's not compatible to update in Google Play Store if you installed a GitHub
 package previously.
 
+### Installing test builds
+
+Each CI build has its own increasing version number (shown in Settings, e.g.
+`2.0.0-ci19+abc1234 - 119`). Install the new APK **over** the previous one, always the same flavor
+(`gms` or `standalone`): it updates in place and keeps your AI provider, API key and history. You
+only need to uninstall first if Android says "App not installed", which happens for builds older
+than #17 (signed with a different key).
+
 ## 📖 Features
 
 - **Summarize multiple media types**
