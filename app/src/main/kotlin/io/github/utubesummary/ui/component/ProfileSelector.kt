@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.utubesummary.R
 import io.github.utubesummary.llm.CRITICAL_ANALYST_PROFILE_ID
@@ -73,7 +74,13 @@ fun ProfileSelector(
         AssistChip(
             onClick = { expanded = true },
             enabled = enabled,
-            label = { Text("${stringResource(R.string.summary_profile)}: ${selected.displayName()}") },
+            label = {
+                Text(
+                    text = "${stringResource(R.string.summary_profile)}: ${selected.displayName()}",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
             trailingIcon = {
                 Icon(Icons.Rounded.ExpandMore, contentDescription = null, modifier = Modifier.size(18.dp))
             },

@@ -62,10 +62,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.model.SummarizationPhase
+import io.github.utubesummary.ui.component.LanguageSelector
 import io.github.utubesummary.ui.component.LlmIndicator
+import io.github.utubesummary.ui.component.ProfileSelector
 import io.github.utubesummary.ui.component.resolveUserErrorMessage
 import io.github.utubesummary.ui.component.summaryShareText
 import io.github.utubesummary.ui.theme.UTubeSummaryTheme
+import io.github.utubesummary.vm.SettingsUiState
 import io.github.utubesummary.vm.SettingsViewModel
 import io.github.utubesummary.vm.SummaryViewModel
 
@@ -106,7 +109,29 @@ class InstantSummaryActivity : ComponentActivity() {
                     activeProvider = settings.activeProvider,
                     activeModel = settings.activeModel,
                     onDismiss = { finish() },
-                    onOpenInApp = { openInApp() }
+                    onOpenInApp = { openInApp() },
+                    settings = settings,
+                    // Changing a setting here summarizes the same text again with it.
+                    onProfileChange = { profileId ->
+                        settingsViewModel.selectProfile(profileId)
+                        textToSummarize?.takeIf { it.isNotBlank() }?.let {
+                            summaryViewModel.summarize(
+                                it,
+                                profileId = profileId,
+                                language = settings.summaryLanguage,
+                            )
+                        }
+                    },
+                    onLanguageChange = { language ->
+                        settingsViewModel.setSummaryLanguage(language)
+                        textToSummarize?.takeIf { it.isNotBlank() }?.let {
+                            summaryViewModel.summarize(
+                                it,
+                                profileId = settings.selectedProfileId,
+                                language = language,
+                            )
+                        }
+                    },
                 )
             }
         }
@@ -196,6 +221,9 @@ fun InstantSummaryDialog(
     activeModel: String? = null,
     onDismiss: () -> Unit,
     onOpenInApp: () -> Unit,
+    settings: SettingsUiState? = null,
+    onProfileChange: (String) -> Unit = {},
+    onLanguageChange: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
     val summarizationState by viewModel.summarizationState.collectAsState()
@@ -284,6 +312,30 @@ fun InstantSummaryDialog(
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
+
+                    if (settings != null) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            if (settings.profiles.size > 1) {
+                                ProfileSelector(
+                                    profiles = settings.profiles,
+                                    selectedProfileId = settings.selectedProfileId,
+                                    onProfileSelect = onProfileChange,
+                                    enabled = !isLoading,
+                                    modifier = Modifier.weight(1f, fill = false),
+                                )
+                            }
+                            LanguageSelector(
+                                selectedLanguage = settings.summaryLanguage,
+                                onLanguageSelect = onLanguageChange,
+                                enabled = !isLoading,
+                                modifier = Modifier.weight(1f, fill = false),
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
 
                     when {
                         isLoading -> {
