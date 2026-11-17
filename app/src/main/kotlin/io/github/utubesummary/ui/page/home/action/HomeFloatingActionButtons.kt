@@ -86,6 +86,11 @@ fun HomeFloatingActionButtons(
         )
     )
 
+    // Read outside the semantics block, which is not composable.
+    val toggleMenuText = stringResource(R.string.attachments_menu_toggle)
+    val expandedText = stringResource(R.string.state_expanded)
+    val collapsedText = stringResource(R.string.state_collapsed)
+
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.End,
@@ -100,8 +105,8 @@ fun HomeFloatingActionButtons(
                     onCheckedChange = { if (!isLoading) menuExpanded = !menuExpanded },
                     modifier = Modifier
                         .semantics {
-                            stateDescription = if (menuExpanded) "Expanded" else "Collapsed"
-                            contentDescription = "Toggle attachments menu"
+                            stateDescription = if (menuExpanded) expandedText else collapsedText
+                            contentDescription = toggleMenuText
                         }
                         .animateFloatingActionButton(
                             visible = fabVisible,

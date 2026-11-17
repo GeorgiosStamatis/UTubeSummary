@@ -350,7 +350,7 @@ private fun ModelEditRow(
         ) {
             Icon(
                 Icons.Rounded.Check,
-                contentDescription = "Save edit",
+                contentDescription = stringResource(R.string.save_edit),
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -360,7 +360,7 @@ private fun ModelEditRow(
         ) {
             Icon(
                 Icons.Rounded.Close,
-                contentDescription = "Cancel edit",
+                contentDescription = stringResource(R.string.cancel_edit),
                 modifier = Modifier.size(20.dp)
             )
         }

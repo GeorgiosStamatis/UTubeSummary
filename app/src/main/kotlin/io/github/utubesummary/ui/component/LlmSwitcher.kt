@@ -1,5 +1,7 @@
 package io.github.utubesummary.ui.component
 
+import io.github.utubesummary.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -436,7 +438,7 @@ private fun ProviderIcon(provider: AIProvider?, iconSize: Dp) {
     } else {
         Icon(
             imageVector = Icons.Outlined.SmartToy,
-            contentDescription = "Select AI Provider",
+            contentDescription = stringResource(R.string.select_ai_provider),
             modifier = Modifier.size(iconSize),
             tint = LocalContentColor.current
         )

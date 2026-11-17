@@ -682,7 +682,7 @@ private fun SummaryActionButtons(
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Link,
-                    contentDescription = "Original Link",
+                    contentDescription = stringResource(R.string.open_original_link),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
@@ -704,7 +704,7 @@ private fun SummaryActionButtons(
         ) {
             Icon(
                 imageVector = Icons.Rounded.ContentCopy,
-                contentDescription = "Copy",
+                contentDescription = stringResource(R.string.copy_summary),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )

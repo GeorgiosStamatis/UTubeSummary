@@ -321,7 +321,7 @@ fun ContentBadge(
                     fallbackIcon = {
                         Icon(
                             imageVector = Icons.Rounded.Language,
-                            contentDescription = "Web Article",
+                            contentDescription = stringResource(R.string.content_web_article),
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -331,7 +331,7 @@ fun ContentBadge(
             isUrl -> {
                 Icon(
                     imageVector = Icons.Rounded.Language,
-                    contentDescription = "Web Article",
+                    contentDescription = stringResource(R.string.content_web_article),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -339,7 +339,7 @@ fun ContentBadge(
             else -> {
                 Icon(
                     imageVector = Icons.Rounded.AutoAwesome,
-                    contentDescription = "Text",
+                    contentDescription = stringResource(R.string.content_text),
                     modifier = Modifier.size(20.dp)
                 )
             }

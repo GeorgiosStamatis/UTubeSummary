@@ -218,7 +218,7 @@ fun AdvancedSummarySetupScreen(
                             leadingContent = {
                                 Icon(
                                     Icons.Rounded.PostAdd,
-                                    contentDescription = "Append Custom Prompt",
+                                    contentDescription = null,
                                     modifier = Modifier.size(24.dp)
                                 )
                             },
@@ -254,7 +254,7 @@ fun AdvancedSummarySetupScreen(
                             leadingContent = {
                                 Icon(
                                     Icons.Rounded.Translate,
-                                    contentDescription = "Language Settings",
+                                    contentDescription = null,
                                     modifier = Modifier.size(24.dp)
                                 )
                             },
@@ -276,7 +276,7 @@ fun AdvancedSummarySetupScreen(
                             leadingContent = {
                                 Icon(
                                     Icons.AutoMirrored.Rounded.ShortText,
-                                    contentDescription = "Length Options",
+                                    contentDescription = null,
                                     modifier = Modifier.size(24.dp)
                                 )
                             },

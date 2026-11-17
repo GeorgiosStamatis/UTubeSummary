@@ -91,7 +91,7 @@
     <string name="onboardingSummarizeTitle">Paste &amp; Summarize</string>
     <string name="onboardingShareTitle">Instant Share Overlay</string>
     <string name="onboardingHistoryTitle">History &amp; Offline Search</string>
-    <string name="instructionSummary">Simply paste the link to a website, article or YouTube video to generate a summary.</string>
+    <string name="instructionSummary">Simply paste the link to a website, article or YouTube video to generate a summary. Choose a profile and the language of the summary below the input, then ask follow-up questions about the result.</string>
     <string name="instructionsViaShare">Or easily share a link with the app to generate a summary.</string>
     <string name="instructionsHistory">Access your past summaries in the History section.</string>
     <string name="finishButton">Finish</string>
@@ -219,4 +219,16 @@
     <string name="phase_summarizing">Summarizing…</string>
 
     <string name="summarize_again">Summarize again with other settings</string>
+
+    <!-- Accessibility labels -->
+    <string name="open_original_link">Original link</string>
+    <string name="copy_summary">Copy</string>
+    <string name="save_edit">Save edit</string>
+    <string name="cancel_edit">Cancel edit</string>
+    <string name="content_web_article">Web article</string>
+    <string name="content_text">Text</string>
+    <string name="select_ai_provider">Select AI provider</string>
+    <string name="attachments_menu_toggle">Toggle attachments menu</string>
+    <string name="state_expanded">Expanded</string>
+    <string name="state_collapsed">Collapsed</string>
 </resources>

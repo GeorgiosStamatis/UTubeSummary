@@ -199,7 +199,7 @@ fun AIProviderSettingsDialog(
                     placeholder = (defaultBaseUrl.ifBlank { null } ?: selectedProvider.baseUrlPlaceholder)?.let { hint ->
                         @Composable { Text(hint, modifier = Modifier.alpha(0.5f)) }
                     },
-                    leadingIcon = { Icon(Icons.Rounded.Link, contentDescription = "Base Url") },
+                    leadingIcon = { Icon(Icons.Rounded.Link, contentDescription = null) },
                     trailingIcon = {
                         ClickablePasteIcon(
                             text = baseUrlTextFieldValue,
@@ -229,7 +229,7 @@ fun AIProviderSettingsDialog(
                         leadingIcon = {
                             Icon(
                                 Icons.Rounded.VpnKey,
-                                contentDescription = "API Key"
+                                contentDescription = null
                             )
                         },
                         supportingText = if (keyUnreadable) {
