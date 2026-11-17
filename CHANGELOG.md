@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- History: remove one summary, select and bulk delete/pin, sort
+- Summarize .txt/.md files; Word tables kept; save as Markdown; export History
+
 ## [2.1.0] - 2026-11-17
 
 ### Added

@@ -151,9 +151,10 @@ than #17 (signed with a different key).
 - **Text to speech for the summaries with multilingual and speed adjustment support**; it reads the
   text without Markdown symbols and handles long summaries
 
-- **History**: search; pin items to the top; filter by pinned, profile or type. Summarizing the same
-  item again (other profile, language or length) keeps every summary in one entry, oldest first,
-  with all but the newest collapsed
+- **History**: search; pin items to the top; filter by pinned, profile or type; sort by newest,
+  oldest or title; long-press to select several entries for bulk delete or pin (with Undo).
+  Summarizing the same item again (other profile, language or length) keeps every summary in one
+  entry, oldest first, with all but the newest collapsed, and a single summary can be removed
 
 - **Private by design**: no analytics or tracking; your API keys and BiliBili login are encrypted on
   your device. Content is only sent to the LLM provider you configure. Two optional third-party
@@ -169,6 +170,11 @@ than #17 (signed with a different key).
   Analysis, Learning Mode, Technical Content Quality Evaluator, Quick Brief) or create your own. Only
   Default uses the structured overview / key points / tags card (unless a profile switches it on);
   the others answer in the format of their prompt. Profiles can be shared as JSON text
+- **History management**: remove a single summary of an entry, select several entries for bulk
+  delete or pin, and sort by newest, oldest or title
+- **Files in and out**: `.txt`, `.md` and Word files can be summarized (tables, tabs and line breaks
+  are kept), a summary can be saved as a Markdown file, and the YouTube video summaries of the
+  History can be exported from Settings in the format the importer reads
 - **History keeps every summary of an item**: summarizing again with another profile, language or
   length appends a section to the same entry instead of replacing the old one; pin items and filter
   by pinned or profile
