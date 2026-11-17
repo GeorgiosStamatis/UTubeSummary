@@ -7,12 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-17
+
 ### Added
 
 - Ask about a summary; import summaries; History thumbnails
 - LM Studio, Custom Provider, model auto-list, new icon
-- Summarization profiles, summary language, cancel button
-- Progress phases; Markdown sharing; summarize again from History
+- Profiles (share, import), summary language, cancel, progress
+- Markdown sharing; every summary kept per item; pin and filter History
 
 ### Fixed
 
