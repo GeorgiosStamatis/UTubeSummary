@@ -33,6 +33,8 @@ documents with AI/LLM.
 
 ## 📱 Screenshots
 
+> The screenshots below are from the original app and will be replaced with ones of this fork.
+
 <div style="text-align: center;">
   <img src=".github/screenshots/home.png" alt="Home" width="24%">
   <img src=".github/screenshots/instant.png" alt="Instant Summary" width="24%">
@@ -70,7 +72,7 @@ package previously.
 ### Installing test builds
 
 Each CI build has its own increasing version number (shown in Settings, e.g.
-`2.0.0-ci19+abc1234 - 119`). Install the new APK **over** the previous one, always the same flavor
+`2.0.0-ci35+0f146ab`). Install the new APK **over** the previous one, always the same flavor
 (`gms` or `standalone`): it updates in place and keeps your AI provider, API key and history. You
 only need to uninstall first if Android says "App not installed", which happens for builds older
 than #17 (signed with a different key).
@@ -102,6 +104,15 @@ than #17 (signed with a different key).
   - LM Studio
   - Custom provider (any OpenAI-compatible endpoint: URL + optional token)
 
+- **Ask questions about a summary**: right after summarizing a video, article or document, ask
+  follow-up questions. The extracted text (e.g. the transcript) stays in memory only and is sent with
+  your question to your LLM provider; nothing extra is stored on the device
+
+- **Import video summaries from another app**: Settings > Import video summaries reads a JSON backup
+  and adds the videos to your History, skipping those already there
+
+- **Video thumbnails in History**: small, cached YouTube thumbnails (optional, can be switched off)
+
 - **Custom Model Management**: Add, edit, delete, and drag-and-drop reorder models per provider with fallback to Koog defaults
 
 - **Quick Model Switcher**: Easily switch providers and active models on the Home screen following your custom configured order
@@ -117,27 +128,50 @@ than #17 (signed with a different key).
 
 - **History search**
 
-- **Private by design**: no analytics or tracking; your keys stay encrypted on your device. Content is
-  only sent to the LLM provider you configure (and, if a site blocks direct access, the article URL
-  goes to the [Jina Reader](https://jina.ai/reader/) service). See [PRIVACY.md](PRIVACY.md).
+- **Private by design**: no analytics or tracking; your API keys and BiliBili login are encrypted on
+  your device. Content is only sent to the LLM provider you configure. Two optional third-party
+  requests exist: if a site blocks direct access, the article URL goes to the
+  [Jina Reader](https://jina.ai/reader/) service, and History thumbnails come from YouTube's image
+  server (can be switched off). See [PRIVACY.md](PRIVACY.md).
 
 ## 🍴 What's different in this fork
 
-**New**
+**New features**
 
+- **Ask questions about a summary**: follow-up questions about the video, article or document you just
+  summarized, with earlier answers as context. The text is kept in memory only (last 3 inputs)
+- **Import video summaries**: import another app's JSON backup from Settings; videos already in the
+  History are skipped (same URL, and for YouTube the same video in any link form), original dates
+  are kept
+- **History thumbnails**: small (about 10 KB) YouTube thumbnails derived from the video id, so older
+  and imported items get them too; capped 50 MB cache, falls back to the icon offline; switch in
+  Settings > Display
 - **LM Studio** and **Custom Provider** (any OpenAI-compatible server) with a URL and an optional token
-- **Test** button in the AI provider dialog: checks that the URL is reachable and the API key is valid
-- Model list is **filled in automatically** from the provider when you press Test or OK
+- **AI provider dialog**: built-in providers show their official URL (editable), a **Test** button
+  checks the URL and API key, the model list is **filled in automatically** from the provider, and
+  pasted URLs such as `https://openrouter.ai/api/v1` are normalized
 - Local and LAN addresses typed without a scheme (e.g. `192.168.1.10:1234`) default to `http://`
+- **New app icon and logo**: a play button above three lines of text, as adaptive and themed
+  (monochrome) Android icons
+- Error messages have a **Show details** option (provider, model, URL and the raw cause) to make
+  problems easy to report
 
 **Fixes**
 
 - PDF text extraction crashed on Android 13/14 for scanned pages
 - Providers without an API key (e.g. Ollama) failed with "you have to provide an API key"
+- OpenRouter requests failed with "Not Found" when the URL contained `/api/v1`; a bare "Not Found"
+  now shows a helpful hint
 - Custom prompt fields lost typed text and the cursor got stuck
+- The app closed after the first-run tutorial when the saved settings could not be read: settings
+  fields now have fixed numbers and an unreadable settings file resets to defaults instead of crashing
+- Only one instance of the app runs (sharing a link reuses it instead of opening another)
 
 **Security & privacy**
 
+- The BiliBili login cookie is now stored encrypted (an old plain-text one is migrated)
+- API keys: a key that can no longer be decrypted gives a clear message instead of looking like "no
+  key", and a failed encryption is reported instead of silently saving an empty key
 - Exported entry points no longer read the clipboard or auto-summarize it on behalf of other apps
 - The "Summarize from clipboard" shortcut fills the input field only; nothing is sent until you tap
   summarize
@@ -145,7 +179,8 @@ than #17 (signed with a different key).
   trigger it
 - Removed the undocumented `INSTANT_SUMMARIZE` intent action; share-sheet and text-selection
   summaries are unchanged
-- Privacy policy rewritten to match what the app actually does; the contact route is now
+- Privacy policy rewritten to match what the app actually does (no analytics, third-party requests
+  listed); the contact route is now
   [GitHub issues](https://github.com/GeorgiosStamatis/UTubeSummary/issues)
 
 **Project**
@@ -156,7 +191,11 @@ than #17 (signed with a different key).
   `utubesummary_api_key_alias`. Existing history and API keys are not carried over
 - In-app "GitHub" links open this fork, and the upstream author's footer credit was removed
 - Google Play badges removed, because this fork has no Play Store listing
-- CI uploads installable debug APKs on every build
+- CI builds installable debug APKs on every push: each has its own increasing version number (shown
+  in Settings), all share one debug signing key so they update in place, and the unit test suite
+  covers the new features
+- README and project pages use the new logo (`.github/social-preview.png` is ready for the
+  repository's social preview)
 
 ## 🏗️ Architecture
 
