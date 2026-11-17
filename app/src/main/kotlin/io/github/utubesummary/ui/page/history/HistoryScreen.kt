@@ -78,6 +78,7 @@ fun HistoryScreen(
     onBack: () -> Unit = {},
     viewModel: HistoryViewModel = hiltViewModel<HistoryViewModel>(),
     showThumbnails: Boolean = true,
+    onSummarizeAgain: (String) -> Unit = {},
 ) {
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -125,7 +126,16 @@ fun HistoryScreen(
             onDismissRequest = { selectedSummary = null },
             onShowSnackbar = { message ->
                 scope.launch { snackbarHostState.showSnackbar(message) }
-            }
+            },
+            // Open the source on Home, where profile, language and length can be changed.
+            onSummarizeAgain = (selectedSummary?.sourceLink ?: selectedSummary?.sourceText)
+                ?.takeIf { it.isNotBlank() }
+                ?.let { source ->
+                    {
+                        selectedSummary = null
+                        onSummarizeAgain(source)
+                    }
+                }
         )
 
         Box(

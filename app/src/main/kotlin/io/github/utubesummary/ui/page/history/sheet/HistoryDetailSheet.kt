@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -27,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
+import androidx.compose.ui.res.stringResource
+import io.github.utubesummary.R
 import io.github.utubesummary.ui.component.historyProfileLabel
 import io.github.utubesummary.ui.component.LengthSelector
 import io.github.utubesummary.ui.component.SummaryCard
@@ -41,6 +44,7 @@ fun HistoryDetailSheet(
     onDismissRequest: () -> Unit,
     onShowSnackbar: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onSummarizeAgain: (() -> Unit)? = null,
     sheetState: SheetState = rememberBottomSheetState(
         initialValue = SheetValue.Expanded,
         enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
@@ -141,6 +145,17 @@ fun HistoryDetailSheet(
                         onPlayRequest = { isPlaying = !isPlaying },
                         onShowSnackbar = onShowSnackbar
                     )
+                }
+
+                if (onSummarizeAgain != null) {
+                    FilledTonalButton(
+                        onClick = onSummarizeAgain,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp)
+                    ) {
+                        Text(stringResource(R.string.summarize_again))
+                    }
                 }
             }
         }

@@ -22,6 +22,7 @@ import io.github.utubesummary.ui.page.onboarding.OnboardingScreen
 import io.github.utubesummary.ui.page.settings.AdvancedSummarySetupScreen
 import io.github.utubesummary.ui.page.settings.SummaryProfilesScreen
 import io.github.utubesummary.ui.page.settings.SettingsScreen
+import io.github.utubesummary.vm.AppStartAction
 import io.github.utubesummary.vm.AppViewModel
 import io.github.utubesummary.vm.SettingsViewModel
 
@@ -96,7 +97,11 @@ fun AppNavigation(
                 val settingsState by settingsViewModel.settingsUiState.collectAsState()
                 HistoryScreen(
                     onBack = { backStack.removeLastOrNull() },
-                    showThumbnails = settingsState.showThumbnails
+                    showThumbnails = settingsState.showThumbnails,
+                    onSummarizeAgain = { source ->
+                        appViewModel.onEvent(AppStartAction(content = source))
+                        backStack.removeLastOrNull()
+                    },
                 )
             }
 

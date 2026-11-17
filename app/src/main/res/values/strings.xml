@@ -217,4 +217,6 @@
     <!-- Progress -->
     <string name="phase_extracting">Fetching content…</string>
     <string name="phase_summarizing">Summarizing…</string>
+
+    <string name="summarize_again">Summarize again with other settings</string>
 </resources>
