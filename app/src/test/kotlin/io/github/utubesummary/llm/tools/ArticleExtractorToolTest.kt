@@ -1,5 +1,6 @@
 package io.github.utubesummary.llm.tools
 
+import io.github.utubesummary.exception.SummaryException
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -242,5 +243,14 @@ class ArticleExtractorToolTest {
         assertFalse(isUnknownAuthor("John Doe"))
         assertFalse(isUnknownAuthor("Cloud With Azeem"))
         assertFalse(isUnknownAuthor("Veritasium"))
+    }
+
+    @Test
+    fun `reader fallback depends on the error type and not on words in its message`() {
+        assertTrue(isReaderFallbackCandidate(SummaryException.AccessDeniedException(statusCode = 403)))
+        assertTrue(isReaderFallbackCandidate(SummaryException.NoContentException()))
+        assertTrue(isReaderFallbackCandidate(SummaryException.PaywallException()))
+        assertFalse(isReaderFallbackCandidate(RuntimeException("page 403 of the blocked list")))
+        assertFalse(isReaderFallbackCandidate(SummaryException.NoInternetException()))
     }
 }

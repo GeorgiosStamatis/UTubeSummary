@@ -100,19 +100,8 @@ class ArticleExtractorTool(private val client: HttpClient) : Tool<Article, Extra
         return body
     }
 
-    private fun shouldFallbackToReader(e: Throwable, url: String): Boolean {
-        return isPublicWebUrl(url) && when (e) {
-            is SummaryException.AccessDeniedException -> true
-            is SummaryException.NoContentException -> true
-            is SummaryException.PaywallException -> true
-            else -> {
-                val message = e.message.orEmpty().lowercase(Locale.ROOT)
-                message.contains("403") || message.contains("401") ||
-                        message.contains("access denied") || message.contains("blocked") ||
-                        message.contains("cloudflare")
-            }
-        }
-    }
+    private fun shouldFallbackToReader(e: Throwable, url: String): Boolean =
+        isPublicWebUrl(url) && isReaderFallbackCandidate(e)
 
     private suspend fun fetchViaReader(
         url: String,
@@ -412,4 +401,17 @@ internal fun isPublicWebUrl(url: String): Boolean {
     return !(host == "localhost" || host.startsWith("127.") || host.startsWith("192.168.") || host.startsWith(
         "10."
     ) || host.endsWith(".local"))
+}
+
+/**
+ * Whether a failed direct fetch is worth retrying through the reader service: the site refused
+ * access (HTTP 401/403 or an anti-bot page), returned nothing usable, or showed a paywall. Decided
+ * from the error type, never from words in its message, which could mention "403" for any reason.
+ */
+internal fun isReaderFallbackCandidate(e: Throwable): Boolean = when (e) {
+    is SummaryException.AccessDeniedException,
+    is SummaryException.NoContentException,
+    is SummaryException.PaywallException -> true
+
+    else -> false
 }
