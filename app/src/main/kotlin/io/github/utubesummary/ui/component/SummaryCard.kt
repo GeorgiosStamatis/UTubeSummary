@@ -1,5 +1,10 @@
 package io.github.utubesummary.ui.component
 
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import androidx.compose.material.icons.outlined.SaveAlt
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
 import android.content.ClipData
 import android.content.Intent
 import android.speech.tts.TextToSpeech
@@ -459,6 +464,25 @@ private fun SummaryActionButtons(
     val scope = rememberCoroutineScope()
     val clipboard = LocalClipboard.current
     val haptics = LocalHapticFeedback.current
+    val markdownSaved = stringResource(R.string.markdown_saved)
+    val markdownSaveFailed = stringResource(R.string.markdown_save_failed)
+    // Lets the user choose where to save the summary as a Markdown file.
+    val saveLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("text/markdown")
+    ) { uri ->
+        if (uri != null) {
+            scope.launch {
+                val saved = withContext(Dispatchers.IO) {
+                    runCatching {
+                        context.contentResolver.openOutputStream(uri, "wt")?.use {
+                            it.write(summaryShareText(summary).toByteArray(Charsets.UTF_8))
+                        } ?: error("Cannot open $uri")
+                    }.isSuccess
+                }
+                onShowSnackbar(if (saved) markdownSaved else markdownSaveFailed)
+            }
+        }
+    }
     // What the speech engine reads: the summary without Markdown symbols.
     val summaryText = remember(summary.summary) { markdownToPlainText(summary.summary) }
     val failedToPlay = stringResource(R.string.tts_failed_to_play)
@@ -726,6 +750,19 @@ private fun SummaryActionButtons(
             Icon(
                 imageVector = Icons.Outlined.Share,
                 contentDescription = stringResource(R.string.share),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        // Save as a Markdown file
+        IconButton(
+            onClick = { saveLauncher.launch(suggestedMarkdownFileName(summary.title)) },
+            modifier = Modifier.size(40.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.SaveAlt,
+                contentDescription = stringResource(R.string.save_as_markdown),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )

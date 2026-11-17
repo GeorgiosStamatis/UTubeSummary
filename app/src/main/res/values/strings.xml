@@ -258,4 +258,9 @@
     <string name="history_sort_newest">Newest first</string>
     <string name="history_sort_oldest">Oldest first</string>
     <string name="history_sort_title">Title A-Z</string>
+
+    <!-- Saving a summary as a file -->
+    <string name="save_as_markdown">Save as Markdown file</string>
+    <string name="markdown_saved">Saved</string>
+    <string name="markdown_save_failed">Could not save the file</string>
 </resources>

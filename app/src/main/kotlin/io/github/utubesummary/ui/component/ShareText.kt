@@ -38,3 +38,19 @@ fun summaryShareText(summary: SummaryOutput): String = buildString {
         appendLine(summary.tags.joinToString(" ") { "#" + it.trim().replace(' ', '_') })
     }
 }.trim()
+
+private val unsafeFileNameChars = Regex("[\\\\/:*?\"<>|\\p{Cntrl}]")
+private const val MAX_FILE_NAME_LENGTH = 80
+
+/** A safe name for the Markdown file of a summary: the title without characters files can't have. */
+fun suggestedMarkdownFileName(title: String): String {
+    val cleaned = title
+        .replace(unsafeFileNameChars, " ")
+        .replace(Regex("\\s+"), " ")
+        .trim()
+        .take(MAX_FILE_NAME_LENGTH)
+        .trim()
+        .trimEnd('.')
+    return (cleaned.ifEmpty { "summary" }) + ".md"
+}
+

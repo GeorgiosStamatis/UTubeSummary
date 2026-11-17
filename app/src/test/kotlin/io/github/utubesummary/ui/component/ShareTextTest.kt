@@ -64,4 +64,17 @@ class ShareTextTest {
         assertEquals("# A title\n\nThe body.", summaryShareText(output()))
         assertEquals("The body.", summaryShareText(output(title = "")))
     }
+
+    @Test
+    fun `the file name is the title without characters a file cannot have`() {
+        assertEquals("What is AI Part 1.md", suggestedMarkdownFileName("What is AI? / Part 1:"))
+        assertEquals("a b c.md", suggestedMarkdownFileName("  a   b\tc  "))
+    }
+
+    @Test
+    fun `an empty or unusable title gives a default name and long titles are cut`() {
+        assertEquals("summary.md", suggestedMarkdownFileName(""))
+        assertEquals("summary.md", suggestedMarkdownFileName("???"))
+        assertEquals(80 + ".md".length, suggestedMarkdownFileName("x".repeat(200)).length)
+    }
 }
