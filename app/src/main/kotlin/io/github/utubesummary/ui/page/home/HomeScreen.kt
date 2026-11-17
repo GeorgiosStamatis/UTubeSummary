@@ -1,5 +1,6 @@
 package io.github.utubesummary.ui.page.home
 
+import android.content.Intent
 import android.content.ClipData
 import android.content.ContentValues
 import android.net.Uri
@@ -134,9 +135,10 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
 
     var urlOrText by rememberSaveable { mutableStateOf("") }
-    var documentFilename by remember { mutableStateOf<String?>(null) }
+    // Saved so a picked file and a camera photo survive Android ending the app's process.
+    var documentFilename by rememberSaveable { mutableStateOf<String?>(null) }
     var isPlaying by remember { mutableStateOf(false) }
-    var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
+    var cameraImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     var showProviderModelSheet by rememberSaveable { mutableStateOf(false) }
     var isScrollingDown by rememberSaveable { mutableStateOf(false) }
 
@@ -166,6 +168,13 @@ fun HomeScreen(
     val filePickerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             if (uri == null) return@rememberLauncherForActivityResult
+            // Keep read access after the process ends; not every provider allows it.
+            runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            }
             scope.launch {
                 summaryViewModel.clearCurrentSummary()
                 documentFilename = getFileName(context, uri)

@@ -1,5 +1,6 @@
 package io.github.utubesummary.exception
 
+import java.io.FileNotFoundException
 import ai.koog.agents.core.agent.exception.AIAgentMaxNumberOfIterationsReachedException
 import ai.koog.prompt.executor.clients.LLMClientException
 import androidx.annotation.StringRes
@@ -98,6 +99,11 @@ sealed class SummaryException(message: String) : Exception(message) {
         val statusCode: Int? = null,
     ) : SummaryException(userMessage) {
         override fun getUserFriendlyMessage(): String = userMessage
+    }
+
+    /** The chosen file can't be opened any more (permission gone, moved, deleted or damaged). */
+    class FileUnavailableException : SummaryException("The file could not be opened.") {
+        override fun getUserMessageResId(apiKey: String?) = R.string.fileUnavailable
     }
 
     class NoKeyException : SummaryException("API key is not set.") {
@@ -205,6 +211,13 @@ private fun Throwable.convertToSummaryException(): SummaryException {
         cause is ConnectTimeoutException
     ) {
         return SummaryException.NoInternetException()
+    }
+
+    // The picked file is gone or no longer readable (e.g. its permission ended with the process)
+    if (this is FileNotFoundException || this is SecurityException ||
+        cause is FileNotFoundException || cause is SecurityException
+    ) {
+        return SummaryException.FileUnavailableException()
     }
 
     // Handle Koog agent limit exceptions

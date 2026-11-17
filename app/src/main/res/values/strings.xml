@@ -270,4 +270,7 @@
     <string name="history_export_done">History exported</string>
     <string name="history_export_none">There are no YouTube video summaries to export.</string>
     <string name="history_export_failed">The History could not be exported.</string>
+
+    <!-- File access -->
+    <string name="fileUnavailable">The file could not be opened. Pick it again, or check that it is a valid file.</string>
 </resources>

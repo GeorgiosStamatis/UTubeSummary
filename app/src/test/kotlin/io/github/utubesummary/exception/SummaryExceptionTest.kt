@@ -172,4 +172,18 @@ Error body:
 
         assertTrue(result is SummaryException.LlmServerException)
     }
+
+    @Test
+    fun `a file that cannot be opened any more gets its own message`() {
+        listOf(
+            java.io.FileNotFoundException("gone"),
+            SecurityException("permission denied"),
+            RuntimeException("wrapper", java.io.FileNotFoundException("nested")),
+        ).forEach { error ->
+            val result = error.toSummaryException()
+
+            assertTrue(result is SummaryException.FileUnavailableException, error.toString())
+            assertEquals(R.string.fileUnavailable, result.getUserMessageResId(null))
+        }
+    }
 }
