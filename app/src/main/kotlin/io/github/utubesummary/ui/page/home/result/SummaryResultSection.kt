@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.key
@@ -18,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.utubesummary.R
 import io.github.utubesummary.llm.AIProvider
+import io.github.utubesummary.model.SummarizationPhase
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
 import io.github.utubesummary.ui.component.SummaryCard
@@ -46,6 +48,16 @@ fun SummaryResultSection(
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
             )
+            summarizationState.phase?.let { phase ->
+                Text(
+                    text = stringResource(
+                        if (phase == SummarizationPhase.EXTRACTING) R.string.phase_extracting else R.string.phase_summarizing
+                    ),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
             if (onCancel != null) {
                 TextButton(
                     onClick = onCancel,

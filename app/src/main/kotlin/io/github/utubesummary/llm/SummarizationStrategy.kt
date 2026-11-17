@@ -25,6 +25,7 @@ import io.github.utubesummary.llm.tools.isUnknownAuthor
 import io.github.utubesummary.llm.tools.isValidTitle
 import io.github.utubesummary.model.ExtractedContent
 import io.github.utubesummary.model.LlmSummaryResponse
+import io.github.utubesummary.model.SummarizationPhase
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
 import io.github.utubesummary.model.SummarySource
@@ -56,6 +57,7 @@ fun createSummarizationStrategy(
     bilibiliSubtitleTool: BiliBiliSubtitleTool,
     fileExtractorTool: FileExtractorTool,
     structuredOutput: Boolean = true,
+    onPhase: (SummarizationPhase) -> Unit = {},
 ): AIAgentGraphStrategy<SummarySource, SummarizationOutcome> =
     strategy("summarization_router_strategy") {
         val contentExtractorSubgraph by subgraph<SummarySource, ExtractedPayload>("content_extractor") {
@@ -145,6 +147,7 @@ fun createSummarizationStrategy(
         }
 
         val nodeSummarize by node<ExtractedPayload, SummarizationOutcome>("summarize_extracted_text") { payload ->
+            onPhase(SummarizationPhase.SUMMARIZING)
             val textToSummarize = payload.content.content
             if (textToSummarize.isBlank()) {
                 throw SummaryException.NoContentException()

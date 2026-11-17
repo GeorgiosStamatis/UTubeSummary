@@ -22,6 +22,7 @@ import io.github.utubesummary.data.AppDatabase
 import io.github.utubesummary.data.HistoryDao
 import io.github.utubesummary.domain.repository.UserPreferencesRepository
 import io.github.utubesummary.llm.LLMHandler
+import io.github.utubesummary.llm.SummarizationProgress
 import javax.inject.Singleton
 
 @Module
@@ -68,8 +69,9 @@ object AppModule {
         @ApplicationContext context: Context,
         httpClient: HttpClient,
         userPreferencesRepository: UserPreferencesRepository,
+        progress: SummarizationProgress,
     ): LLMHandler {
-        return LLMHandler(context, httpClient, userPreferencesRepository)
+        return LLMHandler(context, httpClient, userPreferencesRepository, progress)
     }
 
     @Provides

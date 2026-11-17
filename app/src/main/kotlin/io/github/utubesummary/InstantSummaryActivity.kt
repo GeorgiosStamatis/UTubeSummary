@@ -61,6 +61,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import io.github.utubesummary.llm.AIProvider
+import io.github.utubesummary.model.SummarizationPhase
 import io.github.utubesummary.ui.component.LlmIndicator
 import io.github.utubesummary.ui.component.resolveUserErrorMessage
 import io.github.utubesummary.ui.theme.UTubeSummaryTheme
@@ -291,7 +292,21 @@ fun InstantSummaryDialog(
                                     .heightIn(min = 140.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                LoadingIndicator(modifier = Modifier.size(56.dp))
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    LoadingIndicator(modifier = Modifier.size(56.dp))
+                                    summarizationState.phase?.let { phase ->
+                                        Text(
+                                            text = stringResource(
+                                                if (phase == SummarizationPhase.EXTRACTING) R.string.phase_extracting else R.string.phase_summarizing
+                                            ),
+                                            style = MaterialTheme.typography.labelLarge,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
                             }
                         }
 

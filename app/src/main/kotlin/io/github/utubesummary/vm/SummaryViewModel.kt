@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import io.github.utubesummary.domain.usecase.AskAboutContentUseCase
+import io.github.utubesummary.domain.usecase.ObserveSummarizationPhaseUseCase
 import io.github.utubesummary.domain.usecase.SummarizeContentUseCase
 import io.github.utubesummary.exception.SummaryException
 import io.github.utubesummary.exception.toSummaryException
@@ -23,6 +24,7 @@ import javax.inject.Inject
 class SummaryViewModel @Inject constructor(
     private val summarizeContentUseCase: SummarizeContentUseCase,
     private val askAboutContentUseCase: AskAboutContentUseCase,
+    observeSummarizationPhase: ObserveSummarizationPhaseUseCase,
 ) : ViewModel() {
 
     private val _summarizationState = MutableStateFlow(SummarizationState())
@@ -35,6 +37,14 @@ class SummaryViewModel @Inject constructor(
     private var currentProfileId: String? = null
     private var currentLanguage: String? = null
     private var summarizeJob: Job? = null
+
+    init {
+        viewModelScope.launch {
+            observeSummarizationPhase().collect { phase ->
+                _summarizationState.update { it.copy(phase = phase) }
+            }
+        }
+    }
 
     /** Questions about the current content; the text itself stays in memory in the use case. */
     fun askQuestion(question: String) {

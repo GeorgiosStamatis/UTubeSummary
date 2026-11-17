@@ -30,6 +30,7 @@ class LLMHandler(
     context: Context,
     httpClient: HttpClient,
     userPreferencesRepository: UserPreferencesRepository,
+    private val progress: SummarizationProgress,
 ) {
     private val executorFactory = LLMExecutorFactory(httpClient)
 
@@ -103,6 +104,7 @@ class LLMHandler(
                     bilibiliSubtitleTool = bilibiliSubtitleTool,
                     fileExtractorTool = fileExtractorTool,
                     structuredOutput = structuredOutput,
+                    onPhase = progress::report,
                 ),
                 agentConfig = agentConfig,
                 toolRegistry = toolRegistry,

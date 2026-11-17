@@ -2,6 +2,7 @@ package io.github.utubesummary.vm
 
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import io.github.utubesummary.model.SUMMARY_LANGUAGE_CONTENT
+import io.github.utubesummary.model.SummarizationPhase
 import io.github.utubesummary.model.SummaryProfile
 import io.github.utubesummary.exception.SummaryException
 import io.github.utubesummary.llm.AIProvider
@@ -49,6 +50,8 @@ data class SummarizationState(
     val lengthResults: Map<SummaryLength, SummaryOutput> = emptyMap(),
     /** Profile used for [summaryResult]; null when unknown (e.g. restored from history). */
     val profileId: String? = null,
+    /** What the running summarization is doing; null when idle. */
+    val phase: SummarizationPhase? = null,
     /** Language setting used for [summaryResult]; null when unknown (e.g. restored from history). */
     val language: String? = null,
 )

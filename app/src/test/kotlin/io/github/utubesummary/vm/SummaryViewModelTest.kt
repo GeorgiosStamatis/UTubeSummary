@@ -9,6 +9,9 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.serialization.json.Json
 import io.github.utubesummary.domain.usecase.AskAboutContentUseCase
+import io.github.utubesummary.domain.usecase.ObserveSummarizationPhaseUseCase
+import io.github.utubesummary.llm.SummarizationProgress
+import io.github.utubesummary.model.SummarizationPhase
 import io.github.utubesummary.domain.usecase.SummarizeContentUseCase
 import io.github.utubesummary.model.ChatExchange
 import io.github.utubesummary.exception.SummaryException
@@ -81,13 +84,15 @@ class SummaryViewModelTest {
     private lateinit var fakeAsk: FakeAskAboutContentUseCase
     private lateinit var fakeUseCase: FakeSummarizeContentUseCase
     private lateinit var viewModel: SummaryViewModel
+    private lateinit var progress: SummarizationProgress
 
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakeUseCase = FakeSummarizeContentUseCase()
         fakeAsk = FakeAskAboutContentUseCase()
-        viewModel = SummaryViewModel(fakeUseCase, fakeAsk)
+        progress = SummarizationProgress()
+        viewModel = SummaryViewModel(fakeUseCase, fakeAsk, ObserveSummarizationPhaseUseCase(progress))
     }
 
     @AfterEach
@@ -171,6 +176,20 @@ class SummaryViewModelTest {
         val state = viewModel.summarizationState.value
         assertEquals("fr", state.language)
         assertEquals(setOf(SummaryLength.LONG), state.lengthResults.keys)
+    }
+
+    @Test
+    fun `the phase of the running summarization is exposed in the state`() = runTest(testDispatcher) {
+        assertNull(viewModel.summarizationState.value.phase)
+
+        progress.report(SummarizationPhase.EXTRACTING)
+        assertEquals(SummarizationPhase.EXTRACTING, viewModel.summarizationState.value.phase)
+
+        progress.report(SummarizationPhase.SUMMARIZING)
+        assertEquals(SummarizationPhase.SUMMARIZING, viewModel.summarizationState.value.phase)
+
+        progress.report(null)
+        assertNull(viewModel.summarizationState.value.phase)
     }
 
     @Test

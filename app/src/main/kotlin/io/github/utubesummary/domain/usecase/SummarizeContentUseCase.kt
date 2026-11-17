@@ -14,9 +14,11 @@ import io.github.utubesummary.exception.SummaryException
 import io.github.utubesummary.exception.toSummaryException
 import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.llm.LLMHandler
+import io.github.utubesummary.llm.SummarizationProgress
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import io.github.utubesummary.model.HistoryLengthResult
 import io.github.utubesummary.model.HistorySummary
+import io.github.utubesummary.model.SummarizationPhase
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.effectiveSummaryLanguage
 import io.github.utubesummary.model.summaryPromptLocale
@@ -44,6 +46,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
     private val documentMetadataProvider: DocumentMetadataProvider,
     private val appLocaleProvider: AppLocaleProvider,
     private val sourceTextStore: SourceTextStore,
+    private val progress: SummarizationProgress,
 ) : SummarizeContentUseCase {
     override suspend operator fun invoke(
         text: String,
@@ -94,7 +97,12 @@ class SummarizeContentUseCaseImpl @Inject constructor(
                 structuredOutput = usesStructuredOutput(profile),
             )
 
-            val outcome = agent.run(source)
+            progress.report(SummarizationPhase.EXTRACTING)
+            val outcome = try {
+                agent.run(source)
+            } finally {
+                progress.report(null)
+            }
             val summaryOutput = outcome.summary
             // Kept in memory only, so questions can be asked about this content.
             sourceTextStore.put(text, outcome.sourceText)
