@@ -139,12 +139,23 @@ than #17 (signed with a different key).
 **Security & privacy**
 
 - Exported entry points no longer read the clipboard or auto-summarize it on behalf of other apps
-- Privacy policy rewritten to match what the app actually does
+- The "Summarize from clipboard" shortcut fills the input field only; nothing is sent until you tap
+  summarize
+- The `utubesummary://clipboard` deep link is no longer browsable, so web pages and links cannot
+  trigger it
+- Removed the undocumented `INSTANT_SUMMARIZE` intent action; share-sheet and text-selection
+  summaries are unchanged
+- Privacy policy rewritten to match what the app actually does; the contact route is now
+  [GitHub issues](https://github.com/GeorgiosStamatis/UTubeSummary/issues)
 
 **Project**
 
 - Renamed to UTubeSummary with a new app id (`io.github.utubesummary`): it installs next to the
   original app and does not share its data
+- Storage identifiers renamed: Room database `utubesummary_db` and Keystore alias
+  `utubesummary_api_key_alias`. Existing history and API keys are not carried over
+- In-app "GitHub" links open this fork, and the upstream author's footer credit was removed
+- Google Play badges removed, because this fork has no Play Store listing
 - CI uploads installable debug APKs on every build
 
 ## 🏗️ Architecture
