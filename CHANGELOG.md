@@ -9,16 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- LM Studio and Custom Provider (URL + optional token)
-- Test button and automatic model list in the AI provider dialog
-- Summarization profiles (Technical Deep Dive, Critical Analysis, Learning Mode, Quality Evaluator, Quick Brief or your own); non-default ones answer in the prompt's own format
+- Ask questions about a summary; import video summaries from JSON; History thumbnails
+- LM Studio, Custom Provider, Test button, official URLs and auto model list
+- New app icon and logo
+- Summarization profiles: 5 built-in prompts or your own
 
 ### Fixed
 
-- PDF crash on Android 13/14
-- Ollama failing with "no API key"
-- Custom prompt fields losing typed text
-- Clipboard no longer auto-sent from exported entry points
+- Crash after the tutorial, PDF crash, Ollama key, OpenRouter "Not Found", prompt fields
+
+### Security
+
+- Encrypted BiliBili cookie; clear key errors; no clipboard auto-send
 
 ## [2.0.0] - 2026-10-17
 
