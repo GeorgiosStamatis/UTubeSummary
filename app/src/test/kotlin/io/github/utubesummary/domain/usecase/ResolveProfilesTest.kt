@@ -88,4 +88,17 @@ class ResolveProfilesTest {
         assertTrue(usesStructuredOutput(profiles.first { it.id == DEFAULT_PROFILE_ID }))
         assertTrue(profiles.filter { it.id != DEFAULT_PROFILE_ID }.none { usesStructuredOutput(it) })
     }
+
+    @Test
+    fun `an edited built-in with an empty name keeps its localized name and its prompt as typed`() {
+        val prefs = UserPreferences(
+            profileEntries = listOf(ProfileEntry(CRITICAL_ANALYST_PROFILE_ID, "", "be skeptical \n")),
+        )
+
+        val profile = resolveProfile(prefs, CRITICAL_ANALYST_PROFILE_ID)
+
+        assertEquals(null, profile.name)
+        assertEquals("be skeptical \n", profile.basePrompt)
+        assertTrue(profile.isModified)
+    }
 }

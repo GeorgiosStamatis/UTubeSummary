@@ -4,7 +4,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.rounded.Tune
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import io.github.utubesummary.model.summaryPromptLocale
+import io.github.utubesummary.model.SummaryProfile
 import io.github.utubesummary.ui.component.LanguageSelector
+import io.github.utubesummary.ui.component.displayName
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,6 +64,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
@@ -147,37 +150,58 @@ fun AdvancedSummarySetupScreen(
                             supportingContent = { Text(stringResource(id = R.string.manage_profiles_description)) },
                         ) { Text(stringResource(id = R.string.manage_profiles)) }
 
-                        Text(
-                            text = stringResource(id = R.string.basePrompt),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        OutlinedTextField(
-                            value = if (state.isAppendMode) defaultSystemPromptPlaceholder else basePrompt,
-                            onValueChange = { basePrompt = it },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 120.dp, max = 240.dp),
-                            shape = MaterialTheme.shapes.large,
-                            readOnly = state.isAppendMode,
-                            enabled = !state.isAppendMode
-                        )
+                        val selectedProfile = state.profiles
+                            .firstOrNull { it.id == state.selectedProfileId }
+                            ?.takeIf { it.id != DEFAULT_PROFILE_ID }
 
-                        AnimatedVisibility(visible = !state.isAppendMode) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
-                            ) {
-                                FilledTonalButton(
-                                    onClick = { basePrompt = "" },
-                                    enabled = basePrompt.isNotEmpty()
+                        if (selectedProfile != null) {
+                            // The prompt of the chosen profile; edits are saved to that profile.
+                            key(selectedProfile.id) {
+                                ProfilePromptEditor(
+                                    profile = selectedProfile,
+                                    onSave = {
+                                        settingsViewModel.saveProfile(
+                                            selectedProfile.id,
+                                            selectedProfile.name.orEmpty(),
+                                            it
+                                        )
+                                    },
+                                    onReset = { settingsViewModel.deleteOrResetProfile(selectedProfile.id) },
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = stringResource(id = R.string.basePrompt),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            OutlinedTextField(
+                                value = if (state.isAppendMode) defaultSystemPromptPlaceholder else basePrompt,
+                                onValueChange = { basePrompt = it },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 120.dp, max = 240.dp),
+                                shape = MaterialTheme.shapes.large,
+                                readOnly = state.isAppendMode,
+                                enabled = !state.isAppendMode
+                            )
+
+                            AnimatedVisibility(visible = !state.isAppendMode) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                                 ) {
-                                    Text(stringResource(R.string.clear))
-                                }
-                                FilledTonalButton(
-                                    onClick = { basePrompt = defaultSystemPromptPlaceholder },
-                                    enabled = basePrompt != defaultSystemPromptPlaceholder
-                                ) {
-                                    Text(stringResource(R.string.reset_to_default))
+                                    FilledTonalButton(
+                                        onClick = { basePrompt = "" },
+                                        enabled = basePrompt.isNotEmpty()
+                                    ) {
+                                        Text(stringResource(R.string.clear))
+                                    }
+                                    FilledTonalButton(
+                                        onClick = { basePrompt = defaultSystemPromptPlaceholder },
+                                        enabled = basePrompt != defaultSystemPromptPlaceholder
+                                    ) {
+                                        Text(stringResource(R.string.reset_to_default))
+                                    }
                                 }
                             }
                         }
@@ -355,4 +379,43 @@ private fun rememberPersistedText(
         }
     }
     return text
+}
+
+/** Base prompt box for a non-default profile; edits are persisted to that profile. */
+@Composable
+private fun ProfilePromptEditor(
+    profile: SummaryProfile,
+    onSave: (String) -> Unit,
+    onReset: () -> Unit,
+) {
+    // A blank prompt is never stored; "Reset to preset" restores the shipped prompt.
+    var prompt by rememberPersistedText(
+        saved = profile.basePrompt,
+        onSave = { if (it.isNotBlank()) onSave(it) }
+    )
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text(
+            text = stringResource(id = R.string.base_prompt_for_profile, profile.displayName()),
+            style = MaterialTheme.typography.titleMedium
+        )
+        OutlinedTextField(
+            value = prompt,
+            onValueChange = { prompt = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 120.dp, max = 240.dp),
+            shape = MaterialTheme.shapes.large,
+        )
+        if (profile.isBuiltIn && profile.isModified) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                FilledTonalButton(onClick = onReset) {
+                    Text(stringResource(R.string.profile_reset))
+                }
+            }
+        }
+    }
 }

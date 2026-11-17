@@ -20,7 +20,8 @@ class UpdateSummaryProfilesUseCase @Inject constructor(
         val profileId = id ?: UUID.randomUUID().toString()
         require(profileId != DEFAULT_PROFILE_ID) { "The Default profile is edited in advanced setup" }
         val entries = repository.preferencesFlow.first().profileEntries
-        val entry = ProfileEntry(profileId, name.trim(), basePrompt.trim())
+        // The prompt is stored as typed: trimming it would fight the editor while the user types.
+        val entry = ProfileEntry(profileId, name.trim(), basePrompt)
         repository.setProfileEntries(entries.filterNot { it.id == profileId } + entry)
         return profileId
     }

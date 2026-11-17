@@ -211,4 +211,6 @@
 
     <!-- YouTube -->
     <string name="videoUnavailable">YouTube does not give access to this video. It may be private, age-restricted, region-locked or removed.</string>
+
+    <string name="base_prompt_for_profile">Base Prompt - %1$s</string>
 </resources>

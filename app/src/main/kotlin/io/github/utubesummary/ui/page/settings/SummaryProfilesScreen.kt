@@ -21,7 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -32,6 +32,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -135,14 +136,11 @@ fun SummaryProfilesScreen(
                     ProfileRow(
                         profile = profile,
                         selected = profile.id == state.selectedProfileId,
-                        onClick = {
-                            if (profile.id == DEFAULT_PROFILE_ID) {
-                                settingsViewModel.selectProfile(profile.id)
-                            } else {
-                                editingId = profile.id
-                            }
-                        },
                         onSelect = { settingsViewModel.selectProfile(profile.id) },
+                        // The Default profile is edited in Advanced Summary Setup.
+                        onEdit = if (profile.id == DEFAULT_PROFILE_ID) null else {
+                            { editingId = profile.id }
+                        },
                     )
                 }
             }
@@ -154,12 +152,15 @@ fun SummaryProfilesScreen(
 private fun ProfileRow(
     profile: SummaryProfile,
     selected: Boolean,
-    onClick: () -> Unit,
     onSelect: () -> Unit,
+    onEdit: (() -> Unit)?,
 ) {
     ListItem(
-        modifier = Modifier.clickable(onClick = onClick),
+        modifier = Modifier.clickable(onClick = onSelect),
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        leadingContent = {
+            RadioButton(selected = selected, onClick = onSelect)
+        },
         headlineContent = { Text(profile.displayName()) },
         supportingContent = {
             val text = when {
@@ -170,12 +171,12 @@ private fun ProfileRow(
             Text(text, maxLines = 2, overflow = TextOverflow.Ellipsis)
         },
         trailingContent = {
-            IconButton(onClick = onSelect) {
-                if (selected) {
+            if (onEdit != null) {
+                IconButton(onClick = onEdit) {
                     Icon(
-                        Icons.Rounded.Check,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
+                        Icons.Rounded.Edit,
+                        contentDescription = stringResource(R.string.profile_edit),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
