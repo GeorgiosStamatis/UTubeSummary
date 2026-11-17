@@ -233,7 +233,11 @@ than #17 (signed with a different key).
   by the error type, not by words in its message
 - Accessibility: content descriptions are localized and purely decorative icons are no longer announced
 - The new texts (profiles, language, progress, errors, pinning, sharing) are translated into the existing languages
-  (machine translations: corrections are welcome)
+  (machine translations: corrections are welcome); German, Spanish, French, Italian and Portuguese
+  now also cover the older Settings, onboarding, Ask and error texts that used to fall back to English
+- A picked file or camera photo is kept when Android ends the app's process, and a file that can no
+  longer be opened gets a clear "pick it again" message
+- The "fetching / summarizing" status can no longer be cleared by an older request finishing
 
 **Security & privacy**
 
