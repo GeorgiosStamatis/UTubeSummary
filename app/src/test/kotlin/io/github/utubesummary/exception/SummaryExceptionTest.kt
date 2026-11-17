@@ -104,11 +104,11 @@ class SummaryExceptionTest {
     }
 
     @Test
-    fun `test LLMClientException maps context length exceeded to TooLongException`() {
+    fun `test LLMClientException maps context length exceeded to ContextLengthException`() {
         val clientEx = LLMClientException("context_length_exceeded: maximum context length is 8192")
         val result = clientEx.toSummaryException()
-        assertTrue(result is SummaryException.TooLongException)
-        assertEquals(R.string.tooLong, result.getUserMessageResId())
+        assertTrue(result is SummaryException.ContextLengthException)
+        assertEquals(R.string.contextTooLong, result.getUserMessageResId())
     }
 
     @Test
