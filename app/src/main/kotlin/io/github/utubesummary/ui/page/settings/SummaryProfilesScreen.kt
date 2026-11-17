@@ -34,6 +34,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -76,8 +77,8 @@ fun SummaryProfilesScreen(
         ProfileEditor(
             profile = editing,
             onBack = { editingId = null },
-            onSave = { name, prompt ->
-                settingsViewModel.saveProfile(editing?.id, name, prompt)
+            onSave = { name, prompt, structured ->
+                settingsViewModel.saveProfile(editing?.id, name, prompt, structured)
                 editingId = null
             },
             onDeleteOrReset = {
@@ -189,12 +190,13 @@ private fun ProfileRow(
 private fun ProfileEditor(
     profile: SummaryProfile?,
     onBack: () -> Unit,
-    onSave: (name: String, prompt: String) -> Unit,
+    onSave: (name: String, prompt: String, structuredOutput: Boolean) -> Unit,
     onDeleteOrReset: () -> Unit,
 ) {
     val displayName = profile?.displayName().orEmpty()
     var name by rememberSaveable(profile?.id) { mutableStateOf(displayName) }
     var prompt by rememberSaveable(profile?.id) { mutableStateOf(profile?.basePrompt.orEmpty()) }
+    var structured by rememberSaveable(profile?.id) { mutableStateOf(profile?.structuredOutput ?: false) }
     val canSave = name.isNotBlank() && prompt.isNotBlank()
 
     Scaffold(
@@ -244,12 +246,18 @@ private fun ProfileEditor(
                     .fillMaxWidth()
                     .heightIn(min = 240.dp),
             )
+            ListItem(
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                headlineContent = { Text(stringResource(R.string.profile_structured_output)) },
+                supportingContent = { Text(stringResource(R.string.profile_structured_output_description)) },
+                trailingContent = { Switch(checked = structured, onCheckedChange = { structured = it }) },
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(
                     onClick = {
                         // Keep following the localized name of a built-in profile unless renamed.
                         val unchangedBuiltInName = profile?.name == null && name == displayName
-                        onSave(if (unchangedBuiltInName && profile != null) "" else name, prompt)
+                        onSave(if (unchangedBuiltInName && profile != null) "" else name, prompt, structured)
                     },
                     enabled = canSave
                 ) {

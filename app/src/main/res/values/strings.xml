@@ -231,4 +231,7 @@
     <string name="attachments_menu_toggle">Toggle attachments menu</string>
     <string name="state_expanded">Expanded</string>
     <string name="state_collapsed">Collapsed</string>
+
+    <string name="profile_structured_output">Overview, key points and tags</string>
+    <string name="profile_structured_output_description">Show the summary as a card with an overview, key points and tags instead of the free-form answer of the prompt.</string>
 </resources>

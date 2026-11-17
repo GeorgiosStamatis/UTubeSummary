@@ -16,6 +16,8 @@ data class SummaryProfile(
     val basePrompt: String,
     val isBuiltIn: Boolean,
     val isModified: Boolean = false,
+    /** Ask for overview, key points and tags (the structured card) instead of free-form text. */
+    val structuredOutput: Boolean = false,
 )
 
 const val DEFAULT_PROFILE_ID = "default"

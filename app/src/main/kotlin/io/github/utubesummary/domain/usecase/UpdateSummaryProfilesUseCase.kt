@@ -16,12 +16,12 @@ class UpdateSummaryProfilesUseCase @Inject constructor(
     }
 
     /** Creates a profile when [id] is null, otherwise updates (or overrides, for built-ins) [id]. */
-    suspend fun save(id: String?, name: String, basePrompt: String): String {
+    suspend fun save(id: String?, name: String, basePrompt: String, structuredOutput: Boolean): String {
         val profileId = id ?: UUID.randomUUID().toString()
         require(profileId != DEFAULT_PROFILE_ID) { "The Default profile is edited in advanced setup" }
         val entries = repository.preferencesFlow.first().profileEntries
         // The prompt is stored as typed: trimming it would fight the editor while the user types.
-        val entry = ProfileEntry(profileId, name.trim(), basePrompt)
+        val entry = ProfileEntry(profileId, name.trim(), basePrompt, structuredOutput)
         repository.setProfileEntries(entries.filterNot { it.id == profileId } + entry)
         return profileId
     }

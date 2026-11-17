@@ -22,7 +22,7 @@ class UpdateSummaryProfilesUseCaseTest {
 
     @Test
     fun `a new profile gets an id and shows up after the built-ins`() = runTest {
-        val id = useCase.save(null, "  My profile ", "Summarize like a pirate")
+        val id = useCase.save(null, "  My profile ", "Summarize like a pirate", structuredOutput = false)
 
         val created = profiles().last()
         assertEquals(id, created.id)
@@ -33,7 +33,7 @@ class UpdateSummaryProfilesUseCaseTest {
 
     @Test
     fun `editing a built-in with an empty name keeps its localized name and the prompt as typed`() = runTest {
-        useCase.save(CRITICAL_ANALYST_PROFILE_ID, "", "be skeptical ")
+        useCase.save(CRITICAL_ANALYST_PROFILE_ID, "", "be skeptical ", structuredOutput = false)
 
         val profile = profiles().first { it.id == CRITICAL_ANALYST_PROFILE_ID }
         assertNull(profile.name)
@@ -43,7 +43,7 @@ class UpdateSummaryProfilesUseCaseTest {
 
     @Test
     fun `resetting a built-in restores the shipped prompt and keeps the selection`() = runTest {
-        useCase.save(CRITICAL_ANALYST_PROFILE_ID, "", "changed")
+        useCase.save(CRITICAL_ANALYST_PROFILE_ID, "", "changed", structuredOutput = false)
         useCase.select(CRITICAL_ANALYST_PROFILE_ID)
 
         useCase.deleteOrReset(CRITICAL_ANALYST_PROFILE_ID)
@@ -56,7 +56,7 @@ class UpdateSummaryProfilesUseCaseTest {
 
     @Test
     fun `deleting the selected custom profile falls back to Default`() = runTest {
-        val id = useCase.save(null, "Mine", "prompt")
+        val id = useCase.save(null, "Mine", "prompt", structuredOutput = false)
         useCase.select(id)
 
         useCase.deleteOrReset(id)
@@ -68,7 +68,16 @@ class UpdateSummaryProfilesUseCaseTest {
     @Test
     fun `the Default profile cannot be saved over`() {
         assertThrows(IllegalArgumentException::class.java) {
-            runBlocking { useCase.save(DEFAULT_PROFILE_ID, "x", "y") }
+            runBlocking { useCase.save(DEFAULT_PROFILE_ID, "x", "y", structuredOutput = false) }
         }
+    }
+
+    @Test
+    fun `the structured output choice is saved and reset with the profile`() = runTest {
+        useCase.save(CRITICAL_ANALYST_PROFILE_ID, "", "edited", structuredOutput = true)
+        assertTrue(profiles().first { it.id == CRITICAL_ANALYST_PROFILE_ID }.structuredOutput)
+
+        useCase.deleteOrReset(CRITICAL_ANALYST_PROFILE_ID)
+        assertFalse(profiles().first { it.id == CRITICAL_ANALYST_PROFILE_ID }.structuredOutput)
     }
 }

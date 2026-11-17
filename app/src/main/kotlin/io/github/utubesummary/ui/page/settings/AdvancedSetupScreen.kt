@@ -163,7 +163,8 @@ fun AdvancedSummarySetupScreen(
                                         settingsViewModel.saveProfile(
                                             selectedProfile.id,
                                             selectedProfile.name.orEmpty(),
-                                            it
+                                            it,
+                                            selectedProfile.structuredOutput,
                                         )
                                     },
                                     onReset = { settingsViewModel.deleteOrResetProfile(selectedProfile.id) },

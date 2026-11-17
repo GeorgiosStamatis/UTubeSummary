@@ -43,4 +43,5 @@ data class ProfileEntry(
     @ProtoNumber(1) val id: String,
     @ProtoNumber(2) val name: String = "",
     @ProtoNumber(3) val basePrompt: String = "",
+    @ProtoNumber(4) val structuredOutput: Boolean = false,
 )

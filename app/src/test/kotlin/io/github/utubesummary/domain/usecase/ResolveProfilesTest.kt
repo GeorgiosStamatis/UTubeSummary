@@ -101,4 +101,19 @@ class ResolveProfilesTest {
         assertEquals("be skeptical \n", profile.basePrompt)
         assertTrue(profile.isModified)
     }
+
+    @Test
+    fun `the structured output flag of a profile is carried and decides the card`() {
+        val prefs = UserPreferences(
+            profileEntries = listOf(
+                ProfileEntry(CRITICAL_ANALYST_PROFILE_ID, "", "edited", structuredOutput = true),
+                ProfileEntry("custom", "Mine", "prompt"),
+            ),
+        )
+        val profiles = resolveProfiles(prefs)
+
+        assertTrue(usesStructuredOutput(profiles.first { it.id == CRITICAL_ANALYST_PROFILE_ID }))
+        assertFalse(usesStructuredOutput(profiles.first { it.id == "custom" }))
+        assertTrue(usesStructuredOutput(profiles.first { it.id == DEFAULT_PROFILE_ID }))
+    }
 }

@@ -22,6 +22,7 @@ fun resolveProfiles(prefs: UserPreferences): List<SummaryProfile> {
             defaultSystemPromptPlaceholder
         },
         isBuiltIn = true,
+        structuredOutput = true,
     )
     val builtIns = builtInProfilePrompts.map { (id, prompt) ->
         val entry = entries[id]
@@ -31,11 +32,14 @@ fun resolveProfiles(prefs: UserPreferences): List<SummaryProfile> {
             basePrompt = entry?.basePrompt?.takeIf { it.isNotBlank() } ?: prompt,
             isBuiltIn = true,
             isModified = entry != null,
+            structuredOutput = entry?.structuredOutput ?: false,
         )
     }
     val custom = prefs.profileEntries
         .filter { it.id != DEFAULT_PROFILE_ID && it.id !in builtInProfilePrompts }
-        .map { SummaryProfile(it.id, it.name, it.basePrompt, isBuiltIn = false) }
+        .map {
+            SummaryProfile(it.id, it.name, it.basePrompt, isBuiltIn = false, structuredOutput = it.structuredOutput)
+        }
     return listOf(default) + builtIns + custom
 }
 
@@ -47,6 +51,8 @@ fun resolveProfile(prefs: UserPreferences, profileId: String?): SummaryProfile {
 
 /**
  * The Default profile keeps the structured card (overview, key points, tags). Other profiles return
- * free-form text so the output follows the format defined by their prompt.
+ * free-form text so the output follows the format defined by their prompt, unless the profile asks
+ * for the structured card.
  */
-fun usesStructuredOutput(profile: SummaryProfile): Boolean = profile.id == DEFAULT_PROFILE_ID
+fun usesStructuredOutput(profile: SummaryProfile): Boolean =
+    profile.id == DEFAULT_PROFILE_ID || profile.structuredOutput

@@ -340,9 +340,15 @@ class SettingsViewModel @Inject constructor(
         savePreference(updateSummaryProfilesUseCase::select, profileId)
 
     /** Saves a profile; [onSaved] receives its id (new for custom profiles when [id] is null). */
-    fun saveProfile(id: String?, name: String, basePrompt: String, onSaved: (String) -> Unit = {}) {
+    fun saveProfile(
+        id: String?,
+        name: String,
+        basePrompt: String,
+        structuredOutput: Boolean,
+        onSaved: (String) -> Unit = {},
+    ) {
         launchSecure {
-            onSaved(updateSummaryProfilesUseCase.save(id, name, basePrompt))
+            onSaved(updateSummaryProfilesUseCase.save(id, name, basePrompt, structuredOutput))
         }
     }
 
