@@ -112,5 +112,17 @@
     <string name="attachments_menu_toggle">Přepnout nabídku příloh</string>
     <string name="state_expanded">Rozbaleno</string>
     <string name="state_collapsed">Sbaleno</string>
+
+    <!-- Profile sharing, History pinning and filters -->
+    <string name="profile_structured_output">Přehled, klíčové body a štítky</string>
+    <string name="profile_structured_output_description">Zobrazit shrnutí jako kartu s přehledem, klíčovými body a štítky místo volné odpovědi promptu.</string>
+    <string name="profile_share">Sdílet</string>
+    <string name="profile_import">Importovat profil ze schránky</string>
+    <string name="profile_imported">Profil importován: %1$s</string>
+    <string name="profile_import_invalid">Schránka neobsahuje sdílený profil.</string>
+    <string name="history_pinned">Připnuté</string>
+    <string name="history_pin">Připnout</string>
+    <string name="history_unpin">Odepnout</string>
+    <string name="history_all_profiles">Všechny profily</string>
 </resources>
 

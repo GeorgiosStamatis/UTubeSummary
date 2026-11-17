@@ -138,4 +138,16 @@
     <string name="attachments_menu_toggle">添付メニューを切り替え</string>
     <string name="state_expanded">展開済み</string>
     <string name="state_collapsed">折りたたみ済み</string>
+
+    <!-- Profile sharing, History pinning and filters -->
+    <string name="profile_structured_output">概要・要点・タグ</string>
+    <string name="profile_structured_output_description">プロンプトの自由な回答の代わりに、概要・要点・タグを含むカードとして要約を表示します。</string>
+    <string name="profile_share">共有</string>
+    <string name="profile_import">クリップボードからプロファイルをインポート</string>
+    <string name="profile_imported">プロファイルをインポートしました: %1$s</string>
+    <string name="profile_import_invalid">クリップボードに共有されたプロファイルがありません。</string>
+    <string name="history_pinned">ピン留め</string>
+    <string name="history_pin">ピン留めする</string>
+    <string name="history_unpin">ピン留めを外す</string>
+    <string name="history_all_profiles">すべてのプロファイル</string>
 </resources>

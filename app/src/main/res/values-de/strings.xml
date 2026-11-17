@@ -120,4 +120,16 @@
     <string name="attachments_menu_toggle">Anhangsmenü umschalten</string>
     <string name="state_expanded">Ausgeklappt</string>
     <string name="state_collapsed">Eingeklappt</string>
+
+    <!-- Profile sharing, History pinning and filters -->
+    <string name="profile_structured_output">Überblick, Kernpunkte und Tags</string>
+    <string name="profile_structured_output_description">Die Zusammenfassung als Karte mit Überblick, Kernpunkten und Tags anzeigen statt der freien Antwort des Prompts.</string>
+    <string name="profile_share">Teilen</string>
+    <string name="profile_import">Profil aus der Zwischenablage importieren</string>
+    <string name="profile_imported">Profil importiert: %1$s</string>
+    <string name="profile_import_invalid">Die Zwischenablage enthält kein geteiltes Profil.</string>
+    <string name="history_pinned">Angeheftet</string>
+    <string name="history_pin">Anheften</string>
+    <string name="history_unpin">Lösen</string>
+    <string name="history_all_profiles">Alle Profile</string>
 </resources>

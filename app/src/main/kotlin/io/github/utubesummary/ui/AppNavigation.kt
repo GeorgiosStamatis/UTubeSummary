@@ -98,6 +98,7 @@ fun AppNavigation(
                 HistoryScreen(
                     onBack = { backStack.removeLastOrNull() },
                     showThumbnails = settingsState.showThumbnails,
+                    profiles = settingsState.profiles,
                     onSummarizeAgain = { source ->
                         appViewModel.onEvent(AppStartAction(content = source))
                         backStack.removeLastOrNull()

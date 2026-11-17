@@ -22,8 +22,16 @@ class HistoryRepositoryImplTest {
     private class FakeHistoryDao : HistoryDao {
         val rows = linkedMapOf<String, HistoryEntity>()
 
-        override fun getSummaries(query: String, type: SummaryType?): PagingSource<Int, HistoryEntity> =
-            error("not used")
+        override fun getSummaries(
+            query: String,
+            type: SummaryType?,
+            profileKey: String?,
+            pinnedOnly: Boolean,
+        ): PagingSource<Int, HistoryEntity> = error("not used")
+
+        override suspend fun setPinned(id: String, pinned: Boolean) {
+            rows[id]?.let { rows[id] = it.copy(pinned = pinned) }
+        }
 
         override suspend fun insert(summary: HistoryEntity) {
             rows[summary.id] = summary
@@ -144,5 +152,18 @@ class HistoryRepositoryImplTest {
         assertEquals("snake\\_case", escapeLikePattern("snake_case"))
         assertEquals("a\\\\b", escapeLikePattern("a\\b"))
         assertEquals("plain", escapeLikePattern("plain"))
+    }
+
+    @Test
+    fun `pinning survives a new summary of the same item`() = runTest {
+        val dao = FakeHistoryDao()
+        val repository = HistoryRepositoryImpl(dao)
+        repository.addSummary(summary(SummaryLength.SHORT, "short"))
+        val id = dao.rows.keys.single()
+
+        repository.setPinned(id, true)
+        repository.addSummary(summary(SummaryLength.LONG, "long"))
+
+        assertTrue(dao.rows.values.single().pinned)
     }
 }

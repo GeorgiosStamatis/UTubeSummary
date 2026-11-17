@@ -13,6 +13,8 @@ import io.github.utubesummary.domain.repository.HistoryRepository
 import io.github.utubesummary.domain.usecase.DeleteHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.GetHistorySummariesUseCase
 import io.github.utubesummary.domain.usecase.RestoreHistorySummaryUseCase
+import io.github.utubesummary.domain.usecase.SetHistoryPinnedUseCase
+import io.github.utubesummary.model.HistoryFilter
 import io.github.utubesummary.model.HistoryLengthResult
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryLength
@@ -32,10 +34,20 @@ class HistoryViewModelTest {
     private class FakeHistoryRepository : HistoryRepository {
         val items = mutableListOf<HistorySummary>()
 
+        var lastFilter: HistoryFilter? = null
+        val pinned = mutableMapOf<String, Boolean>()
+
         override fun getSummaries(
             query: String,
-            type: SummaryType?,
-        ): Flow<PagingData<HistorySummary>> = emptyFlow()
+            filter: HistoryFilter,
+        ): Flow<PagingData<HistorySummary>> {
+            lastFilter = filter
+            return emptyFlow()
+        }
+
+        override suspend fun setPinned(id: String, pinned: Boolean) {
+            this.pinned[id] = pinned
+        }
 
         override suspend fun addSummary(summary: HistorySummary) {
             items.removeAll { it.id == summary.id }
@@ -64,6 +76,7 @@ class HistoryViewModelTest {
             getHistorySummariesUseCase = GetHistorySummariesUseCase(fakeRepository),
             deleteHistorySummaryUseCase = DeleteHistorySummaryUseCase(fakeRepository),
             restoreHistorySummaryUseCase = RestoreHistorySummaryUseCase(fakeRepository),
+            setHistoryPinnedUseCase = SetHistoryPinnedUseCase(fakeRepository),
         )
     }
 
@@ -143,4 +156,19 @@ class HistoryViewModelTest {
             assertEquals(1, fakeRepository.items.size)
             assertEquals("id-2", fakeRepository.items.first().id)
         }
+
+    @Test
+    fun `the profile filter toggles and pinning goes to the repository`() {
+        viewModel.onProfileFilterChanged("quick_brief")
+        assertEquals("quick_brief", viewModel.profileFilter.value)
+
+        viewModel.onProfileFilterChanged("quick_brief")
+        assertNull(viewModel.profileFilter.value)
+
+        viewModel.onPinnedOnlyChanged(true)
+        assertTrue(viewModel.pinnedOnly.value)
+
+        viewModel.setPinned("abc", true)
+        assertEquals(true, fakeRepository.pinned["abc"])
+    }
 }

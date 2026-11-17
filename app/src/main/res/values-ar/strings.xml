@@ -115,4 +115,16 @@
     <string name="attachments_menu_toggle">تبديل قائمة المرفقات</string>
     <string name="state_expanded">موسَّع</string>
     <string name="state_collapsed">مطوي</string>
+
+    <!-- Profile sharing, History pinning and filters -->
+    <string name="profile_structured_output">نظرة عامة ونقاط رئيسية ووسوم</string>
+    <string name="profile_structured_output_description">عرض الملخص كبطاقة تتضمن نظرة عامة ونقاطًا رئيسية ووسومًا بدل الإجابة الحرة للموجّه.</string>
+    <string name="profile_share">مشاركة</string>
+    <string name="profile_import">استيراد ملف من الحافظة</string>
+    <string name="profile_imported">تم استيراد الملف: %1$s</string>
+    <string name="profile_import_invalid">لا تحتوي الحافظة على ملف مشترك.</string>
+    <string name="history_pinned">المثبّتة</string>
+    <string name="history_pin">تثبيت</string>
+    <string name="history_unpin">إلغاء التثبيت</string>
+    <string name="history_all_profiles">جميع الملفات</string>
 </resources>

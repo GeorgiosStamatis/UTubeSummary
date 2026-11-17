@@ -130,4 +130,16 @@
     <string name="attachments_menu_toggle">Ek menüsünü aç/kapat</string>
     <string name="state_expanded">Genişletildi</string>
     <string name="state_collapsed">Daraltıldı</string>
+
+    <!-- Profile sharing, History pinning and filters -->
+    <string name="profile_structured_output">Genel bakış, ana noktalar ve etiketler</string>
+    <string name="profile_structured_output_description">Özeti, istemin serbest yanıtı yerine genel bakış, ana noktalar ve etiketler içeren bir kart olarak göster.</string>
+    <string name="profile_share">Paylaş</string>
+    <string name="profile_import">Profili panodan içe aktar</string>
+    <string name="profile_imported">Profil içe aktarıldı: %1$s</string>
+    <string name="profile_import_invalid">Panoda paylaşılmış bir profil yok.</string>
+    <string name="history_pinned">Sabitlenenler</string>
+    <string name="history_pin">Sabitle</string>
+    <string name="history_unpin">Sabitlemeyi kaldır</string>
+    <string name="history_all_profiles">Tüm profiller</string>
 </resources>

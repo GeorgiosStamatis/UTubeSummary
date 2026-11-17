@@ -138,4 +138,16 @@
     <string name="attachments_menu_toggle">Mostrar ou ocultar o menu de anexos</string>
     <string name="state_expanded">Expandido</string>
     <string name="state_collapsed">Recolhido</string>
+
+    <!-- Profile sharing, History pinning and filters -->
+    <string name="profile_structured_output">Visão geral, pontos-chave e etiquetas</string>
+    <string name="profile_structured_output_description">Mostrar o resumo como um cartão com visão geral, pontos-chave e etiquetas em vez da resposta livre do prompt.</string>
+    <string name="profile_share">Partilhar</string>
+    <string name="profile_import">Importar perfil da área de transferência</string>
+    <string name="profile_imported">Perfil importado: %1$s</string>
+    <string name="profile_import_invalid">A área de transferência não contém um perfil partilhado.</string>
+    <string name="history_pinned">Afixados</string>
+    <string name="history_pin">Afixar</string>
+    <string name="history_unpin">Desafixar</string>
+    <string name="history_all_profiles">Todos os perfis</string>
 </resources>

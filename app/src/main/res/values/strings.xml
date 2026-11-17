@@ -239,4 +239,10 @@
     <string name="profile_import">Import profile from clipboard</string>
     <string name="profile_imported">Profile imported: %1$s</string>
     <string name="profile_import_invalid">The clipboard does not contain a shared profile.</string>
+
+    <!-- History pinning and filters -->
+    <string name="history_pinned">Pinned</string>
+    <string name="history_pin">Pin</string>
+    <string name="history_unpin">Unpin</string>
+    <string name="history_all_profiles">All profiles</string>
 </resources>

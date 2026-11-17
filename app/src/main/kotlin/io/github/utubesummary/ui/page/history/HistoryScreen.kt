@@ -54,6 +54,7 @@ import androidx.paging.compose.itemKey
 import kotlinx.coroutines.launch
 import io.github.utubesummary.R
 import io.github.utubesummary.model.HistorySummary
+import io.github.utubesummary.model.SummaryProfile
 import io.github.utubesummary.ui.page.history.search.HistoryEmptySearchResults
 import io.github.utubesummary.ui.page.history.search.HistoryFilterChips
 import io.github.utubesummary.ui.page.history.search.HistorySearchBar
@@ -79,6 +80,7 @@ fun HistoryScreen(
     viewModel: HistoryViewModel = hiltViewModel<HistoryViewModel>(),
     showThumbnails: Boolean = true,
     onSummarizeAgain: (String) -> Unit = {},
+    profiles: List<SummaryProfile> = emptyList(),
 ) {
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
@@ -93,8 +95,9 @@ fun HistoryScreen(
 
     val deletedMessage = stringResource(id = R.string.deleted)
     val undoMessage = stringResource(id = R.string.undo)
+    val pinnedTitle = stringResource(id = R.string.history_pinned)
 
-    LaunchedEffect(searchState.query, searchState.selectedFilter) {
+    LaunchedEffect(searchState.query, searchState.selectedFilter, searchState.selectedProfileId, searchState.pinnedOnly) {
         lazyListState.scrollToItem(0)
     }
 
@@ -128,6 +131,9 @@ fun HistoryScreen(
                 scope.launch { snackbarHostState.showSnackbar(message) }
             },
             // Open the source on Home, where profile, language and length can be changed.
+            onPinnedChange = { pinned ->
+                selectedSummary?.let { viewModel.setPinned(it.id, pinned) }
+            },
             onSummarizeAgain = (selectedSummary?.sourceLink ?: selectedSummary?.sourceText)
                 ?.takeIf { it.isNotBlank() }
                 ?.let { source ->
@@ -169,6 +175,11 @@ fun HistoryScreen(
                         HistoryFilterChips(
                             selectedFilter = searchState.selectedFilter,
                             onFilterChanged = searchState.onFilterChanged,
+                            pinnedOnly = searchState.pinnedOnly,
+                            onPinnedOnlyChanged = searchState.onPinnedOnlyChanged,
+                            profiles = profiles,
+                            selectedProfileId = searchState.selectedProfileId,
+                            onProfileFilterChanged = searchState.onProfileFilterChanged,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 8.dp)
@@ -207,14 +218,15 @@ fun HistoryScreen(
                 ) { index ->
                     val summary = historySummaries[index]
                     if (summary != null) {
-                        val currentSection = getDateSectionTitle(summary.createdOn)
+                        // Pinned items form their own section at the top.
+                        val currentSection = if (summary.pinned) pinnedTitle else getDateSectionTitle(summary.createdOn)
                         val prevSection = if (index > 0) {
                             historySummaries.peek(index - 1)
-                                ?.let { getDateSectionTitle(it.createdOn) }
+                                ?.let { if (it.pinned) pinnedTitle else getDateSectionTitle(it.createdOn) }
                         } else null
                         val nextSection = if (index < historySummaries.itemCount - 1) {
                             historySummaries.peek(index + 1)
-                                ?.let { getDateSectionTitle(it.createdOn) }
+                                ?.let { if (it.pinned) pinnedTitle else getDateSectionTitle(it.createdOn) }
                         } else null
 
                         val isFirstInSection = prevSection != currentSection

@@ -17,11 +17,18 @@ interface HistoryDao {
         """
          SELECT * FROM history 
          WHERE (:type IS NULL OR type = :type) 
-         AND (:query = '' OR title LIKE '%' || :query || '%' ESCAPE '\' OR author LIKE '%' || :query || '%' ESCAPE '\' OR summary LIKE '%' || :query || '%' ESCAPE '\' OR lengthResults LIKE '%' || :query || '%' ESCAPE '\')
-         ORDER BY createdOn DESC
+         AND (:profileKey IS NULL OR variantKeys LIKE '%' || :profileKey || '%' ESCAPE '\')
+         AND (:pinnedOnly = 0 OR pinned = 1)
+         AND (:query = '' OR title LIKE '%' || :query || '%' ESCAPE '\' OR author LIKE '%' || :query || '%' ESCAPE '\' OR summary LIKE '%' || :query || '%' ESCAPE '\' OR lengthResults LIKE '%' || :query || '%' ESCAPE '\' OR alternatives LIKE '%' || :query || '%' ESCAPE '\')
+         ORDER BY pinned DESC, createdOn DESC
     """
     )
-    fun getSummaries(query: String, type: SummaryType?): PagingSource<Int, HistoryEntity>
+    fun getSummaries(
+        query: String,
+        type: SummaryType?,
+        profileKey: String?,
+        pinnedOnly: Boolean,
+    ): PagingSource<Int, HistoryEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(summary: HistoryEntity)
@@ -40,6 +47,9 @@ interface HistoryDao {
 
     @Query("SELECT * FROM history ORDER BY createdOn DESC")
     suspend fun getAll(): List<HistoryEntity>
+
+    @Query("UPDATE history SET pinned = :pinned WHERE id = :id")
+    suspend fun setPinned(id: String, pinned: Boolean)
 
     @Query("DELETE FROM history WHERE id = :id")
     suspend fun deleteById(id: String)

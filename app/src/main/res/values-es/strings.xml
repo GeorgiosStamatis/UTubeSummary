@@ -138,4 +138,16 @@
     <string name="attachments_menu_toggle">Mostrar u ocultar el menú de adjuntos</string>
     <string name="state_expanded">Expandido</string>
     <string name="state_collapsed">Contraído</string>
+
+    <!-- Profile sharing, History pinning and filters -->
+    <string name="profile_structured_output">Resumen, puntos clave y etiquetas</string>
+    <string name="profile_structured_output_description">Mostrar el resumen como una tarjeta con descripción general, puntos clave y etiquetas en lugar de la respuesta libre del prompt.</string>
+    <string name="profile_share">Compartir</string>
+    <string name="profile_import">Importar perfil desde el portapapeles</string>
+    <string name="profile_imported">Perfil importado: %1$s</string>
+    <string name="profile_import_invalid">El portapapeles no contiene un perfil compartido.</string>
+    <string name="history_pinned">Fijados</string>
+    <string name="history_pin">Fijar</string>
+    <string name="history_unpin">Desfijar</string>
+    <string name="history_all_profiles">Todos los perfiles</string>
 </resources>

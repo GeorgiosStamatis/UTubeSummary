@@ -8,6 +8,7 @@ import io.github.utubesummary.domain.importer.InvalidBackupException
 import io.github.utubesummary.domain.provider.TextFileReader
 import io.github.utubesummary.domain.repository.HistoryRepository
 import io.github.utubesummary.domain.usecase.ImportVideoSummariesUseCaseImpl
+import io.github.utubesummary.model.HistoryFilter
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.ImportResult
 import io.github.utubesummary.model.SummaryLength
@@ -24,8 +25,10 @@ class ImportVideoSummariesUseCaseTest {
             HistorySummary(title = "old", type = SummaryType.VIDEO, sourceLink = it)
         }.toMutableList()
 
-        override fun getSummaries(query: String, type: SummaryType?): Flow<PagingData<HistorySummary>> =
+        override fun getSummaries(query: String, filter: HistoryFilter): Flow<PagingData<HistorySummary>> =
             emptyFlow()
+
+        override suspend fun setPinned(id: String, pinned: Boolean) {}
 
         override suspend fun addSummary(summary: HistorySummary) {
             items += summary

@@ -2,11 +2,14 @@ package io.github.utubesummary.domain.repository
 
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
+import io.github.utubesummary.model.HistoryFilter
 import io.github.utubesummary.model.HistorySummary
-import io.github.utubesummary.model.SummaryType
 
 interface HistoryRepository {
-    fun getSummaries(query: String, type: SummaryType?): Flow<PagingData<HistorySummary>>
+    fun getSummaries(query: String, filter: HistoryFilter): Flow<PagingData<HistorySummary>>
+
+    /** Pins or unpins an item; pinned items are listed first. */
+    suspend fun setPinned(id: String, pinned: Boolean)
     suspend fun addSummary(summary: HistorySummary)
 
     /** Saves all [summaries] at once, as they are (no merging with existing entries). */

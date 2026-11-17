@@ -1,5 +1,6 @@
 package io.github.utubesummary.ui.page.history.section
 
+import androidx.compose.material.icons.filled.PushPin
 import io.github.utubesummary.R
 import androidx.compose.ui.res.stringResource
 import android.text.format.DateUtils
@@ -187,6 +188,16 @@ fun HistoryItemRow(
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
+
+                if (summary.pinned) {
+                    Icon(
+                        imageVector = Icons.Filled.PushPin,
+                        contentDescription = stringResource(R.string.history_pinned),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
 
                 Icon(
                     imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,

@@ -176,4 +176,16 @@
     <string name="attachments_menu_toggle">切换附件菜单</string>
     <string name="state_expanded">已展开</string>
     <string name="state_collapsed">已收起</string>
+
+    <!-- Profile sharing, History pinning and filters -->
+    <string name="profile_structured_output">概述、要点和标签</string>
+    <string name="profile_structured_output_description">将摘要显示为包含概述、要点和标签的卡片，而不是提示词的自由回答。</string>
+    <string name="profile_share">分享</string>
+    <string name="profile_import">从剪贴板导入配置</string>
+    <string name="profile_imported">已导入配置：%1$s</string>
+    <string name="profile_import_invalid">剪贴板中没有分享的配置。</string>
+    <string name="history_pinned">已置顶</string>
+    <string name="history_pin">置顶</string>
+    <string name="history_unpin">取消置顶</string>
+    <string name="history_all_profiles">所有配置</string>
 </resources>

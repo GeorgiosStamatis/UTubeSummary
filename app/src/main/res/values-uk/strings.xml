@@ -107,4 +107,16 @@
     <string name="attachments_menu_toggle">Показати або сховати меню вкладень</string>
     <string name="state_expanded">Розгорнуто</string>
     <string name="state_collapsed">Згорнуто</string>
+
+    <!-- Profile sharing, History pinning and filters -->
+    <string name="profile_structured_output">Огляд, ключові пункти й теги</string>
+    <string name="profile_structured_output_description">Показувати підсумок як картку з оглядом, ключовими пунктами й тегами замість вільної відповіді промпта.</string>
+    <string name="profile_share">Поділитися</string>
+    <string name="profile_import">Імпортувати профіль із буфера обміну</string>
+    <string name="profile_imported">Профіль імпортовано: %1$s</string>
+    <string name="profile_import_invalid">У буфері обміну немає спільного профілю.</string>
+    <string name="history_pinned">Закріплені</string>
+    <string name="history_pin">Закріпити</string>
+    <string name="history_unpin">Відкріпити</string>
+    <string name="history_all_profiles">Усі профілі</string>
 </resources>

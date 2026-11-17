@@ -1,5 +1,14 @@
 package io.github.utubesummary.ui.page.history.sheet
 
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.Icons
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -51,6 +60,7 @@ fun HistoryDetailSheet(
     onDismissRequest: () -> Unit,
     onShowSnackbar: (String) -> Unit,
     modifier: Modifier = Modifier,
+    onPinnedChange: (Boolean) -> Unit = {},
     onSummarizeAgain: (() -> Unit)? = null,
     sheetState: SheetState = rememberBottomSheetState(
         initialValue = SheetValue.Expanded,
@@ -61,6 +71,9 @@ fun HistoryDetailSheet(
 
     // Every result of the item, oldest first: a new summary is appended after the last one.
     val results = remember(summary) { summary.allResultsOldestFirst() }
+
+    // The sheet shows a snapshot of the item, so the pin state is tracked here while it is open.
+    var pinned by remember(summary.id) { mutableStateOf(summary.pinned) }
 
     // Only one section is read aloud at a time.
     var playingIndex by remember(summary) { mutableStateOf<Int?>(null) }
@@ -91,6 +104,22 @@ fun HistoryDetailSheet(
                     .fillMaxWidth()
                     .verticalScroll(scrollState)
             ) {
+                TextButton(
+                    onClick = {
+                        pinned = !pinned
+                        onPinnedChange(pinned)
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Icon(
+                        imageVector = if (pinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(if (pinned) R.string.history_unpin else R.string.history_pin))
+                }
+
                 results.forEachIndexed { index, result ->
                     val isNewest = index == results.lastIndex
                     val header = historyResultHeader(result)

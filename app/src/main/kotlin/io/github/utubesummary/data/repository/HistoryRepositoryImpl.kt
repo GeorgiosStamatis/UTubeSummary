@@ -14,10 +14,10 @@ import io.github.utubesummary.data.local.database.entity.HistoryEntity
 import io.github.utubesummary.data.local.database.mapper.toDomain
 import io.github.utubesummary.data.local.database.mapper.toEntity
 import io.github.utubesummary.domain.repository.HistoryRepository
+import io.github.utubesummary.model.HistoryFilter
 import io.github.utubesummary.model.HistoryLengthResult
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryLength
-import io.github.utubesummary.model.SummaryType
 import io.github.utubesummary.model.mergeHistoryResult
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -39,13 +39,17 @@ class HistoryRepositoryImpl @Inject constructor(
     // Serializes read-merge-write cycles so overlapping saves cannot overwrite each other.
     private val writeMutex = Mutex()
 
-    override fun getSummaries(query: String, type: SummaryType?): Flow<PagingData<HistorySummary>> {
+    override fun getSummaries(query: String, filter: HistoryFilter): Flow<PagingData<HistorySummary>> {
+        // Profile ids are stored as " id1 id2 "; match whole ids, with LIKE wildcards escaped.
+        val profileKey = filter.profileId?.let { " ${escapeLikePattern(it)} " }
         return Pager(
             config = PagingConfig(
                 pageSize = PAGE_SIZE,
                 enablePlaceholders = false
             ),
-            pagingSourceFactory = { historyDao.getSummaries(escapeLikePattern(query), type) }
+            pagingSourceFactory = {
+                historyDao.getSummaries(escapeLikePattern(query), filter.type, profileKey, filter.pinnedOnly)
+            }
         ).flow
             .onStart { ensureDeduplicated() }
             .map { pagingData ->
@@ -104,6 +108,10 @@ class HistoryRepositoryImpl @Inject constructor(
             val newSummary = summary.copy(lengthResults = initialResults)
             historyDao.insert(newSummary.toEntity())
         }
+    }
+
+    override suspend fun setPinned(id: String, pinned: Boolean) {
+        historyDao.setPinned(id, pinned)
     }
 
     override suspend fun deleteSummary(id: String) {

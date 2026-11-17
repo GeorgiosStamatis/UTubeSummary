@@ -138,4 +138,16 @@
     <string name="attachments_menu_toggle">Afficher ou masquer le menu des pièces jointes</string>
     <string name="state_expanded">Développé</string>
     <string name="state_collapsed">Réduit</string>
+
+    <!-- Profile sharing, History pinning and filters -->
+    <string name="profile_structured_output">Aperçu, points clés et tags</string>
+    <string name="profile_structured_output_description">Afficher le résumé sous forme de carte avec aperçu, points clés et tags au lieu de la réponse libre du prompt.</string>
+    <string name="profile_share">Partager</string>
+    <string name="profile_import">Importer un profil depuis le presse-papiers</string>
+    <string name="profile_imported">Profil importé : %1$s</string>
+    <string name="profile_import_invalid">Le presse-papiers ne contient pas de profil partagé.</string>
+    <string name="history_pinned">Épinglés</string>
+    <string name="history_pin">Épingler</string>
+    <string name="history_unpin">Désépingler</string>
+    <string name="history_all_profiles">Tous les profils</string>
 </resources>

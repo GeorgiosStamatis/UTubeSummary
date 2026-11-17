@@ -16,23 +16,33 @@ class HistorySearchState(
     val onQueryChange: (String) -> Unit,
     val onClear: () -> Unit,
     val onFilterChanged: (SummaryType) -> Unit,
+    val selectedProfileId: String? = null,
+    val pinnedOnly: Boolean = false,
+    val onProfileFilterChanged: (String?) -> Unit = {},
+    val onPinnedOnlyChanged: (Boolean) -> Unit = {},
 ) {
     val isSearching: Boolean
-        get() = query.isNotBlank() || selectedFilter != null
+        get() = query.isNotBlank() || selectedFilter != null || selectedProfileId != null || pinnedOnly
 }
 
 @Composable
 fun rememberHistorySearchState(viewModel: HistoryViewModel): HistorySearchState {
     val selectedFilter by viewModel.filterType.collectAsState()
     val query by viewModel.searchQuery.collectAsState()
+    val selectedProfileId by viewModel.profileFilter.collectAsState()
+    val pinnedOnly by viewModel.pinnedOnly.collectAsState()
 
-    return remember(query, selectedFilter, viewModel) {
+    return remember(query, selectedFilter, selectedProfileId, pinnedOnly, viewModel) {
         HistorySearchState(
             query = query,
             selectedFilter = selectedFilter,
             onQueryChange = viewModel::onSearchTextChanged,
             onClear = { viewModel.onSearchTextChanged("") },
-            onFilterChanged = viewModel::onFilterChanged
+            onFilterChanged = viewModel::onFilterChanged,
+            selectedProfileId = selectedProfileId,
+            pinnedOnly = pinnedOnly,
+            onProfileFilterChanged = viewModel::onProfileFilterChanged,
+            onPinnedOnlyChanged = viewModel::onPinnedOnlyChanged,
         )
     }
 }
