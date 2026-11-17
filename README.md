@@ -222,7 +222,7 @@ than #17 (signed with a different key).
 - The question box scrolls above the keyboard, and the reader fallback for blocked articles is decided
   by the error type, not by words in its message
 - Accessibility: content descriptions are localized and purely decorative icons are no longer announced
-- The new texts (profiles, language, progress, errors) are translated into the existing languages
+- The new texts (profiles, language, progress, errors, pinning, sharing) are translated into the existing languages
   (machine translations: corrections are welcome)
 
 **Security & privacy**
@@ -243,6 +243,7 @@ than #17 (signed with a different key).
 
 **Project**
 
+- Version 2.1.0 (database migration 2 to 3: existing History is kept)
 - Renamed to UTubeSummary with a new app id (`io.github.utubesummary`): it installs next to the
   original app and does not share its data
 - Storage identifiers renamed: Room database `utubesummary_db` and Keystore alias
@@ -271,6 +272,9 @@ The app follows Google's [official Android Architecture Recommendations](https:/
   resolved in `SummarizeContentUseCase` and named in the prompt; `SummarizationProgress` exposes the
   current phase through `ObserveSummarizationPhaseUseCase`; `SummaryHandoff` passes a finished summary
   from the instant dialog to the main activity in memory.
+- **History model**: an entry keeps the current result per length plus `alternatives` (results of other
+  profiles or languages), a `pinned` flag and `variantKeys` for the profile filter; the Room database
+  is at version 3 with a migration from version 2.
 - **Dependency Injection**: Powered by Dagger Hilt with `@Binds` for domain repository contracts.
 - **Asynchronous Operations**: Kotlin Coroutines + Flow for reactive, main-safe async streams.
 
