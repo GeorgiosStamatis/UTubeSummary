@@ -170,7 +170,7 @@ class BiliBiliSubtitleTool(
 
         if (!response.status.isSuccess()) {
             Log.e(TAG, "Failed to fetch video info for bvid $bvid: ${response.status}")
-            throw SummaryException.NoInternetException()
+            throw bilibiliHttpFailure(response.status.value)
         }
 
         val responseBody = response.bodyAsText()
@@ -208,7 +208,7 @@ class BiliBiliSubtitleTool(
 
         if (!response.status.isSuccess()) {
             Log.e(TAG, "Failed to fetch player info for bvid $bvid, cid $cid: ${response.status}")
-            throw SummaryException.NoInternetException()
+            throw bilibiliHttpFailure(response.status.value)
         }
 
         val responseBody = response.bodyAsText()
@@ -256,10 +256,20 @@ class BiliBiliSubtitleTool(
 
         if (!response.status.isSuccess()) {
             Log.e(TAG, "Failed to fetch subtitle content from $subtitleUrl: ${response.status}")
-            throw SummaryException.NoInternetException()
+            throw bilibiliHttpFailure(response.status.value)
         }
 
         val responseBody = response.bodyAsText()
         return json.decodeFromString<BiliSubtitleContentResponse>(responseBody)
     }
+}
+
+/**
+ * What a failed BiliBili request means for the user: access refused (login needed), a link that
+ * does not exist, or a server problem. A plain HTTP answer is never "no internet".
+ */
+internal fun bilibiliHttpFailure(statusCode: Int): SummaryException = when (statusCode) {
+    401, 403, 412 -> SummaryException.BiliBiliLoginRequiredException()
+    404 -> SummaryException.InvalidLinkException()
+    else -> SummaryException.UnknownException("BiliBili answered with HTTP $statusCode")
 }

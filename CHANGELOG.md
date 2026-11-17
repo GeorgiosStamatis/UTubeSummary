@@ -10,19 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Ask about a summary; import summaries; History thumbnails
-- LM Studio, Custom Provider, Test button, auto model list
-- New app icon and logo
-- Summarization profiles (5 built-in or your own); summary language picker
-- Cancel button; profile shown in History
+- LM Studio, Custom Provider, model auto-list, new icon
+- Summarization profiles, summary language, cancel button
+- Progress phases; Markdown sharing; summarize again from History
 
 ### Fixed
 
-- Tutorial and PDF crashes, Ollama key, OpenRouter, prompt fields
-- Clearer context-length and YouTube errors
+- Tutorial and PDF crashes, Ollama, OpenRouter, prompt fields
+- Clearer context-length, YouTube and BiliBili errors
 
 ### Security
 
-- Encrypted BiliBili cookie; clear key errors; no clipboard auto-send
+- Encrypted BiliBili cookie; no clipboard auto-send
 
 ## [2.0.0] - 2026-10-17
 

@@ -132,6 +132,11 @@ than #17 (signed with a different key).
 - **Summary language**: choose the language of the summary on Home or in Advanced Summary Setup:
   the video's own language, the app language or one of about 20 other languages
 
+- **Share and re-run**: share a summary as Markdown (title, source link, key points, tags), see
+  whether the app is fetching content or summarizing, cancel a running summary, and summarize a
+  History item again with another profile, language or length. The instant summary dialog has the
+  same profile and language pickers
+
 - **Configurable LLM settings**: Custom API keys, base URLs, prompt customization, and summary lengths
 
 - **Text to speech for the summaries with multilingual and speed adjustment support**

@@ -35,51 +35,59 @@ private object PdfTextExtractor : TextExtractor {
             val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
             val extractedText = StringBuilder()
 
-            context.contentResolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
-                PdfRenderer(parcelFileDescriptor).use { pdfRenderer ->
-                    for (pageNumber in 0 until pdfRenderer.pageCount) {
-                        pdfRenderer.openPage(pageNumber).use { page ->
-                            val pageImage = createBitmap(page.width, page.height)
-                            page.render(
-                                pageImage,
-                                null,
-                                null,
-                                PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY
-                            )
+            try {
+                context.contentResolver.openFileDescriptor(uri, "r")?.use { parcelFileDescriptor ->
+                    PdfRenderer(parcelFileDescriptor).use { pdfRenderer ->
+                        for (pageNumber in 0 until pdfRenderer.pageCount) {
+                            pdfRenderer.openPage(pageNumber).use { page ->
+                                val pageImage = createBitmap(page.width, page.height)
+                                page.render(
+                                    pageImage,
+                                    null,
+                                    null,
+                                    PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY
+                                )
 
-                            // Try OCR first
-                            val inputImage = InputImage.fromBitmap(pageImage, 0)
-                            val ocrResult = textRecognizer.process(inputImage).await()
-                            var pageText = ocrResult.text.trim()
+                                // Try OCR first
+                                val inputImage = InputImage.fromBitmap(pageImage, 0)
+                                val ocrResult = try {
+                                    textRecognizer.process(inputImage).await()
+                                } finally {
+                                    pageImage.recycle()
+                                }
+                                var pageText = ocrResult.text.trim()
 
-                            // fallback to get content directly from text layer
-                            if (pageText.isBlank()) {
-                                // Text layer access needs API 35+; older devices rely on OCR only.
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-                                    try {
-                                        val pageLayerText = page.getTextContents()
-                                            .joinToString(" ") { it.text }.trim()
-                                        if (pageLayerText.isNotBlank()) {
-                                            pageText = pageLayerText
+                                // fallback to get content directly from text layer
+                                if (pageText.isBlank()) {
+                                    // Text layer access needs API 35+; older devices rely on OCR only.
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                                        try {
+                                            val pageLayerText = page.getTextContents()
+                                                .joinToString(" ") { it.text }.trim()
+                                            if (pageLayerText.isNotBlank()) {
+                                                pageText = pageLayerText
+                                            }
+                                        } catch (e: Exception) {
+                                            Log.w(
+                                                "PdfTextExtractor",
+                                                "Failed to extract text from PDF's text layer",
+                                                e
+                                            )
                                         }
-                                    } catch (e: Exception) {
-                                        Log.w(
-                                            "PdfTextExtractor",
-                                            "Failed to extract text from PDF's text layer",
-                                            e
-                                        )
                                     }
                                 }
-                            }
 
-                            if (pageText.isNotBlank()) {
-                                extractedText.append(pageText)
-                                extractedText.append("\n")
+                                if (pageText.isNotBlank()) {
+                                    extractedText.append(pageText)
+                                    extractedText.append("\n")
+                                }
                             }
                         }
                     }
-                }
-            } ?: throw FileNotFoundException("Cannot open PDF file descriptor for URI: $uri")
+                } ?: throw FileNotFoundException("Cannot open PDF file descriptor for URI: $uri")
+            } finally {
+                textRecognizer.close()
+            }
 
             val resultText = extractedText.toString().trim()
             resultText
@@ -142,11 +150,8 @@ private object ImageTextExtractor : TextExtractor {
             // Load the image from the URI
             val inputImage = InputImage.fromFilePath(context, uri)
 
-            // Recognize text from the image
-            val result = textRecognizer.process(inputImage).await()
-
-            // Return the extracted text
-            result.text
+            // Recognize text from the image and release the recognizer
+            textRecognizer.use { it.process(inputImage).await().text }
         }
 }
 
