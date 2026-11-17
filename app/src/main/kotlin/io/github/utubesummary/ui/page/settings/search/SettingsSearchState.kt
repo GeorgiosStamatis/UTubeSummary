@@ -114,6 +114,8 @@ fun rememberSettingsSearchState(
     val repoTitle = stringResource(R.string.repository)
     val repoSubtitle = stringResource(R.string.githubDescription)
 
+    val bilibiliAccountTitle = stringResource(R.string.bilibili_account)
+
     // BiliBili login details
     val bilibiliSessDataValid =
         (state.bilibiliSessData.isNotBlank() && state.bilibiliSessDataExpires > System.currentTimeMillis())
@@ -143,6 +145,7 @@ fun rememberSettingsSearchState(
         state,
         bilibiliSessDataValid,
         bilibiliSubtitle,
+        bilibiliAccountTitle,
         themeSubtitle,
         aiProviderSubtitle,
         modelSubtitle,
@@ -282,7 +285,7 @@ fun rememberSettingsSearchState(
             ),
             SearchableSetting(
                 id = "bilibili",
-                title = stringResource(R.string.bilibili_account),
+                title = bilibiliAccountTitle,
                 subtitle = bilibiliSubtitle,
                 group = "Services & Tools",
                 iconBadge = {
