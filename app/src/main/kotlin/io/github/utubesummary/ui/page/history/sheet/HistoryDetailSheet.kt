@@ -39,7 +39,6 @@ import io.github.utubesummary.model.HistoryLengthResult
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.ExperimentalFoundationApi
-import io.github.utubesummary.ui.component.LengthSelector
 import io.github.utubesummary.ui.component.SummaryCard
 
 /**
@@ -60,27 +59,15 @@ fun HistoryDetailSheet(
 ) {
     if (summary == null) return
 
-    val availableLengths = remember(summary) {
-        summary.allLengthResults.keys.filter { it != SummaryLength.NONE }.sortedBy { it.ordinal }
-    }
-    var selectedLength by remember(summary) {
-        mutableStateOf(
-            if (summary.allLengthResults.containsKey(summary.length)) {
-                summary.length
-            } else {
-                availableLengths.firstOrNull() ?: summary.length
-            }
-        )
-    }
-    // Every result of the selected length, oldest first: the newest is appended at the bottom.
-    val results = remember(summary, selectedLength) { summary.resultsFor(selectedLength) }
+    // Every result of the item, oldest first: a new summary is appended after the last one.
+    val results = remember(summary) { summary.allResultsOldestFirst() }
 
     // Only one section is read aloud at a time.
     var playingIndex by remember(summary) { mutableStateOf<Int?>(null) }
     val scrollState = rememberScrollState()
-    val newestSection = remember(summary, selectedLength) { BringIntoViewRequester() }
+    val newestSection = remember(summary) { BringIntoViewRequester() }
 
-    LaunchedEffect(summary, selectedLength) {
+    LaunchedEffect(summary) {
         scrollState.scrollTo(0)
         if (results.size > 1) {
             delay(SCROLL_TO_NEWEST_DELAY_MS)
@@ -104,27 +91,10 @@ fun HistoryDetailSheet(
                     .fillMaxWidth()
                     .verticalScroll(scrollState)
             ) {
-                if (availableLengths.size > 1) {
-                    val selectedIndex = availableLengths.indexOf(selectedLength).coerceAtLeast(0)
-                    LengthSelector(
-                        selectedIndex = selectedIndex,
-                        onSelectedIndexChange = { index ->
-                            selectedLength = availableLengths[index]
-                            playingIndex = null
-                        },
-                        options = availableLengths.map { length ->
-                            length.name.lowercase().replaceFirstChar { it.titlecase() }
-                        },
-                        enabled = true,
-                        useContainerBackground = false,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-                }
-
                 results.forEachIndexed { index, result ->
                     val isNewest = index == results.lastIndex
                     val header = historyResultHeader(result)
-                    key(selectedLength, index) {
+                    key(index) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()

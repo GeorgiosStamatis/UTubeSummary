@@ -65,7 +65,7 @@ class HistoryResultsTest {
     }
 
     @Test
-    fun `results of a length are listed oldest first with the current one last`() {
+    fun `all results are listed oldest first across lengths with the current one last`() {
         val summary = HistorySummary(
             title = "t",
             type = SummaryType.ARTICLE,
@@ -74,11 +74,41 @@ class HistoryResultsTest {
             alternatives = listOf(
                 result("middle", profileId = "a", createdOn = 200L),
                 result("oldest", profileId = "b", createdOn = 100L),
-                result("other length", SummaryLength.LONG, createdOn = 50L),
+                result("other length", SummaryLength.LONG, createdOn = 150L),
             ),
         )
 
-        assertEquals(listOf("oldest", "middle", "newest"), summary.resultsFor(SummaryLength.MEDIUM).map { it.summary })
+        assertEquals(
+            listOf("oldest", "other length", "middle", "newest"),
+            summary.allResultsOldestFirst().map { it.summary }
+        )
+    }
+
+    @Test
+    fun `entries from before timestamps end with the result that was made last`() {
+        val summary = HistorySummary(
+            title = "t",
+            type = SummaryType.ARTICLE,
+            length = SummaryLength.SHORT,
+            lengthResults = mapOf(
+                SummaryLength.LONG to result("long", SummaryLength.LONG),
+                SummaryLength.SHORT to result("short", SummaryLength.SHORT),
+            ),
+        )
+
+        assertEquals(listOf("long", "short"), summary.allResultsOldestFirst().map { it.summary })
+    }
+
+    @Test
+    fun `a single result stays single`() {
+        val summary = HistorySummary(
+            title = "t",
+            type = SummaryType.ARTICLE,
+            length = SummaryLength.MEDIUM,
+            lengthResults = mapOf(SummaryLength.MEDIUM to result("only")),
+        )
+
+        assertEquals(listOf("only"), summary.allResultsOldestFirst().map { it.summary })
     }
 
     @Test

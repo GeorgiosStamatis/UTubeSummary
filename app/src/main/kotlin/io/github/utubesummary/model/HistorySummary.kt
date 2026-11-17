@@ -34,14 +34,16 @@ data class HistorySummary(
         get() = lengthResults
 
     /**
-     * All results of [length], oldest first. The current one (shown in the list) is the newest and
-     * therefore last.
+     * Every result of this item, oldest first, so a new summary is appended after the last one.
+     * Entries from before timestamps existed all have `createdOn = 0`: they are ordered by length
+     * (short, medium, long) with the one made last (the active result) at the end.
      */
-    fun resultsFor(length: SummaryLength): List<HistoryLengthResult> {
-        val current = lengthResults[length]
-        val others = alternatives.filter { it.length == length }
-        return (others + listOfNotNull(current)).sortedWith(
-            compareBy<HistoryLengthResult> { it.createdOn }.thenBy { it === current }
+    fun allResultsOldestFirst(): List<HistoryLengthResult> {
+        val active = activeResult
+        return (lengthResults.values + alternatives).sortedWith(
+            compareBy<HistoryLengthResult> { it.createdOn }
+                .thenBy { it === active }
+                .thenBy { it.length.ordinal }
         )
     }
 
