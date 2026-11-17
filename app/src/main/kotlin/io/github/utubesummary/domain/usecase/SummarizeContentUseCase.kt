@@ -13,7 +13,8 @@ import io.github.utubesummary.domain.repository.UserPreferencesRepository
 import io.github.utubesummary.exception.SummaryException
 import io.github.utubesummary.exception.toSummaryException
 import io.github.utubesummary.llm.AIProvider
-import io.github.utubesummary.llm.LLMHandler
+import io.github.utubesummary.llm.LlmGateway
+import io.github.utubesummary.llm.SummarizationRequest
 import io.github.utubesummary.llm.SummarizationProgress
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import io.github.utubesummary.model.HistoryLengthResult
@@ -41,7 +42,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
     private val aiProviderConfigRepository: AIProviderConfigRepository,
     private val historyRepository: HistoryRepository,
-    private val llmHandler: LLMHandler,
+    private val llmGateway: LlmGateway,
     private val documentMetadataProvider: DocumentMetadataProvider,
     private val appLocaleProvider: AppLocaleProvider,
     private val sourceTextStore: SourceTextStore,
@@ -76,7 +77,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             val appLocale = appLocaleProvider.getCurrentLocale()
             val promptLocale = summaryPromptLocale(language ?: effectiveSummaryLanguage(prefs), appLocale)
 
-            val agent = llmHandler.getSummarizationAgent(
+            val request = SummarizationRequest(
                 provider = active.provider,
                 apiKey = active.apiKey,
                 baseUrl = active.baseUrl,
@@ -96,7 +97,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
 
             val progressId = progress.start()
             val outcome = try {
-                agent.run(source)
+                llmGateway.summarize(request, source)
             } finally {
                 progress.finish(progressId)
             }

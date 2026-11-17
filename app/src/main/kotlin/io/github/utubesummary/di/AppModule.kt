@@ -22,6 +22,7 @@ import io.github.utubesummary.data.AppDatabase
 import io.github.utubesummary.data.HistoryDao
 import io.github.utubesummary.domain.repository.UserPreferencesRepository
 import io.github.utubesummary.llm.LLMHandler
+import io.github.utubesummary.llm.LlmGateway
 import io.github.utubesummary.llm.SummarizationProgress
 import javax.inject.Singleton
 
@@ -82,6 +83,10 @@ object AppModule {
     ): LLMHandler {
         return LLMHandler(context, httpClient, userPreferencesRepository, progress)
     }
+
+    @Provides
+    @Singleton
+    fun provideLlmGateway(handler: LLMHandler): LlmGateway = handler
 
     @Provides
     @Singleton

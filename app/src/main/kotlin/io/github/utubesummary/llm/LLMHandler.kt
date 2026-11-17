@@ -31,7 +31,7 @@ class LLMHandler(
     httpClient: HttpClient,
     userPreferencesRepository: UserPreferencesRepository,
     private val progress: SummarizationProgress,
-) {
+) : LlmGateway {
     private val executorFactory = LLMExecutorFactory(httpClient)
 
     private val fileExtractorTool = FileExtractorTool(context)
@@ -112,8 +112,28 @@ class LLMHandler(
         }
     }
 
+    override suspend fun summarize(
+        request: SummarizationRequest,
+        source: SummarySource,
+    ): SummarizationOutcome = getSummarizationAgent(
+        provider = request.provider,
+        apiKey = request.apiKey,
+        baseUrl = request.baseUrl,
+        model = request.model,
+        summaryLength = request.summaryLength,
+        showLength = request.showLength,
+        useContentLanguage = request.useContentLanguage,
+        appLanguage = request.appLanguage,
+        isAppendMode = request.isAppendMode,
+        customBasePrompt = request.customBasePrompt,
+        additionalSystemPrompt = request.additionalSystemPrompt,
+        profileBasePrompt = request.profileBasePrompt,
+        structuredOutput = request.structuredOutput,
+        summaryLanguage = request.summaryLanguage,
+    ).run(source)
+
     /** Answers [question] about [sourceText] with a plain request (no agent, no tools). */
-    suspend fun askQuestion(
+    override suspend fun askQuestion(
         provider: AIProvider,
         apiKey: String,
         baseUrl: String?,

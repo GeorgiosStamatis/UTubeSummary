@@ -9,7 +9,7 @@ import io.github.utubesummary.domain.repository.AIProviderConfigRepository
 import io.github.utubesummary.domain.repository.UserPreferencesRepository
 import io.github.utubesummary.exception.SummaryException
 import io.github.utubesummary.exception.toSummaryException
-import io.github.utubesummary.llm.LLMHandler
+import io.github.utubesummary.llm.LlmGateway
 import io.github.utubesummary.model.ChatExchange
 import javax.inject.Inject
 
@@ -28,7 +28,7 @@ interface AskAboutContentUseCase {
 class AskAboutContentUseCaseImpl @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
     private val aiProviderConfigRepository: AIProviderConfigRepository,
-    private val llmHandler: LLMHandler,
+    private val llmGateway: LlmGateway,
     private val appLocaleProvider: AppLocaleProvider,
     private val sourceTextStore: SourceTextStore,
 ) : AskAboutContentUseCase {
@@ -48,7 +48,7 @@ class AskAboutContentUseCaseImpl @Inject constructor(
             val active = resolveActiveProvider(prefs, configs)
             requestContext = active.description
 
-            val answer = llmHandler.askQuestion(
+            val answer = llmGateway.askQuestion(
                 provider = active.provider,
                 apiKey = active.apiKey,
                 baseUrl = active.baseUrl,
