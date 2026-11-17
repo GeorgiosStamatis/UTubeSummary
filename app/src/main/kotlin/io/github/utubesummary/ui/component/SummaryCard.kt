@@ -347,8 +347,9 @@ fun SummaryCard(
 
             // Summary Body
             if (summary.summary.isNotBlank()) {
+                val bodyText = remember(summary.summary) { markdownToAnnotatedString(summary.summary.trim()) }
                 Text(
-                    text = summary.summary.trim(),
+                    text = bodyText,
                     style = MaterialTheme.typography.bodyMedium,
                     lineHeight = 22.sp,
                     color = MaterialTheme.colorScheme.onSurface,

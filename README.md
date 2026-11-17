@@ -115,7 +115,8 @@ than #17 (signed with a different key).
   Long length selector on Home. Each profile is its own base prompt: **Default**, **Technical Deep
   Dive**, **Critical Analysis**, **Learning Mode**, **Technical Content Quality Evaluator** and
   **Quick Brief**. Edit or reset any preset, or create and delete your own profiles; "Append Custom
-  Prompt" is applied on top of any profile.
+  Prompt" is applied on top of any profile. Default keeps the overview / key points / tags card;
+  the other profiles answer in the format defined by their prompt (Markdown is rendered).
 
 - **Ask questions about a summary**: follow up on a summarized video or document. The extracted text
   is only kept in memory (never saved) and is sent to your configured LLM together with your question.

@@ -83,6 +83,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
                 additionalSystemPrompt = prefs.additionalSystemPrompt,
                 // Default profile keeps the legacy base/custom prompt behavior.
                 profileBasePrompt = profile.basePrompt.takeIf { profile.id != DEFAULT_PROFILE_ID },
+                structuredOutput = usesStructuredOutput(profile),
             )
 
             val outcome = agent.run(source)

@@ -80,4 +80,12 @@ class ResolveProfilesTest {
         assertTrue(profiles.all { it.basePrompt.isNotBlank() })
         assertEquals(profiles.size, profiles.map { it.basePrompt }.toSet().size)
     }
+
+    @Test
+    fun `only the default profile uses structured output`() {
+        val profiles = resolveProfiles(UserPreferences())
+
+        assertTrue(usesStructuredOutput(profiles.first { it.id == DEFAULT_PROFILE_ID }))
+        assertTrue(profiles.filter { it.id != DEFAULT_PROFILE_ID }.none { usesStructuredOutput(it) })
+    }
 }

@@ -24,6 +24,7 @@ private data class AgentCacheKey(
     val model: String?,
     val summaryLength: SummaryLength,
     val systemPrompt: String,
+    val structuredOutput: Boolean,
 )
 
 class LLMHandler(
@@ -61,6 +62,7 @@ class LLMHandler(
         customBasePrompt: String = "",
         additionalSystemPrompt: String = "",
         profileBasePrompt: String? = null,
+        structuredOutput: Boolean = true,
     ): AIAgent<SummarySource, SummarizationOutcome> {
         val promptString = generateFinalPromptString(
             length = summaryLength,
@@ -80,6 +82,7 @@ class LLMHandler(
             model = model,
             summaryLength = summaryLength,
             systemPrompt = promptString,
+            structuredOutput = structuredOutput,
         )
 
         return agentCache.computeIfAbsent(cacheKey) {
@@ -100,6 +103,7 @@ class LLMHandler(
                     youTubeTranscriptTool = youTubeTranscriptTool,
                     bilibiliSubtitleTool = bilibiliSubtitleTool,
                     fileExtractorTool = fileExtractorTool,
+                    structuredOutput = structuredOutput,
                 ),
                 agentConfig = agentConfig,
                 toolRegistry = toolRegistry,

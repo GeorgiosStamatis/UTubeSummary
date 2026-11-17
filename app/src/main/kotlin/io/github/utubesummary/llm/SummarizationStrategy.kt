@@ -54,6 +54,7 @@ fun createSummarizationStrategy(
     youTubeTranscriptTool: YouTubeTranscriptTool,
     bilibiliSubtitleTool: BiliBiliSubtitleTool,
     fileExtractorTool: FileExtractorTool,
+    structuredOutput: Boolean = true,
 ): AIAgentGraphStrategy<SummarySource, SummarizationOutcome> =
     strategy("summarization_router_strategy") {
         val contentExtractorSubgraph by subgraph<SummarySource, ExtractedPayload>("content_extractor") {
@@ -143,7 +144,8 @@ fun createSummarizationStrategy(
             val supportsStructured = model.supports(LLMCapability.Schema.JSON.Standard) ||
                     model.supports(LLMCapability.Schema.JSON.Basic)
 
-            val result = if (supportsStructured) {
+            // Free-form mode lets the system prompt (profile) define the output format.
+            val result = if (structuredOutput && supportsStructured) {
                 requestStructuredSummary(llm, textToSummarize, model)
             } else {
                 requestPlainTextSummary(llm, textToSummarize)

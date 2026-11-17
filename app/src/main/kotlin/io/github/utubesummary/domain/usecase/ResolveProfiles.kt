@@ -44,3 +44,9 @@ fun resolveProfile(prefs: UserPreferences, profileId: String?): SummaryProfile {
     val profiles = resolveProfiles(prefs)
     return profiles.firstOrNull { it.id == (profileId ?: prefs.selectedProfileId) } ?: profiles.first()
 }
+
+/**
+ * The Default profile keeps the structured card (overview, key points, tags). Other profiles return
+ * free-form text so the output follows the format defined by their prompt.
+ */
+fun usesStructuredOutput(profile: SummaryProfile): Boolean = profile.id == DEFAULT_PROFILE_ID
