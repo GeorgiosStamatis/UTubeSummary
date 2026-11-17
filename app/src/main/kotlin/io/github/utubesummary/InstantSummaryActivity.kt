@@ -64,6 +64,7 @@ import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.model.SummarizationPhase
 import io.github.utubesummary.ui.component.LlmIndicator
 import io.github.utubesummary.ui.component.resolveUserErrorMessage
+import io.github.utubesummary.ui.component.summaryShareText
 import io.github.utubesummary.ui.theme.UTubeSummaryTheme
 import io.github.utubesummary.vm.SettingsViewModel
 import io.github.utubesummary.vm.SummaryViewModel
@@ -394,7 +395,7 @@ fun InstantSummaryDialog(
                                                 action = Intent.ACTION_SEND
                                                 putExtra(
                                                     Intent.EXTRA_TEXT,
-                                                    "${summaryResult.title}\n\n${summaryResult.summary}"
+                                                    summaryShareText(summaryResult)
                                                 )
                                                 type = "text/plain"
                                             }

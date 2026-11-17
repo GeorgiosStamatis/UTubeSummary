@@ -715,7 +715,8 @@ private fun SummaryActionButtons(
             onClick = {
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, summaryText)
+                    putExtra(Intent.EXTRA_TEXT, summaryShareText(summary))
+                    summary.title.takeIf { it.isNotBlank() }?.let { putExtra(Intent.EXTRA_SUBJECT, it) }
                 }
                 val chooserIntent = Intent.createChooser(shareIntent, null)
                 context.startActivity(chooserIntent)
