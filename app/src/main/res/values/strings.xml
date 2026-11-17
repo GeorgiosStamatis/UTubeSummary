@@ -234,4 +234,9 @@
 
     <string name="profile_structured_output">Overview, key points and tags</string>
     <string name="profile_structured_output_description">Show the summary as a card with an overview, key points and tags instead of the free-form answer of the prompt.</string>
+
+    <string name="profile_share">Share</string>
+    <string name="profile_import">Import profile from clipboard</string>
+    <string name="profile_imported">Profile imported: %1$s</string>
+    <string name="profile_import_invalid">The clipboard does not contain a shared profile.</string>
 </resources>

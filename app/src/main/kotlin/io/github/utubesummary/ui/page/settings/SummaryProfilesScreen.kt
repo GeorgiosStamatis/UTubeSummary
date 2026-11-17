@@ -1,6 +1,15 @@
 package io.github.utubesummary.ui.page.settings
 
 import androidx.activity.compose.BackHandler
+import kotlinx.coroutines.launch
+import io.github.utubesummary.model.encodeSharedProfile
+import io.github.utubesummary.model.decodeSharedProfile
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.icons.rounded.ContentPaste
+import android.widget.Toast
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -70,6 +79,11 @@ fun SummaryProfilesScreen(
     val state by settingsViewModel.settingsUiState.collectAsState()
     var editingId by rememberSaveable { mutableStateOf<String?>(null) }
     val editing = state.profiles.firstOrNull { it.id == editingId }
+    val context = LocalContext.current
+    val clipboard = LocalClipboard.current
+    val scope = rememberCoroutineScope()
+    val importedTemplate = stringResource(R.string.profile_imported)
+    val importInvalid = stringResource(R.string.profile_import_invalid)
 
     BackHandler(enabled = editingId != null) { editingId = null }
 
@@ -109,6 +123,37 @@ fun SummaryProfilesScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.profile_back)
+                        )
+                    }
+                },
+                actions = {
+                    // Import a profile that was shared as text and copied to the clipboard.
+                    IconButton(onClick = {
+                        scope.launch {
+                            val text = clipboard.getClipEntry()?.clipData
+                                ?.takeIf { it.itemCount > 0 }
+                                ?.getItemAt(0)?.text?.toString().orEmpty()
+                            val shared = decodeSharedProfile(text)
+                            if (shared == null) {
+                                Toast.makeText(context, importInvalid, Toast.LENGTH_SHORT).show()
+                            } else {
+                                settingsViewModel.saveProfile(
+                                    null,
+                                    shared.name,
+                                    shared.basePrompt,
+                                    shared.structuredOutput
+                                )
+                                Toast.makeText(
+                                    context,
+                                    importedTemplate.format(shared.name),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }) {
+                        Icon(
+                            Icons.Rounded.ContentPaste,
+                            contentDescription = stringResource(R.string.profile_import)
                         )
                     }
                 },
@@ -196,6 +241,7 @@ private fun ProfileEditor(
     val displayName = profile?.displayName().orEmpty()
     var name by rememberSaveable(profile?.id) { mutableStateOf(displayName) }
     var prompt by rememberSaveable(profile?.id) { mutableStateOf(profile?.basePrompt.orEmpty()) }
+    val context = LocalContext.current
     var structured by rememberSaveable(profile?.id) { mutableStateOf(profile?.structuredOutput ?: false) }
     val canSave = name.isNotBlank() && prompt.isNotBlank()
 
@@ -262,6 +308,18 @@ private fun ProfileEditor(
                     enabled = canSave
                 ) {
                     Text(stringResource(R.string.profile_save))
+                }
+                OutlinedButton(
+                    onClick = {
+                        val send = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, encodeSharedProfile(name, prompt, structured))
+                        }
+                        context.startActivity(Intent.createChooser(send, null))
+                    },
+                    enabled = canSave
+                ) {
+                    Text(stringResource(R.string.profile_share))
                 }
                 if (profile != null) {
                     // Custom profiles are deleted; built-in ones can only be reset to the preset.
