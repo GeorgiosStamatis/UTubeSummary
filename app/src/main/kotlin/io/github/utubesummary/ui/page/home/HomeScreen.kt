@@ -87,8 +87,11 @@ object MimeTypes {
     const val JPEG = "image/jpeg"
     const val JPG = "image/jpg"
     const val WEBP = "image/webp"
+    const val TEXT = "text/plain"
+    const val MARKDOWN = "text/markdown"
+    const val MARKDOWN_LEGACY = "text/x-markdown"
 
-    val allSupported = arrayOf(PDF, DOCX, PNG, JPEG, JPG, WEBP)
+    val allSupported = arrayOf(PDF, DOCX, PNG, JPEG, JPG, WEBP, TEXT, MARKDOWN, MARKDOWN_LEGACY)
 }
 
 data class HomeActions(

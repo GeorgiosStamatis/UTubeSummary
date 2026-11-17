@@ -119,26 +119,32 @@ private object DocxTextExtractor : TextExtractor {
             setInput(xmlInputStream, null)
         }
 
-        val extractedText = StringBuilder()
+        val builder = DocxTextBuilder()
         var eventType = parser.eventType
         while (eventType != XmlPullParser.END_DOCUMENT) {
             when (eventType) {
                 XmlPullParser.START_TAG -> {
+                    builder.startElement(parser.name)
                     if (parser.name == "w:t" && parser.next() == XmlPullParser.TEXT) {
-                        extractedText.append(parser.text)
+                        builder.text(parser.text)
                     }
                 }
 
-                XmlPullParser.END_TAG -> {
-                    if (parser.name == "w:p") {
-                        extractedText.append("\n")
-                    }
-                }
+                XmlPullParser.END_TAG -> builder.endElement(parser.name)
             }
             eventType = parser.next()
         }
-        return extractedText.toString().trim()
+        return builder.build()
     }
+}
+
+private object PlainTextExtractor : TextExtractor {
+    override suspend fun extract(context: Context, uri: Uri): String =
+        withContext(Dispatchers.IO) {
+            val stream = context.contentResolver.openInputStream(uri)
+                ?: throw FileNotFoundException("Can't open InputStream for the URI: $uri")
+            stream.use { String(it.readBytes(), Charsets.UTF_8) }
+        }
 }
 
 private object ImageTextExtractor : TextExtractor {
@@ -172,16 +178,12 @@ class FileExtractorTool(private val context: Context) : Tool<File, ExtractedCont
         val filename = getFileName(context, uri)
         val mimeType = context.contentResolver.getType(uri)
 
-        val extractor: TextExtractor? = when {
-            filename.endsWith(".pdf", ignoreCase = true) -> PdfTextExtractor
-            filename.endsWith(".docx", ignoreCase = true) -> DocxTextExtractor
-            mimeType?.startsWith("image/") == true ||
-                    filename.endsWith(".jpg", ignoreCase = true) ||
-                    filename.endsWith(".jpeg", ignoreCase = true) ||
-                    filename.endsWith(".png", ignoreCase = true)
-                -> ImageTextExtractor
-
-            else -> null
+        val extractor: TextExtractor? = when (fileKindOf(filename, mimeType)) {
+            FileKind.PDF -> PdfTextExtractor
+            FileKind.DOCX -> DocxTextExtractor
+            FileKind.IMAGE -> ImageTextExtractor
+            FileKind.TEXT -> PlainTextExtractor
+            null -> null
         }
 
         val content = extractor?.extract(context, uri)

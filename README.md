@@ -84,7 +84,7 @@ than #17 (signed with a different key).
 | media        | supported types                     |
 |--------------|-------------------------------------|
 | Video (Link) | YouTube, BiliBili                   |
-| Document     | MS Word, PDF                        |
+| Document     | MS Word, PDF, plain text, Markdown  |
 | Image        | Jpg, Png, Webp (Latin only for now) |
 | Text         | Article link, Plain text            |
 
