@@ -18,7 +18,6 @@ import io.github.utubesummary.llm.SummarizationProgress
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import io.github.utubesummary.model.HistoryLengthResult
 import io.github.utubesummary.model.HistorySummary
-import io.github.utubesummary.model.SummarizationPhase
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.effectiveSummaryLanguage
 import io.github.utubesummary.model.summaryPromptLocale
@@ -95,11 +94,11 @@ class SummarizeContentUseCaseImpl @Inject constructor(
                 structuredOutput = usesStructuredOutput(profile),
             )
 
-            progress.report(SummarizationPhase.EXTRACTING)
+            val progressId = progress.start()
             val outcome = try {
                 agent.run(source)
             } finally {
-                progress.report(null)
+                progress.finish(progressId)
             }
             val summaryOutput = outcome.summary
             // Kept in memory only, so questions can be asked about this content.
