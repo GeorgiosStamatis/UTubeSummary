@@ -4,6 +4,7 @@ import io.github.utubesummary.llm.CRITICAL_ANALYST_PROFILE_ID
 import io.github.utubesummary.llm.criticalAnalystPrompt
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import io.github.utubesummary.testutil.FakeUserPreferencesRepository
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -65,9 +66,9 @@ class UpdateSummaryProfilesUseCaseTest {
     }
 
     @Test
-    fun `the Default profile cannot be saved over`() = runTest {
+    fun `the Default profile cannot be saved over`() {
         assertThrows(IllegalArgumentException::class.java) {
-            kotlinx.coroutines.runBlocking { useCase.save(DEFAULT_PROFILE_ID, "x", "y") }
+            runBlocking { useCase.save(DEFAULT_PROFILE_ID, "x", "y") }
         }
     }
 }
