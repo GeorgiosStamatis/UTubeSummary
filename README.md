@@ -125,12 +125,15 @@ than #17 (signed with a different key).
 - **Summarization profiles**: choose *how* a summary is written, right next to the Short / Middle /
   Long length selector on Home. Each profile is its own base prompt: **Default**, **Technical Deep
   Dive**, **Critical Analysis**, **Learning Mode**, **Technical Content Quality Evaluator** and
-  **Quick Brief**. Edit or reset any preset, or create and delete your own profiles; "Append Custom
-  Prompt" is applied on top of any profile. Default keeps the overview / key points / tags card;
-  the other profiles answer in the format defined by their prompt (Markdown is rendered).
+  **Quick Brief**. Tap a profile to use it, edit its prompt (in Summarization profiles or in the Base
+  Prompt box of Advanced Summary Setup), reset a preset, or create and delete your own profiles;
+  "Append Custom Prompt" is applied on top of any profile. Default keeps the overview / key points /
+  tags card; the other profiles answer in the format defined by their prompt (Markdown is rendered).
 
 - **Summary language**: choose the language of the summary on Home or in Advanced Summary Setup:
-  the video's own language, the app language or one of about 20 other languages
+  the video's own language, the app language or one of about 20 other languages. If the content is
+  too long for the model's context window, the app says so and suggests a model with a larger one
+  (nothing is cut)
 
 - **Share and re-run**: share a summary as Markdown (title, source link, key points, tags), see
   whether the app is fetching content or summarizing, cancel a running summary, and summarize a
@@ -139,7 +142,8 @@ than #17 (signed with a different key).
 
 - **Configurable LLM settings**: Custom API keys, base URLs, prompt customization, and summary lengths
 
-- **Text to speech for the summaries with multilingual and speed adjustment support**
+- **Text to speech for the summaries with multilingual and speed adjustment support**; it reads the
+  text without Markdown symbols and handles long summaries
 
 - **History search**
 
@@ -157,6 +161,13 @@ than #17 (signed with a different key).
   Analysis, Learning Mode, Technical Content Quality Evaluator, Quick Brief) or create your own. Only
   Default uses the structured overview / key points / tags card; the others answer in the format of
   their prompt
+- **Summary language**: Video language, App language or one of about 20 languages, chosen on Home
+  (under the profile picker), in Advanced Summary Setup and in the instant summary dialog; the old
+  "Original Language" switch is used until you pick one
+- **Cancel, progress and re-run**: a Cancel button while summarizing, a "Fetching content…" /
+  "Summarizing…" status, and "Summarize again with other settings" in the History detail sheet
+- **Share as Markdown**: title, author, source link, overview, key points, summary and tags
+- **Instant summary dialog**: profile and language pickers; changing one summarizes the text again
 - **Ask questions about a summary**: follow-up questions about the video, article or document you just
   summarized, with earlier answers as context. The text is kept in memory only (last 3 inputs)
 - **Import video summaries**: import another app's JSON backup from Settings; videos already in the
@@ -174,6 +185,9 @@ than #17 (signed with a different key).
   (monochrome) Android icons
 - Error messages have a **Show details** option (provider, model, URL and the raw cause) to make
   problems easy to report
+- **Clearer errors**: content that does not fit the model's context window asks you to choose a
+  model with a larger one; private, age-restricted or removed YouTube videos are named as such;
+  BiliBili access problems ask for a login or report an invalid link instead of "no internet"
 
 **Fixes**
 
@@ -185,6 +199,19 @@ than #17 (signed with a different key).
 - The app closed after the first-run tutorial when the saved settings could not be read: settings
   fields now have fixed numbers and an unreadable settings file resets to defaults instead of crashing
 - Only one instance of the app runs (sharing a link reuses it instead of opening another)
+- A second summarize request, or clearing the input, no longer lets an older result appear later;
+  cancelling is no longer reported as an error
+- History: overlapping saves cannot lose a result, Undo restores an entry exactly as it was (same
+  date, no merging), `%` and `_` in a search match literally, and the profile used is shown
+- Long summaries no longer travel through intent extras (about 1 MB limit) when opening the main
+  app from the instant dialog
+- Error classification: numbers and words in ordinary text (for example "500" or "quota") are no
+  longer mistaken for HTTP or rate-limit errors
+- YouTube: a missing author no longer fails extraction, and a manual caption track in the spoken
+  language is preferred
+- Text to speech read Markdown symbols aloud and could fail on long summaries
+- PDF and image text recognition now release their bitmaps and recognizer
+- Provider and summarizer caches are real bounded LRU caches and are keyed by a hash of the API key
 
 **Security & privacy**
 
@@ -228,6 +255,10 @@ The app follows Google's [official Android Architecture Recommendations](https:/
   (`resolveProfiles()`, `UpdateSummaryProfilesUseCase`) merges them with the user's edits and custom
   profiles stored in the ProtoBuf DataStore, and the chosen profile's base prompt is passed to the
   LLM handler for each summary.
+- **Summary language, progress and handoff**: the language setting (`model/SummaryLanguage.kt`) is
+  resolved in `SummarizeContentUseCase` and named in the prompt; `SummarizationProgress` exposes the
+  current phase through `ObserveSummarizationPhaseUseCase`; `SummaryHandoff` passes a finished summary
+  from the instant dialog to the main activity in memory.
 - **Dependency Injection**: Powered by Dagger Hilt with `@Binds` for domain repository contracts.
 - **Asynchronous Operations**: Kotlin Coroutines + Flow for reactive, main-safe async streams.
 
