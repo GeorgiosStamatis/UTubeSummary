@@ -212,6 +212,11 @@ than #17 (signed with a different key).
 - Text to speech read Markdown symbols aloud and could fail on long summaries
 - PDF and image text recognition now release their bitmaps and recognizer
 - Provider and summarizer caches are real bounded LRU caches and are keyed by a hash of the API key
+- The question box scrolls above the keyboard, and the reader fallback for blocked articles is decided
+  by the error type, not by words in its message
+- Accessibility: content descriptions are localized and purely decorative icons are no longer announced
+- The new texts (profiles, language, progress, errors) are translated into the existing languages
+  (machine translations: corrections are welcome)
 
 **Security & privacy**
 

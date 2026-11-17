@@ -75,4 +75,67 @@
     <string name="instant_summarize">Résumé Instantané</string>
 
 
+
+    <!-- Profiles, language, progress and accessibility texts -->
+    <string name="summary_profile">Profil</string>
+    <string name="profile_label">Profil : %1$s</string>
+    <string name="profile_default">Par défaut</string>
+    <string name="profile_technical_analysis">Analyse technique approfondie</string>
+    <string name="profile_critical_analyst">Analyse critique</string>
+    <string name="profile_curious_learner">Mode apprentissage</string>
+    <string name="profile_technical_content_evaluator">Évaluateur de la qualité du contenu technique</string>
+    <string name="profile_quick_brief">Résumé express</string>
+    <string name="profile_unnamed">Profil sans nom</string>
+    <string name="manage_profiles">Profils de résumé</string>
+    <string name="manage_profiles_description">Choisissez un prompt de base différent pour chaque type de résumé, ou créez le vôtre.</string>
+    <string name="profile_new">Nouveau profil</string>
+    <string name="profile_edit">Modifier le profil</string>
+    <string name="profile_name">Nom</string>
+    <string name="profile_prompt">Prompt de base</string>
+    <string name="profile_prompt_hint">Utilisez [Language instructions] et [Length instructions] là où doivent figurer les règles de langue et de longueur. Elles sont ajoutées automatiquement si elles manquent.</string>
+    <string name="profile_default_hint">Le profil par défaut se modifie dans la configuration avancée du résumé.</string>
+    <string name="profile_save">Enregistrer</string>
+    <string name="profile_delete">Supprimer</string>
+    <string name="profile_reset">Rétablir le préréglage</string>
+    <string name="profile_modified">Modifié</string>
+    <string name="profile_back">Retour</string>
+    <string name="tts_failed_to_play">Échec de la lecture</string>
+    <string name="tts_init_failed">Le moteur de synthèse vocale n\'a pas pu être initialisé.</string>
+    <string name="tts_language_not_supported">La langue n\'est pas prise en charge par la synthèse vocale.</string>
+    <string name="overview">Aperçu</string>
+    <string name="go_back">Retour</string>
+    <string name="delete">Supprimer</string>
+    <string name="paste">Coller</string>
+    <string name="share">Partager</string>
+    <string name="close">Fermer</string>
+    <string name="error_title">Erreur</string>
+    <string name="pause_playback">Pause</string>
+    <string name="continue_playback">Continuer</string>
+    <string name="reset_to_default">Rétablir les valeurs par défaut</string>
+    <string name="additional_instructions_hint">Saisissez des instructions supplémentaires...</string>
+    <string name="clear_bilibili_login">Effacer la connexion BiliBili</string>
+    <string name="clear_bilibili_login_confirm">Voulez-vous vraiment effacer vos informations de connexion BiliBili ?</string>
+    <string name="bilibili_account">Compte BiliBili</string>
+    <string name="bilibili_login">Connexion BiliBili</string>
+    <string name="no_models_configured">Aucun modèle configuré</string>
+    <string name="summary_language">Langue</string>
+    <string name="language_video">Langue de la vidéo</string>
+    <string name="language_app">Langue de l\'application</string>
+    <string name="summary_language_description">Langue du résumé : la langue de la vidéo, la langue de l\'application ou une langue précise.</string>
+    <string name="contextTooLong">Ce contenu est trop long pour le modèle sélectionné. Choisissez un modèle avec une fenêtre de contexte plus grande et réessayez.</string>
+    <string name="videoUnavailable">YouTube n\'autorise pas l\'accès à cette vidéo. Elle est peut-être privée, soumise à une restriction d\'âge, bloquée dans votre région ou supprimée.</string>
+    <string name="base_prompt_for_profile">Prompt de base - %1$s</string>
+    <string name="phase_extracting">Récupération du contenu…</string>
+    <string name="phase_summarizing">Résumé en cours…</string>
+    <string name="summarize_again">Résumer à nouveau avec d\'autres paramètres</string>
+    <string name="open_original_link">Lien d\'origine</string>
+    <string name="copy_summary">Copier</string>
+    <string name="save_edit">Enregistrer la modification</string>
+    <string name="cancel_edit">Annuler la modification</string>
+    <string name="content_web_article">Article web</string>
+    <string name="content_text">Texte</string>
+    <string name="select_ai_provider">Sélectionner le fournisseur d\'IA</string>
+    <string name="attachments_menu_toggle">Afficher ou masquer le menu des pièces jointes</string>
+    <string name="state_expanded">Développé</string>
+    <string name="state_collapsed">Réduit</string>
 </resources>
