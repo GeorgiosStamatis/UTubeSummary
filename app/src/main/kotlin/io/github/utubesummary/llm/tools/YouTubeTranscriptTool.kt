@@ -27,6 +27,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import io.github.utubesummary.exception.SummaryException
 import io.github.utubesummary.model.ExtractedContent
 import io.github.utubesummary.model.VideoSubtype
 
@@ -48,7 +49,7 @@ class YouTubeTranscriptTool(client: HttpClient) : Tool<YouTubeTranscript, Extrac
         val videoId = YouTubeExtractor.extractVideoId(args.url)
             ?: throw Exception("Could not extract video ID from URL: ${args.url}")
         val detailsResult = youtubeExtractor.getVideoDetails(videoId)
-            ?: throw Exception("Could not get video details.")
+            ?: throw SummaryException.VideoUnavailableException()
         val details = detailsResult.first
         val playerResponse = detailsResult.second
         val transcriptResult = youtubeExtractor.getTranscript(videoId, playerResponse)
@@ -68,7 +69,7 @@ class YouTubeTranscriptTool(client: HttpClient) : Tool<YouTubeTranscript, Extrac
 private data class VideoDetails(val title: String, val author: String)
 
 @Serializable
-private data class CaptionTrack(
+internal data class CaptionTrack(
     val baseUrl: String,
     val name: Name,
     val languageCode: String,
@@ -76,6 +77,31 @@ private data class CaptionTrack(
 ) {
     @Serializable
     data class Name(val simpleText: String = "")
+}
+
+/**
+ * Picks the caption track to read. Auto-generated ("asr") tracks are always in the language that
+ * is spoken in the video, so that language is preferred when a manual track exists for it; then a
+ * manual track in [preferredLanguage], then the auto-generated one, then any track.
+ */
+internal fun selectCaptionTrack(
+    tracks: List<CaptionTrack>,
+    preferredLanguage: String = "en",
+): CaptionTrack? {
+    val spokenLanguage = tracks.firstOrNull { it.kind == "asr" }?.languageCode
+    return tracks.firstOrNull { spokenLanguage != null && it.languageCode == spokenLanguage && it.kind != "asr" }
+        ?: tracks.firstOrNull { it.languageCode == preferredLanguage && it.kind != "asr" }
+        ?: tracks.firstOrNull { it.kind == "asr" }
+        ?: tracks.firstOrNull { it.languageCode.startsWith(preferredLanguage) }
+        ?: tracks.firstOrNull()
+}
+
+/** Why YouTube will not give out this video (private, age or login restricted, removed), or null. */
+internal fun playabilityProblem(playerResponse: JsonObject): String? {
+    val playability = playerResponse["playabilityStatus"] as? JsonObject ?: return null
+    val status = playability["status"]?.jsonPrimitive?.contentOrNull
+    if (status != "LOGIN_REQUIRED" && status != "UNPLAYABLE" && status != "ERROR") return null
+    return playability["reason"]?.jsonPrimitive?.contentOrNull ?: status
 }
 
 
@@ -212,11 +238,16 @@ private class YouTubeExtractor(private val client: HttpClient) {
         withContext(Dispatchers.IO) {
             try {
                 val playerResponse = getPlayerResponse(videoId) ?: return@withContext null
+                playabilityProblem(playerResponse)?.let { reason ->
+                    Log.e(TAG, "Video $videoId is not playable: $reason")
+                    throw SummaryException.VideoUnavailableException(reason)
+                }
                 val details = playerResponse["videoDetails"]?.jsonObject
                 val title = details?.get("title")?.jsonPrimitive?.contentOrNull
-                val author = details?.get("author")?.jsonPrimitive?.contentOrNull
+                // A missing author must not make an otherwise usable transcript fail.
+                val author = details?.get("author")?.jsonPrimitive?.contentOrNull.orEmpty()
 
-                if (title != null && author != null) {
+                if (title != null) {
                     return@withContext Pair(VideoDetails(title, author), playerResponse)
                 } else {
                     Log.w(
@@ -226,6 +257,8 @@ private class YouTubeExtractor(private val client: HttpClient) {
                     return@withContext null
                 }
             } catch (e: CancellationException) {
+                throw e
+            } catch (e: SummaryException) {
                 throw e
             } catch (e: Exception) {
                 Log.e(TAG, "Exception in getVideoDetails for video $videoId", e)
@@ -270,12 +303,7 @@ private class YouTubeExtractor(private val client: HttpClient) {
             }
 
             // Select the best track (prefer manual to auto, prefer specified language over English)
-            val track =
-                tracks.firstOrNull { it.languageCode == preferredLanguage && it.kind != "asr" } // Manual, preferred lang
-                    ?: tracks.firstOrNull { it.languageCode == "en" && it.kind != "asr" } // Manual, English
-                    ?: tracks.firstOrNull { it.languageCode.startsWith(preferredLanguage) } // Auto, preferred lang
-                    ?: tracks.firstOrNull { it.languageCode.startsWith("en") } // Auto, English
-                    ?: tracks.firstOrNull() // Any available track
+            val track = selectCaptionTrack(tracks, preferredLanguage)
 
             if (track == null) {
                 Log.w(TAG, "Could not select a suitable caption track for video $videoId.")

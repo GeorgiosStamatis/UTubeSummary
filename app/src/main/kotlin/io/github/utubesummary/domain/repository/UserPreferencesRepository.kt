@@ -8,6 +8,7 @@ interface UserPreferencesRepository {
     val preferencesFlow: Flow<UserPreferences>
 
     suspend fun setUseOriginalLanguage(value: Boolean)
+    suspend fun setSummaryLanguage(value: String)
     suspend fun setDynamicColor(value: Boolean)
     suspend fun setShowThumbnails(value: Boolean)
     suspend fun setTheme(value: Int)

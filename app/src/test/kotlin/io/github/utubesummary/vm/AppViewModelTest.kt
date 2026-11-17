@@ -52,6 +52,7 @@ class AppViewModelTest {
         override suspend fun setIsAppendMode(value: Boolean) {}
         override suspend fun setCustomBasePrompt(value: String) {}
         override suspend fun setAdditionalSystemPrompt(value: String) {}
+        override suspend fun setSummaryLanguage(value: String) {}
         override suspend fun setProfileEntries(value: List<ProfileEntry>) {}
         override suspend fun setSelectedProfileId(value: String) {}
     }

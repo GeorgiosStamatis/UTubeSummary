@@ -178,4 +178,20 @@ class PromptsTest {
 
         assertTrue(prompt.contains("You are an expert summarization assistant."))
     }
+
+    @Test
+    fun `a chosen language is named in the prompt instead of the content language procedure`() {
+        val prompt = generateFinalPromptString(
+            length = SummaryLength.MEDIUM,
+            showLength = true,
+            useContentLanguage = false,
+            appLanguage = "French",
+            isAppendMode = true,
+            customBasePrompt = "",
+            additionalSystemPrompt = "",
+        )
+
+        assertTrue(prompt.contains("The summary should be written in French."))
+        assertFalse(prompt.contains("Identify Content Language"))
+    }
 }

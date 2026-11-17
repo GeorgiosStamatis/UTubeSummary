@@ -199,4 +199,16 @@
     <string name="bilibili_account">BiliBili Account</string>
     <string name="bilibili_login">BiliBili Login</string>
     <string name="no_models_configured">No models configured</string>
+
+    <!-- Summary language -->
+    <string name="summary_language">Language</string>
+    <string name="language_video">Video language</string>
+    <string name="language_app">App language</string>
+    <string name="summary_language_description">Language of the summary: the video\'s own language, your app language or a specific language.</string>
+
+    <!-- Context length -->
+    <string name="contextTooLong">This content is too long for the selected model. Choose a model with a larger context window and try again.</string>
+
+    <!-- YouTube -->
+    <string name="videoUnavailable">YouTube does not give access to this video. It may be private, age-restricted, region-locked or removed.</string>
 </resources>

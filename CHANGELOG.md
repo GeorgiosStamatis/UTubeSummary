@@ -9,15 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Ask questions about a summary; import video summaries from JSON; History thumbnails
-- LM Studio, Custom Provider, Test button, official URLs and auto model list
+- Ask about a summary; import summaries; History thumbnails
+- LM Studio, Custom Provider, Test button, auto model list
 - New app icon and logo
-- Summarization profiles: 5 built-in prompts or your own
+- Summarization profiles (5 built-in or your own); summary language picker
 - Cancel button; profile shown in History
 
 ### Fixed
 
-- Crash after the tutorial, PDF crash, Ollama key, OpenRouter "Not Found", prompt fields
+- Tutorial and PDF crashes, Ollama key, OpenRouter, prompt fields
+- Clearer context-length and YouTube errors
 
 ### Security
 

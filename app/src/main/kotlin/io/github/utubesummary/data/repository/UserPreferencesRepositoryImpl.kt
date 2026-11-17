@@ -65,6 +65,9 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override suspend fun setUseOriginalLanguage(value: Boolean) =
         updatePreferences { it.copy(useOriginalLanguage = value) }
 
+    override suspend fun setSummaryLanguage(value: String) =
+        updatePreferences { it.copy(summaryLanguage = value) }
+
     override suspend fun setDynamicColor(value: Boolean) =
         updatePreferences { it.copy(dynamicColor = value) }
 

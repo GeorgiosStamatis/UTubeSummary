@@ -34,6 +34,7 @@ class SummaryViewModelTest {
         var lastInput: String? = null
         var lastOverrideLength: SummaryLength? = null
         var lastProfileId: String? = null
+        var lastLanguage: String? = null
 
         /** When set, every call suspends until it is completed (simulates a slow request). */
         var gate: CompletableDeferred<Unit>? = null
@@ -43,8 +44,10 @@ class SummaryViewModelTest {
             text: String,
             overrideLength: SummaryLength?,
             profileId: String?,
+            language: String?,
         ): Result<SummaryOutput> {
             lastProfileId = profileId
+            lastLanguage = language
             lastInput = text
             inputs += text
             gate?.await()
@@ -152,6 +155,22 @@ class SummaryViewModelTest {
         assertFalse(state.isLoading)
         assertEquals(output, state.summaryResult)
         assertEquals(listOf("https://example.com/first", "https://example.com/second"), fakeUseCase.inputs)
+    }
+
+    @Test
+    fun `changing the language drops cached results and is passed to the use case`() = runTest(testDispatcher) {
+        fakeUseCase.summaryToReturn = createSummaryOutput(SummaryLength.SHORT, "Short summary")
+        viewModel.summarize("https://example.com", SummaryLength.SHORT, language = "content")
+
+        assertEquals("content", viewModel.summarizationState.value.language)
+
+        fakeUseCase.summaryToReturn = createSummaryOutput(SummaryLength.LONG, "Long summary")
+        viewModel.summarize("https://example.com", SummaryLength.LONG, language = "fr")
+
+        assertEquals("fr", fakeUseCase.lastLanguage)
+        val state = viewModel.summarizationState.value
+        assertEquals("fr", state.language)
+        assertEquals(setOf(SummaryLength.LONG), state.lengthResults.keys)
     }
 
     @Test

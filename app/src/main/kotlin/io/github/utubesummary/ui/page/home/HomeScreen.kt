@@ -8,6 +8,9 @@ import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -64,6 +67,7 @@ import io.github.utubesummary.llm.tools.getFileName
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
 import io.github.utubesummary.ui.Nav
+import io.github.utubesummary.ui.component.LanguageSelector
 import io.github.utubesummary.ui.component.LengthSelector
 import io.github.utubesummary.ui.component.ProfileSelector
 import io.github.utubesummary.ui.page.home.action.HomeFloatingActionButtons
@@ -96,6 +100,7 @@ data class HomeActions(
     val onUrlChange: (String) -> Unit,
     val onLengthSelect: (SummaryLength) -> Unit,
     val onProfileSelect: (String) -> Unit = {},
+    val onLanguageSelect: (String) -> Unit = {},
     val onCancelSummarize: () -> Unit = {},
     val onPasteFromClipboard: () -> Unit,
     val onPlaySummary: () -> Unit,
@@ -143,7 +148,11 @@ fun HomeScreen(
     fun summarize() {
         focusManager.clearFocus()
         isScrollingDown = false
-        summaryViewModel.summarize(urlOrText, profileId = settings.selectedProfileId)
+        summaryViewModel.summarize(
+            urlOrText,
+            profileId = settings.selectedProfileId,
+            language = settings.summaryLanguage,
+        )
     }
 
     fun clearInput() {
@@ -273,7 +282,10 @@ fun HomeScreen(
     val isProfileDirty = summarizationState.summaryResult != null &&
             summarizationState.profileId != null &&
             summarizationState.profileId != settings.selectedProfileId
-    val isDirty = isLengthDirty || isProfileDirty
+    val isLanguageDirty = summarizationState.summaryResult != null &&
+            summarizationState.language != null &&
+            summarizationState.language != settings.summaryLanguage
+    val isDirty = isLengthDirty || isProfileDirty || isLanguageDirty
 
     val actions = HomeActions(
         onSummarize = {
@@ -287,6 +299,7 @@ fun HomeScreen(
             summaryViewModel.switchLength(length)
         },
         onProfileSelect = settingsViewModel::selectProfile,
+        onLanguageSelect = settingsViewModel::setSummaryLanguage,
         onCancelSummarize = summaryViewModel::cancelSummarize,
         onPasteFromClipboard = {
             clearInput()
@@ -444,11 +457,23 @@ private fun HomeContent(
                         isLoading = summarizationState.isLoading,
                     )
 
-                    if (settings.profiles.size > 1) {
-                        ProfileSelector(
-                            profiles = settings.profiles,
-                            selectedProfileId = settings.selectedProfileId,
-                            onProfileSelect = actions.onProfileSelect,
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        if (settings.profiles.size > 1) {
+                            ProfileSelector(
+                                profiles = settings.profiles,
+                                selectedProfileId = settings.selectedProfileId,
+                                onProfileSelect = actions.onProfileSelect,
+                                enabled = !summarizationState.isLoading,
+                            )
+                        }
+                        LanguageSelector(
+                            selectedLanguage = settings.summaryLanguage,
+                            onLanguageSelect = actions.onLanguageSelect,
                             enabled = !summarizationState.isLoading,
                         )
                     }

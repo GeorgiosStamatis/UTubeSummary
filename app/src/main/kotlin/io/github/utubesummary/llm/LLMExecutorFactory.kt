@@ -21,13 +21,12 @@ import ai.koog.prompt.executor.ollama.client.OllamaClient
 import io.ktor.client.HttpClient
 import java.net.URI
 import java.util.Locale
-import java.util.concurrent.ConcurrentHashMap
 
 private const val MAX_EXECUTOR_CACHE_SIZE = 10
 
 data class ExecutorCacheKey(
     val provider: AIProvider,
-    val apiKey: String,
+    val apiKeyDigest: String,
     val baseUrl: String?,
     val appLanguage: Locale,
 )
@@ -40,7 +39,7 @@ class LLMExecutorFactory(
         HttpClient(GeminiSanitizingHttpClientEngine(httpClient.engine))
     )
 
-    private val executorCache = ConcurrentHashMap<ExecutorCacheKey, PromptExecutor>()
+    private val executorCache = BoundedLruCache<ExecutorCacheKey, PromptExecutor>(MAX_EXECUTOR_CACHE_SIZE)
 
     fun getOrCreateExecutor(
         provider: AIProvider,
@@ -48,11 +47,8 @@ class LLMExecutorFactory(
         baseUrl: String?,
         appLanguage: Locale,
     ): PromptExecutor {
-        val cacheKey = ExecutorCacheKey(provider, apiKey, baseUrl, appLanguage)
-        return executorCache.computeIfAbsent(cacheKey) {
-            if (executorCache.size > MAX_EXECUTOR_CACHE_SIZE) {
-                executorCache.clear()
-            }
+        val cacheKey = ExecutorCacheKey(provider, apiKey.sha256Hex(), baseUrl, appLanguage)
+        return executorCache.getOrPut(cacheKey) {
             createExecutor(provider, apiKey, baseUrl, appLanguage)
         }
     }

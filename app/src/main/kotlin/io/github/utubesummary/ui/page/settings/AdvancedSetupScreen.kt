@@ -3,6 +3,8 @@ package io.github.utubesummary.ui.page.settings
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.rounded.Tune
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID
+import io.github.utubesummary.model.summaryPromptLocale
+import io.github.utubesummary.ui.component.LanguageSelector
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -233,18 +235,15 @@ fun AdvancedSummarySetupScreen(
                                 )
                             },
                             trailingContent = {
-                                Switch(
-                                    checked = state.useOriginalLanguage,
-                                    onCheckedChange = {
-                                        settingsViewModel.setUseOriginalLanguageValue(
-                                            it
-                                        )
-                                    }
+                                LanguageSelector(
+                                    selectedLanguage = state.summaryLanguage,
+                                    onLanguageSelect = settingsViewModel::setSummaryLanguage,
+                                    enabled = true,
                                 )
                             },
-                            supportingContent = { Text(stringResource(id = R.string.useOriginalLanguageDescription)) },
+                            supportingContent = { Text(stringResource(id = R.string.summary_language_description)) },
                             colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                        ) { Text(stringResource(id = R.string.useOriginalLanguage)) }
+                        ) { Text(stringResource(id = R.string.summary_language)) }
 
                         ListItem(
                             modifier = Modifier.fillMaxWidth(),
@@ -275,11 +274,15 @@ fun AdvancedSummarySetupScreen(
 
                         val appLanguage =
                             LocalLocale.current.platformLocale.getDisplayLanguage(Locale.ENGLISH)
+                        val previewLocale = summaryPromptLocale(
+                            state.summaryLanguage,
+                            LocalLocale.current.platformLocale,
+                        )
                         val finalPromptPreview = generateFinalPromptString(
                             length = state.summaryLength,
                             showLength = state.showLength,
-                            useContentLanguage = state.useOriginalLanguage,
-                            appLanguage = appLanguage,
+                            useContentLanguage = previewLocale == null,
+                            appLanguage = previewLocale?.getDisplayLanguage(Locale.ENGLISH) ?: appLanguage,
                             isAppendMode = state.isAppendMode,
                             customBasePrompt = basePrompt,
                             additionalSystemPrompt = additionalPrompt,

@@ -33,6 +33,7 @@ class SummaryViewModel @Inject constructor(
 
     private var currentInput: String? = null
     private var currentProfileId: String? = null
+    private var currentLanguage: String? = null
     private var summarizeJob: Job? = null
 
     /** Questions about the current content; the text itself stays in memory in the use case. */
@@ -83,6 +84,7 @@ class SummaryViewModel @Inject constructor(
         summarizeJob = null
         currentInput = null
         currentProfileId = null
+        currentLanguage = null
         resetChat(null)
         _summarizationState.update {
             it.copy(
@@ -103,6 +105,7 @@ class SummaryViewModel @Inject constructor(
         summarizeJob = null
         currentInput = input ?: output.sourceLink
         currentProfileId = null
+        currentLanguage = null
         resetChat(currentInput)
         _summarizationState.update {
             val combinedResults = if (lengthResults.isNotEmpty()) {
@@ -115,6 +118,7 @@ class SummaryViewModel @Inject constructor(
                 summaryResult = output,
                 lengthResults = combinedResults,
                 profileId = null,
+                language = null,
                 error = null,
             )
         }
@@ -137,15 +141,21 @@ class SummaryViewModel @Inject constructor(
         }
     }
 
-    fun summarize(text: String, overrideLength: SummaryLength? = null, profileId: String? = null) {
+    fun summarize(
+        text: String,
+        overrideLength: SummaryLength? = null,
+        profileId: String? = null,
+        language: String? = null,
+    ) {
         // A newer request replaces the running one, so a late result can never overwrite it.
         summarizeJob?.cancel()
         summarizeJob = viewModelScope.launch {
-            if (currentInput != text || currentProfileId != profileId) {
-                // New content or a different profile: cached results no longer apply.
+            if (currentInput != text || currentProfileId != profileId || currentLanguage != language) {
+                // New content, profile or language: cached results no longer apply.
                 if (currentInput != text) resetChat(null)
                 currentInput = text
                 currentProfileId = profileId
+                currentLanguage = language
                 _summarizationState.update {
                     it.copy(
                         isLoading = true,
@@ -163,7 +173,7 @@ class SummaryViewModel @Inject constructor(
                 }
             }
 
-            summarizeContentUseCase(text, overrideLength, profileId)
+            summarizeContentUseCase(text, overrideLength, profileId, language)
                 .onSuccess { output ->
                     // The text of this input is now in memory: questions can be asked.
                     _chatState.update { it.copy(canAsk = askAboutContentUseCase.isAvailable(text)) }
@@ -173,6 +183,7 @@ class SummaryViewModel @Inject constructor(
                             summaryResult = output,
                             lengthResults = updatedLengthResults,
                             profileId = profileId,
+                            language = language,
                             isLoading = false,
                             error = null,
                         )

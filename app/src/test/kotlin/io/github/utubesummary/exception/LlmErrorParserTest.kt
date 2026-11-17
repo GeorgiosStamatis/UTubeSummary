@@ -93,4 +93,14 @@ class LlmErrorParserTest {
         assertNull(parsed.statusCode)
         assertNull(parsed.cleanMessage)
     }
+
+    @Test
+    fun `a bare number in free text is not a status code`() {
+        assertNull(LlmErrorParser.parse("Processed 500 items").statusCode)
+    }
+
+    @Test
+    fun `a bare number counts when the message is shaped like an HTTP error`() {
+        assertEquals(503, LlmErrorParser.parse("HTTP error 503 from upstream").statusCode)
+    }
 }

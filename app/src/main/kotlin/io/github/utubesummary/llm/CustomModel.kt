@@ -20,8 +20,8 @@ data class CustomLLModel(
     fun toLLModel(): LLModel = LLModel(
         provider = provider.id,
         id = name,
-        // TODO: just hardcoded for now
-        contextLength = 8_192,
+        // The real size is unknown for custom models; assume a modern 128k window.
+        contextLength = 128_000,
         capabilities = listOfNotNull(
             LLMCapability.Completion,
             LLMCapability.Schema.JSON.Basic,

@@ -13,13 +13,12 @@ import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.ChatExchange
 import io.github.utubesummary.model.SummarySource
 import java.util.Locale
-import java.util.concurrent.ConcurrentHashMap
 
 private const val MAX_AGENT_CACHE_SIZE = 20
 
 private data class AgentCacheKey(
     val provider: AIProvider,
-    val apiKey: String,
+    val apiKeyDigest: String,
     val baseUrl: String?,
     val model: String?,
     val summaryLength: SummaryLength,
@@ -47,7 +46,7 @@ class LLMHandler(
     }
 
     private val agentCache =
-        ConcurrentHashMap<AgentCacheKey, AIAgent<SummarySource, SummarizationOutcome>>()
+        BoundedLruCache<AgentCacheKey, AIAgent<SummarySource, SummarizationOutcome>>(MAX_AGENT_CACHE_SIZE)
 
     fun getSummarizationAgent(
         provider: AIProvider,
@@ -63,12 +62,15 @@ class LLMHandler(
         additionalSystemPrompt: String = "",
         profileBasePrompt: String? = null,
         structuredOutput: Boolean = true,
+        summaryLanguage: Locale? = null,
     ): AIAgent<SummarySource, SummarizationOutcome> {
         val promptString = generateFinalPromptString(
             length = summaryLength,
             showLength = showLength,
             useContentLanguage = useContentLanguage,
-            appLanguage = appLanguage.getDisplayLanguage(Locale.ENGLISH),
+            // appLanguage is the app locale (it also selects regional endpoints); the language named
+            // in the prompt is the chosen summary language when there is one.
+            appLanguage = (summaryLanguage ?: appLanguage).getDisplayLanguage(Locale.ENGLISH),
             isAppendMode = isAppendMode,
             customBasePrompt = customBasePrompt,
             additionalSystemPrompt = additionalSystemPrompt,
@@ -77,7 +79,7 @@ class LLMHandler(
 
         val cacheKey = AgentCacheKey(
             provider = provider,
-            apiKey = apiKey,
+            apiKeyDigest = apiKey.sha256Hex(),
             baseUrl = baseUrl,
             model = model,
             summaryLength = summaryLength,
@@ -85,10 +87,7 @@ class LLMHandler(
             structuredOutput = structuredOutput,
         )
 
-        return agentCache.computeIfAbsent(cacheKey) {
-            if (agentCache.size > MAX_AGENT_CACHE_SIZE) {
-                agentCache.clear()
-            }
+        return agentCache.getOrPut(cacheKey) {
             val executor =
                 executorFactory.getOrCreateExecutor(provider, apiKey, baseUrl, appLanguage)
             val agentConfig = AgentConfigFactory.createAgentConfig(provider, model, promptString)

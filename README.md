@@ -129,6 +129,9 @@ than #17 (signed with a different key).
   Prompt" is applied on top of any profile. Default keeps the overview / key points / tags card;
   the other profiles answer in the format defined by their prompt (Markdown is rendered).
 
+- **Summary language**: choose the language of the summary on Home or in Advanced Summary Setup:
+  the video's own language, the app language or one of about 20 other languages
+
 - **Configurable LLM settings**: Custom API keys, base URLs, prompt customization, and summary lengths
 
 - **Text to speech for the summaries with multilingual and speed adjustment support**

@@ -18,6 +18,8 @@ import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import io.github.utubesummary.model.HistoryLengthResult
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryLength
+import io.github.utubesummary.model.effectiveSummaryLanguage
+import io.github.utubesummary.model.summaryPromptLocale
 import io.github.utubesummary.model.SummaryOutput
 import io.github.utubesummary.model.SummaryProfile
 import io.github.utubesummary.model.SummarySource
@@ -30,6 +32,7 @@ interface SummarizeContentUseCase {
         text: String,
         overrideLength: SummaryLength? = null,
         profileId: String? = null,
+        language: String? = null,
     ): Result<SummaryOutput>
 }
 
@@ -46,6 +49,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
         text: String,
         overrideLength: SummaryLength?,
         profileId: String?,
+        language: String?,
     ): Result<SummaryOutput> = withContext(Dispatchers.IO) {
         var requestContext = ""
         runCatching {
@@ -69,6 +73,8 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             }
 
             val profile = resolveProfile(prefs, profileId)
+            val appLocale = appLocaleProvider.getCurrentLocale()
+            val promptLocale = summaryPromptLocale(language ?: effectiveSummaryLanguage(prefs), appLocale)
 
             val agent = llmHandler.getSummarizationAgent(
                 provider = active.provider,
@@ -77,8 +83,9 @@ class SummarizeContentUseCaseImpl @Inject constructor(
                 model = active.model,
                 summaryLength = targetLength,
                 showLength = prefs.showLength,
-                useContentLanguage = prefs.useOriginalLanguage,
-                appLanguage = appLocaleProvider.getCurrentLocale(),
+                useContentLanguage = promptLocale == null,
+                appLanguage = appLocale,
+                summaryLanguage = promptLocale,
                 isAppendMode = prefs.isAppendMode,
                 customBasePrompt = prefs.customBasePrompt,
                 additionalSystemPrompt = prefs.additionalSystemPrompt,

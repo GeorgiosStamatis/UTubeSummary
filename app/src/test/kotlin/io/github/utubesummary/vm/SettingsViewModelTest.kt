@@ -146,6 +146,10 @@ class SettingsViewModelTest {
             prefs.value = prefs.value.copy(additionalSystemPrompt = value)
         }
 
+        override suspend fun setSummaryLanguage(value: String) {
+            prefs.value = prefs.value.copy(summaryLanguage = value)
+        }
+
         override suspend fun setProfileEntries(value: List<ProfileEntry>) {
             prefs.value = prefs.value.copy(profileEntries = value)
         }

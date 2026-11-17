@@ -22,6 +22,7 @@ object LlmErrorParser {
         """(?:status\s*code|status|code|HTTP)[:\s=]+(\d{3})""",
         RegexOption.IGNORE_CASE
     )
+    private val httpMarkers = listOf("error from client", "http", "status", "response")
     private val standaloneCodeRegex = Regex(
         """\b(400|401|402|403|404|408|429|500|502|503|504)\b"""
     )
@@ -69,9 +70,14 @@ object LlmErrorParser {
             }
         }
 
+        // A bare number such as "500" only counts as an HTTP status when the message is shaped
+        // like an HTTP/client error; the same digits in free text (page counts, ids) do not.
+        val looksLikeHttpError = httpMarkers.any { rawMessage.contains(it, ignoreCase = true) }
+
         parsedStatusCode = parsedErrorCode?.toIntOrNull()
             ?: statusCodeRegex.find(rawMessage)?.groupValues?.getOrNull(1)?.toIntOrNull()
-                    ?: standaloneCodeRegex.find(rawMessage)?.value?.toIntOrNull()
+                    ?: standaloneCodeRegex.find(rawMessage)?.takeIf { looksLikeHttpError }
+                        ?.value?.toIntOrNull()
 
         val cleanMsg = cleanMessageText(parsedMessage ?: rawMessage)
 

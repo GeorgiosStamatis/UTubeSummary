@@ -139,4 +139,37 @@ class SummaryExceptionTest {
         val resolved = ex.resolveUserErrorMessage { "String-$it" }
         assertEquals("A generic failure", resolved)
     }
+
+    @Test
+    fun `context window errors map to ContextLengthException with a model hint`() {
+        listOf(
+            """Error from client: OpenAILLMClient
+Status code: 400
+Error body:
+{"error":{"message":"This model's maximum context length is 128000 tokens.","type":"invalid_request_error","code":"context_length_exceeded"}}""",
+            "Error from client: AnthropicLLMClient Status code: 400 prompt is too long: 250000 tokens > 200000 maximum",
+            "Error from client: GoogleLLMClient Status code: 400 The input token count exceeds the maximum number of tokens allowed",
+        ).forEach { message ->
+            val result = LLMClientException(message).toSummaryException()
+            assertTrue(result is SummaryException.ContextLengthException, message)
+            assertEquals(R.string.contextTooLong, result.getUserMessageResId(null))
+        }
+    }
+
+    @Test
+    fun `numbers and keywords in plain text are not mistaken for provider errors`() {
+        val result = RuntimeException("Processed 404 pages and 500 items within the quota").toSummaryException()
+
+        assertTrue(result !is SummaryException.ModelNotFoundException)
+        assertTrue(result !is SummaryException.LlmServerException)
+        assertTrue(result !is SummaryException.RateLimitException)
+        assertTrue(result !is SummaryException.ContextLengthException)
+    }
+
+    @Test
+    fun `a real server error is still recognised`() {
+        val result = LLMClientException("Error from client: Status code: 503 Service Unavailable").toSummaryException()
+
+        assertTrue(result is SummaryException.LlmServerException)
+    }
 }

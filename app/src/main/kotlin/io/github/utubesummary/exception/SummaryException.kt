@@ -31,6 +31,12 @@ sealed class SummaryException(message: String) : Exception(message) {
         override fun getUserMessageResId(apiKey: String?) = R.string.noTranscript
     }
 
+    /** YouTube refuses to give out the video: private, age/login restricted, removed, ... */
+    class VideoUnavailableException(val reason: String? = null) :
+        SummaryException(reason ?: "The video is not available.") {
+        override fun getUserMessageResId(apiKey: String?) = R.string.videoUnavailable
+    }
+
     class NoContentException : SummaryException("Could not extract any content.") {
         override fun getUserMessageResId(apiKey: String?) = R.string.noContent
     }
@@ -45,6 +51,11 @@ sealed class SummaryException(message: String) : Exception(message) {
 
     class TooLongException : SummaryException("The content is too long to process.") {
         override fun getUserMessageResId(apiKey: String?) = R.string.tooLong
+    }
+
+    /** The content does not fit the model's context window: pick a model with a larger one. */
+    class ContextLengthException : SummaryException("The content exceeds the model's context window.") {
+        override fun getUserMessageResId(apiKey: String?) = R.string.contextTooLong
     }
 
     class IncorrectKeyException(val detail: String? = null) :
@@ -256,9 +267,8 @@ private fun Throwable.convertToSummaryException(): SummaryException {
 
             errorCode in listOf("context_length_exceeded", "string_above_max_length") ||
                     rawLower.contains("context_length_exceeded") ||
-                    rawLower.contains("maximum context length") ||
-                    rawLower.contains("too many tokens") -> {
-                SummaryException.TooLongException()
+                    isContextLengthError(rawLower) -> {
+                SummaryException.ContextLengthException()
             }
 
             statusCode != null && statusCode in 500..599 ||
@@ -294,4 +304,20 @@ inline fun Throwable.resolveUserErrorMessage(
     }
 }
 
+/** Phrases providers use when the prompt does not fit the model's context window. */
+private val contextLengthPhrases = listOf(
+    "context_length_exceeded",
+    "maximum context length",
+    "context window",
+    "context length",
+    "too many tokens",
+    "prompt is too long",
+    "input is too long",
+    "exceeds the maximum number of tokens",
+    "input token count",
+    "request too large",
+    "reduce the length",
+)
 
+internal fun isContextLengthError(lowerCaseMessage: String): Boolean =
+    contextLengthPhrases.any { lowerCaseMessage.contains(it) }

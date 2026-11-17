@@ -25,6 +25,7 @@ import io.github.utubesummary.domain.usecase.UpdateUserPreferencesUseCase
 import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import io.github.utubesummary.model.ProviderTestResult
+import io.github.utubesummary.model.effectiveSummaryLanguage
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.util.SecureStorageException
 import javax.inject.Inject
@@ -124,6 +125,7 @@ class SettingsViewModel @Inject constructor(
 
         SettingsUiState(
             useOriginalLanguage = prefs.useOriginalLanguage,
+            summaryLanguage = effectiveSummaryLanguage(prefs),
             dynamicColor = prefs.dynamicColor,
             showThumbnails = prefs.showThumbnails,
             theme = prefs.theme,
@@ -154,6 +156,10 @@ class SettingsViewModel @Inject constructor(
     // Original Language in summary
     fun setUseOriginalLanguageValue(newValue: Boolean) =
         savePreference(updateUserPreferencesUseCase::setUseOriginalLanguage, newValue)
+
+    // Summary language: Video language, App language or a language tag
+    fun setSummaryLanguage(newValue: String) =
+        savePreference(updateUserPreferencesUseCase::setSummaryLanguage, newValue)
 
     // Video thumbnails in History
     fun setShowThumbnailsValue(newValue: Boolean) =

@@ -91,6 +91,7 @@ class UserPreferencesCompatibilityTest {
         val prefs = UserPreferences(
             profileEntries = listOf(ProfileEntry("custom-1", "Mine", "prompt [Language instructions]")),
             selectedProfileId = "custom-1",
+            summaryLanguage = "fr",
         )
 
         val decoded = ProtoBuf.decodeFromByteArray(

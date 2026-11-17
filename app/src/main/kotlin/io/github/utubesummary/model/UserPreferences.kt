@@ -32,6 +32,8 @@ data class UserPreferences(
     @ProtoNumber(15) val showThumbnails: Boolean = true,
     @ProtoNumber(16) val profileEntries: List<ProfileEntry> = emptyList(),
     @ProtoNumber(17) val selectedProfileId: String = DEFAULT_PROFILE_ID,
+    // "" = never chosen (falls back to useOriginalLanguage), see SummaryLanguage.kt
+    @ProtoNumber(18) val summaryLanguage: String = "",
 )
 
 /** A user-created profile, or a user-edited override of a built-in profile with the same [id]. */
