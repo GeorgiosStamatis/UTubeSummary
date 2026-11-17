@@ -15,6 +15,9 @@ data class HistorySummary(
     val sourceLink: String? = null,
     val sourceText: String? = null,
     val lengthResults: Map<SummaryLength, HistoryLengthResult> = emptyMap(),
+    /** Earlier results that were replaced as the current one for their length by another profile/language. */
+    val alternatives: List<HistoryLengthResult> = emptyList(),
+    val pinned: Boolean = false,
 ) {
 
     val activeResult: HistoryLengthResult?
@@ -29,6 +32,18 @@ data class HistorySummary(
 
     val allLengthResults: Map<SummaryLength, HistoryLengthResult>
         get() = lengthResults
+
+    /**
+     * All results of [length], oldest first. The current one (shown in the list) is the newest and
+     * therefore last.
+     */
+    fun resultsFor(length: SummaryLength): List<HistoryLengthResult> {
+        val current = lengthResults[length]
+        val others = alternatives.filter { it.length == length }
+        return (others + listOfNotNull(current)).sortedWith(
+            compareBy<HistoryLengthResult> { it.createdOn }.thenBy { it === current }
+        )
+    }
 
     val hasLength: Boolean
         get() = length != SummaryLength.NONE

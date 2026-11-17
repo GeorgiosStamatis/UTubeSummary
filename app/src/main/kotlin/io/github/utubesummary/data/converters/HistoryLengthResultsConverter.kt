@@ -14,6 +14,17 @@ class HistoryLengthResultsConverter {
     }
 
     @ColumnTypeConverter
+    fun fromResultList(value: List<HistoryLengthResult>?): String? {
+        return value?.takeIf { it.isNotEmpty() }?.let { json.encodeToString(it) }
+    }
+
+    @ColumnTypeConverter
+    fun toResultList(value: String?): List<HistoryLengthResult>? {
+        if (value.isNullOrBlank()) return null
+        return runCatching { json.decodeFromString<List<HistoryLengthResult>>(value) }.getOrNull()
+    }
+
+    @ColumnTypeConverter
     fun toLengthResults(value: String?): Map<SummaryLength, HistoryLengthResult>? {
         if (value.isNullOrBlank()) return null
         return runCatching {

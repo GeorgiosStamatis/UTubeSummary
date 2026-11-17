@@ -30,14 +30,22 @@ import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
 import androidx.compose.ui.res.stringResource
 import io.github.utubesummary.R
-import io.github.utubesummary.ui.component.historyProfileLabel
+import java.util.Date
+import java.text.DateFormat
+import kotlinx.coroutines.delay
+import io.github.utubesummary.ui.component.summaryLanguageLabel
+import io.github.utubesummary.ui.component.historyProfileName
+import io.github.utubesummary.model.HistoryLengthResult
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.ExperimentalFoundationApi
 import io.github.utubesummary.ui.component.LengthSelector
 import io.github.utubesummary.ui.component.SummaryCard
 
 /**
  * Bottom sheet to view complete summary details, playback TTS, and share
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HistoryDetailSheet(
     summary: HistorySummary?,
@@ -64,15 +72,20 @@ fun HistoryDetailSheet(
             }
         )
     }
-    val activeSummary = remember(summary, selectedLength) {
-        summary.copy(length = selectedLength)
-    }
+    // Every result of the selected length, oldest first: the newest is appended at the bottom.
+    val results = remember(summary, selectedLength) { summary.resultsFor(selectedLength) }
 
-    var isPlaying by remember { mutableStateOf(false) }
+    // Only one section is read aloud at a time.
+    var playingIndex by remember(summary) { mutableStateOf<Int?>(null) }
     val scrollState = rememberScrollState()
+    val newestSection = remember(summary, selectedLength) { BringIntoViewRequester() }
 
-    LaunchedEffect(selectedLength) {
+    LaunchedEffect(summary, selectedLength) {
         scrollState.scrollTo(0)
+        if (results.size > 1) {
+            delay(SCROLL_TO_NEWEST_DELAY_MS)
+            newestSection.bringIntoView()
+        }
     }
 
     ModalBottomSheet(
@@ -97,7 +110,7 @@ fun HistoryDetailSheet(
                         selectedIndex = selectedIndex,
                         onSelectedIndexChange = { index ->
                             selectedLength = availableLengths[index]
-                            isPlaying = false
+                            playingIndex = null
                         },
                         options = availableLengths.map { length ->
                             length.name.lowercase().replaceFirstChar { it.titlecase() }
@@ -108,43 +121,51 @@ fun HistoryDetailSheet(
                     )
                 }
 
-                historyProfileLabel(
-                    profileId = activeSummary.activeResult?.profileId,
-                    profileName = activeSummary.activeResult?.profileName,
-                )?.let { label ->
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                }
-
-                key(selectedLength) {
-                    SummaryCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        summary = SummaryOutput(
-                            title = summary.title,
-                            summary = activeSummary.summary,
-                            author = summary.author,
-                            sourceLink = summary.sourceLink,
-                            isYoutubeLink = summary.isYoutubeLink,
-                            isBiliBiliLink = summary.isBiliBiliLink,
-                            length = activeSummary.length,
-                            provider = activeSummary.provider ?: summary.provider,
-                            model = activeSummary.model ?: summary.model,
-                            overview = activeSummary.overview,
-                            keyPoints = activeSummary.keyPoints,
-                            tags = activeSummary.tags.ifEmpty { summary.tags },
-                        ),
-                        cardColors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
-                        ),
-                        isExpandedByDefault = true,
-                        isPlaying = isPlaying,
-                        onPlayRequest = { isPlaying = !isPlaying },
-                        onShowSnackbar = onShowSnackbar
-                    )
+                results.forEachIndexed { index, result ->
+                    val isNewest = index == results.lastIndex
+                    val header = historyResultHeader(result)
+                    key(selectedLength, index) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp)
+                                .then(if (isNewest) Modifier.bringIntoViewRequester(newestSection) else Modifier)
+                        ) {
+                            Text(
+                                text = header,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            SummaryCard(
+                                modifier = Modifier.fillMaxWidth(),
+                                summary = SummaryOutput(
+                                    title = summary.title,
+                                    summary = result.summary,
+                                    author = summary.author,
+                                    sourceLink = summary.sourceLink,
+                                    isYoutubeLink = summary.isYoutubeLink,
+                                    isBiliBiliLink = summary.isBiliBiliLink,
+                                    length = result.length,
+                                    provider = result.provider ?: summary.provider,
+                                    model = result.model ?: summary.model,
+                                    overview = result.overview,
+                                    keyPoints = result.keyPoints,
+                                    tags = result.tags,
+                                ),
+                                cardColors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainer
+                                ),
+                                // Older sections start collapsed so a long history stays readable.
+                                isExpandedByDefault = isNewest,
+                                isPlaying = playingIndex == index,
+                                onPlayRequest = {
+                                    playingIndex = if (playingIndex == index) null else index
+                                },
+                                onShowSnackbar = onShowSnackbar
+                            )
+                        }
+                    }
                 }
 
                 if (onSummarizeAgain != null) {
@@ -160,4 +181,18 @@ fun HistoryDetailSheet(
             }
         }
     }
+}
+
+private const val SCROLL_TO_NEWEST_DELAY_MS = 200L
+
+/** "Profile · Language · Length · date" for one stored result. */
+@Composable
+private fun historyResultHeader(result: HistoryLengthResult): String {
+    val profile = historyProfileName(result.profileId, result.profileName)
+    val language = result.language?.let { summaryLanguageLabel(it) }
+    val length = result.length.takeIf { it != SummaryLength.NONE }
+        ?.name?.lowercase()?.replaceFirstChar { it.titlecase() }
+    val date = result.createdOn.takeIf { it > 0L }
+        ?.let { DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(it)) }
+    return listOfNotNull(profile, language, length, date).joinToString(" · ")
 }

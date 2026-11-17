@@ -18,6 +18,7 @@ import io.github.utubesummary.model.HistoryLengthResult
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryType
+import io.github.utubesummary.model.mergeHistoryResult
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -75,16 +76,22 @@ class HistoryRepositoryImpl @Inject constructor(
                 keyPoints = summary.keyPoints,
                 tags = summary.tags,
             )
-            // One result is kept per length: the newest replaces an older one, even from another
-            // profile. The result records its profile, which History shows.
-            mergedLengthResults[summary.length] = newResult
+            // The new result becomes the current one for its length. A result of another profile or
+            // language that it displaces is kept as an alternative (see mergeHistoryResult).
+            val (currentResults, alternatives) = mergeHistoryResult(
+                current = mergedLengthResults,
+                alternatives = existingRecords.flatMap { it.toDomain().alternatives }.distinct(),
+                new = newResult,
+            )
 
             val updated = primary.copy(
                 title = summary.title.ifBlank { primary.title },
                 author = summary.author.ifBlank { primary.author },
                 length = summary.length,
                 createdOn = System.currentTimeMillis(),
-                lengthResults = mergedLengthResults,
+                lengthResults = currentResults,
+                alternatives = alternatives,
+                pinned = existingRecords.any { it.pinned },
             )
             historyDao.insert(updated.toEntity())
 
@@ -138,7 +145,9 @@ class HistoryRepositoryImpl @Inject constructor(
                             mergedLengths.putAll(item.toDomain().allLengthResults)
                         }
                         val updated = latest.toDomain().copy(
-                            lengthResults = mergedLengths
+                            lengthResults = mergedLengths,
+                            alternatives = group.flatMap { it.toDomain().alternatives }.distinct(),
+                            pinned = group.any { it.pinned },
                         )
                         historyDao.insert(updated.toEntity())
                         val toDelete = group.filter { it.id != latest.id }.map { it.id }
@@ -146,6 +155,11 @@ class HistoryRepositoryImpl @Inject constructor(
                             historyDao.deleteByIds(toDelete)
                         }
                     }
+                }
+
+                // Rows from before profile filtering have no variant keys yet: fill them in.
+                historyDao.getAll().filter { it.variantKeys.isEmpty() }.forEach {
+                    historyDao.insert(it.toDomain().toEntity())
                 }
             } }
             // A failed pass is retried the next time the history is opened.

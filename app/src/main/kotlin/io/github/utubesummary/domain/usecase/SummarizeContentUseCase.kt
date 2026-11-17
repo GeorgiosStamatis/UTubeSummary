@@ -112,6 +112,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
                 provider = active.provider.name,
                 model = active.model,
                 profile = profile,
+                language = language ?: effectiveSummaryLanguage(prefs),
             )
 
             summaryOutput
@@ -136,6 +137,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
         provider: String,
         model: String?,
         profile: SummaryProfile,
+        language: String,
     ) {
         if (source is SummarySource.None) return
 
@@ -179,6 +181,8 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             tags = summaryOutput.tags,
             profileId = profile.id,
             profileName = profile.name,
+            language = language,
+            createdOn = System.currentTimeMillis(),
         )
 
         val summary = HistorySummary(

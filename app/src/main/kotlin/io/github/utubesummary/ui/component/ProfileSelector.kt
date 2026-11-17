@@ -46,6 +46,11 @@ private fun profileNameRes(id: String): Int = when (id) {
 fun SummaryProfile.displayName(): String =
     name?.takeIf { it.isNotBlank() } ?: stringResource(profileNameRes(id))
 
+/** Name of the profile that made a stored result; older results (no id) used the Default profile. */
+@Composable
+fun historyProfileName(profileId: String?, profileName: String?): String =
+    profileName?.takeIf { it.isNotBlank() } ?: stringResource(profileNameRes(profileId ?: DEFAULT_PROFILE_ID))
+
 /**
  * "Profile: <name>" for a stored history result, or null when it used the Default profile (or
  * predates profiles), so only non-default summaries get a label.

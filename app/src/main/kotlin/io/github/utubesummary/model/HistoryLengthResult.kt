@@ -13,4 +13,8 @@ data class HistoryLengthResult(
     val tags: List<String> = emptyList(),
     val profileId: String? = null,
     val profileName: String? = null,
+    /** Summary language setting used ("content", "app" or a tag); null for older entries. */
+    val language: String? = null,
+    /** When this result was made; 0 for older entries. */
+    val createdOn: Long = 0L,
 )

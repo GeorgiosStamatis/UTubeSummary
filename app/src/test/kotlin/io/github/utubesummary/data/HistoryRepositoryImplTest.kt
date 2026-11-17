@@ -83,16 +83,32 @@ class HistoryRepositoryImplTest {
     }
 
     @Test
-    fun `a newer result for the same length replaces the older one and records its profile`() = runTest {
+    fun `a result of another profile becomes current and the old one is kept as an alternative`() = runTest {
         val dao = FakeHistoryDao()
         val repository = HistoryRepositoryImpl(dao)
 
         repository.addSummary(summary(SummaryLength.MEDIUM, "default result"))
         repository.addSummary(summary(SummaryLength.MEDIUM, "brief result", profileId = "quick_brief"))
 
-        val result = dao.rows.values.single().lengthResults!!.getValue(SummaryLength.MEDIUM)
-        assertEquals("brief result", result.summary)
-        assertEquals("quick_brief", result.profileId)
+        val row = dao.rows.values.single()
+        val current = row.lengthResults!!.getValue(SummaryLength.MEDIUM)
+        assertEquals("brief result", current.summary)
+        assertEquals("quick_brief", current.profileId)
+        assertEquals(listOf("default result"), row.alternatives!!.map { it.summary })
+        assertEquals(" quick_brief default ", row.variantKeys)
+    }
+
+    @Test
+    fun `the same profile and language replaces its result instead of adding a duplicate`() = runTest {
+        val dao = FakeHistoryDao()
+        val repository = HistoryRepositoryImpl(dao)
+
+        repository.addSummary(summary(SummaryLength.MEDIUM, "first", profileId = "quick_brief"))
+        repository.addSummary(summary(SummaryLength.MEDIUM, "second", profileId = "quick_brief"))
+
+        val row = dao.rows.values.single()
+        assertEquals("second", row.lengthResults!!.getValue(SummaryLength.MEDIUM).summary)
+        assertTrue(row.alternatives.isNullOrEmpty())
     }
 
     @Test

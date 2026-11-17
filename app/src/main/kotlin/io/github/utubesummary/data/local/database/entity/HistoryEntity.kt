@@ -38,4 +38,11 @@ data class HistoryEntity(
     val model: String? = null,
     @ColumnInfo(defaultValue = "NULL")
     val lengthResults: Map<SummaryLength, HistoryLengthResult>? = null,
+    @ColumnInfo(defaultValue = "NULL")
+    val alternatives: List<HistoryLengthResult>? = null,
+    @ColumnInfo(defaultValue = "0")
+    val pinned: Boolean = false,
+    /** Profile ids of all results, " default quick_brief "; used to filter by profile. */
+    @ColumnInfo(defaultValue = "''")
+    val variantKeys: String = "",
 )

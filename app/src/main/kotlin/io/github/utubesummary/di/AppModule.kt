@@ -41,12 +41,21 @@ object AppModule {
             }
         }
 
+        // Keep every profile's result: older results of an item, pinning and the profile filter keys.
+        val migrationV3 = object : Migration(2, 3) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE history ADD COLUMN alternatives TEXT DEFAULT NULL")
+                connection.execSQL("ALTER TABLE history ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0")
+                connection.execSQL("ALTER TABLE history ADD COLUMN variantKeys TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         return Room.databaseBuilder<AppDatabase>(
             context,
             "utubesummary_db"
         )
             .setDriver(AndroidSQLiteDriver())
-            .addMigrations(migrationV2)
+            .addMigrations(migrationV2, migrationV3)
             .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = false)
             .build()
     }
