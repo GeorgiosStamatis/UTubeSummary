@@ -1,6 +1,6 @@
 # Privacy Policy for UTubeSummary
 
-**Effective Date:** August 6, 2025
+**Effective Date:** November 17, 2026
 
 Thank you for using UTubeSummary ("the App"), a free and open-source app ("we," "us," or "
 our"). This Privacy Policy explains how we collect, use, disclose, and safeguard your information
@@ -68,13 +68,27 @@ access (e.g. HTTP 401/403 or anti-bot protection), the App may instead send the 
 Jina Reader service (`r.jina.ai`) to retrieve the page text. See
 [Jina AI's Privacy Policy](https://jina.ai/legal/).
 
-#### C. By Law or to Protect Rights
+#### C. Video Thumbnails
+
+If you keep the "Video thumbnails" option in Settings switched on, the History shows small
+thumbnails of YouTube videos. They are downloaded from YouTube's image servers using the video
+address, which tells that service which thumbnails your device requests. Switch the option off and
+no such requests are made.
+
+#### D. By Law or to Protect Rights
 
 We may disclose your information if required to do so by law or in the good faith belief that such
 action is necessary to (i) comply with a legal obligation, (ii) protect and defend our rights or
 property, or (iii) protect the personal safety of users of the Application or the public.
 
 ### 4. Data Retention and Security
+
+* **What stays on your device:** your History (including pinned entries and every summary kept for
+  an item), summarization profiles (including ones you create or import), the chosen summary
+  language and your other settings are stored only on your device.
+* **Things you start yourself:** sharing a summary or a profile, saving a summary as a Markdown file
+  and exporting your History happen only when you choose them, and the file or text goes only where
+  you send it. The App does not upload these.
 
 * **Retention:** The developers operate no servers and receive none of your content. Summaries are
   stored in the App's history on your device until you delete them. Content sent to third-party
