@@ -1,5 +1,8 @@
 package io.github.utubesummary.ui.page.settings
 
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.rounded.Tune
+import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,6 +70,7 @@ import java.util.Locale
 fun AdvancedSummarySetupScreen(
     onBack: () -> Unit,
     settingsViewModel: SettingsViewModel,
+    onOpenProfiles: () -> Unit = {},
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val state by settingsViewModel.settingsUiState.collectAsState()
@@ -126,6 +130,21 @@ fun AdvancedSummarySetupScreen(
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
+                        ListItem(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(onClick = onOpenProfiles),
+                            leadingContent = {
+                                Icon(
+                                    Icons.Rounded.Tune,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                            supportingContent = { Text(stringResource(id = R.string.manage_profiles_description)) },
+                        ) { Text(stringResource(id = R.string.manage_profiles)) }
+
                         Text(
                             text = stringResource(id = R.string.basePrompt),
                             style = MaterialTheme.typography.titleMedium
@@ -263,7 +282,11 @@ fun AdvancedSummarySetupScreen(
                             appLanguage = appLanguage,
                             isAppendMode = state.isAppendMode,
                             customBasePrompt = basePrompt,
-                            additionalSystemPrompt = additionalPrompt
+                            additionalSystemPrompt = additionalPrompt,
+                            profileBasePrompt = state.profiles
+                                .firstOrNull { it.id == state.selectedProfileId }
+                                ?.takeIf { it.id != DEFAULT_PROFILE_ID }
+                                ?.basePrompt,
                         )
 
                         Card(

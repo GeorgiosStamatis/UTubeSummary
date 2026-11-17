@@ -19,4 +19,7 @@ sealed interface Nav : NavKey {
 
     @Serializable
     data object AdvancedSummarySetup : Nav
+
+    @Serializable
+    data object SummaryProfiles : Nav
 }

@@ -32,11 +32,14 @@ class SummaryViewModelTest {
         var errorToThrow: Throwable? = null
         var lastInput: String? = null
         var lastOverrideLength: SummaryLength? = null
+        var lastProfileId: String? = null
 
         override suspend operator fun invoke(
             text: String,
             overrideLength: SummaryLength?,
+            profileId: String?,
         ): Result<SummaryOutput> {
+            lastProfileId = profileId
             lastInput = text
             lastOverrideLength = overrideLength
             errorToThrow?.let { return Result.failure(it) }

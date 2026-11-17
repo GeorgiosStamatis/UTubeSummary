@@ -60,6 +60,7 @@ class LLMHandler(
         isAppendMode: Boolean = true,
         customBasePrompt: String = "",
         additionalSystemPrompt: String = "",
+        profileBasePrompt: String? = null,
     ): AIAgent<SummarySource, SummarizationOutcome> {
         val promptString = generateFinalPromptString(
             length = summaryLength,
@@ -69,6 +70,7 @@ class LLMHandler(
             isAppendMode = isAppendMode,
             customBasePrompt = customBasePrompt,
             additionalSystemPrompt = additionalSystemPrompt,
+            profileBasePrompt = profileBasePrompt,
         )
 
         val cacheKey = AgentCacheKey(

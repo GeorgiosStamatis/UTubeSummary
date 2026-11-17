@@ -1,0 +1,64 @@
+package io.github.utubesummary.domain.usecase
+
+import io.github.utubesummary.llm.CRITICAL_ANALYST_PROFILE_ID
+import io.github.utubesummary.llm.criticalAnalystPrompt
+import io.github.utubesummary.llm.defaultSystemPromptPlaceholder
+import io.github.utubesummary.model.DEFAULT_PROFILE_ID
+import io.github.utubesummary.model.ProfileEntry
+import io.github.utubesummary.model.UserPreferences
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+
+class ResolveProfilesTest {
+
+    @Test
+    fun `default profile comes first followed by built-ins`() {
+        val profiles = resolveProfiles(UserPreferences())
+
+        assertEquals(DEFAULT_PROFILE_ID, profiles.first().id)
+        assertEquals(defaultSystemPromptPlaceholder, profiles.first().basePrompt)
+        assertTrue(profiles.all { it.isBuiltIn })
+        assertTrue(profiles.any { it.id == CRITICAL_ANALYST_PROFILE_ID })
+    }
+
+    @Test
+    fun `default profile uses the legacy custom base prompt when append mode is off`() {
+        val prefs = UserPreferences(isAppendMode = false, customBasePrompt = "my base")
+
+        assertEquals("my base", resolveProfiles(prefs).first().basePrompt)
+    }
+
+    @Test
+    fun `edited built-in overrides the shipped prompt and can be reset`() {
+        val edited = UserPreferences(
+            profileEntries = listOf(ProfileEntry(CRITICAL_ANALYST_PROFILE_ID, "Skeptic", "be skeptical")),
+        )
+        val profile = resolveProfile(edited, CRITICAL_ANALYST_PROFILE_ID)
+
+        assertEquals("Skeptic", profile.name)
+        assertEquals("be skeptical", profile.basePrompt)
+        assertTrue(profile.isModified)
+
+        val reset = resolveProfile(UserPreferences(), CRITICAL_ANALYST_PROFILE_ID)
+        assertEquals(criticalAnalystPrompt, reset.basePrompt)
+        assertFalse(reset.isModified)
+    }
+
+    @Test
+    fun `custom profiles are appended and non built-in`() {
+        val prefs = UserPreferences(profileEntries = listOf(ProfileEntry("abc", "Mine", "prompt")))
+        val custom = resolveProfiles(prefs).last()
+
+        assertEquals("abc", custom.id)
+        assertFalse(custom.isBuiltIn)
+    }
+
+    @Test
+    fun `unknown selected profile falls back to default`() {
+        val prefs = UserPreferences(selectedProfileId = "deleted")
+
+        assertEquals(DEFAULT_PROFILE_ID, resolveProfile(prefs, null).id)
+    }
+}

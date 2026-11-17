@@ -152,4 +152,25 @@
     <string name="drag_vertical_model">↕ Model</string>
     <string name="release_to_switch">Release to switch</string>
     <string name="open_in_app">Open in App</string>
+
+    <!-- Summarization profiles -->
+    <string name="summary_profile">Profile</string>
+    <string name="profile_default">Default</string>
+    <string name="profile_technical_analysis">Technical Analysis</string>
+    <string name="profile_critical_analyst">Critical Analyst</string>
+    <string name="profile_curious_learner">Curious Learner</string>
+    <string name="profile_unnamed">Untitled profile</string>
+    <string name="manage_profiles">Summarization profiles</string>
+    <string name="manage_profiles_description">Choose a different base prompt for each kind of summary, or create your own.</string>
+    <string name="profile_new">New profile</string>
+    <string name="profile_edit">Edit profile</string>
+    <string name="profile_name">Name</string>
+    <string name="profile_prompt">Base prompt</string>
+    <string name="profile_prompt_hint">Use [Language instructions] and [Length instructions] where the language and length rules should go. They are added automatically if missing.</string>
+    <string name="profile_default_hint">The Default profile is edited in Advanced Summary Setup.</string>
+    <string name="profile_save">Save</string>
+    <string name="profile_delete">Delete</string>
+    <string name="profile_reset">Reset to preset</string>
+    <string name="profile_modified">Edited</string>
+    <string name="profile_back">Back</string>
 </resources>

@@ -31,6 +31,7 @@ class SummaryViewModel @Inject constructor(
     val chatState: StateFlow<ChatState> = _chatState.asStateFlow()
 
     private var currentInput: String? = null
+    private var currentProfileId: String? = null
 
     /** Questions about the current content; the text itself stays in memory in the use case. */
     fun askQuestion(question: String) {
@@ -70,6 +71,7 @@ class SummaryViewModel @Inject constructor(
 
     fun clearCurrentSummary() {
         currentInput = null
+        currentProfileId = null
         resetChat(null)
         _summarizationState.update {
             it.copy(
@@ -86,6 +88,7 @@ class SummaryViewModel @Inject constructor(
         lengthResults: Map<SummaryLength, SummaryOutput> = emptyMap(),
     ) {
         currentInput = input ?: output.sourceLink
+        currentProfileId = null
         resetChat(currentInput)
         _summarizationState.update {
             val combinedResults = if (lengthResults.isNotEmpty()) {
@@ -97,6 +100,7 @@ class SummaryViewModel @Inject constructor(
                 isLoading = false,
                 summaryResult = output,
                 lengthResults = combinedResults,
+                profileId = null,
                 error = null,
             )
         }
@@ -119,11 +123,13 @@ class SummaryViewModel @Inject constructor(
         }
     }
 
-    fun summarize(text: String, overrideLength: SummaryLength? = null) {
+    fun summarize(text: String, overrideLength: SummaryLength? = null, profileId: String? = null) {
         viewModelScope.launch {
-            if (currentInput != text) {
+            if (currentInput != text || currentProfileId != profileId) {
+                // New content or a different profile: cached results no longer apply.
+                if (currentInput != text) resetChat(null)
                 currentInput = text
-                resetChat(null)
+                currentProfileId = profileId
                 _summarizationState.update {
                     it.copy(
                         isLoading = true,
@@ -141,7 +147,7 @@ class SummaryViewModel @Inject constructor(
                 }
             }
 
-            summarizeContentUseCase(text, overrideLength)
+            summarizeContentUseCase(text, overrideLength, profileId)
                 .onSuccess { output ->
                     // The text of this input is now in memory: questions can be asked.
                     _chatState.update { it.copy(canAsk = askAboutContentUseCase.isAvailable(text)) }
@@ -150,6 +156,7 @@ class SummaryViewModel @Inject constructor(
                         it.copy(
                             summaryResult = output,
                             lengthResults = updatedLengthResults,
+                            profileId = profileId,
                             isLoading = false,
                             error = null,
                         )

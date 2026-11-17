@@ -14,6 +14,7 @@ import io.github.utubesummary.domain.repository.AIProviderConfigRepository
 import io.github.utubesummary.domain.repository.UserPreferencesRepository
 import io.github.utubesummary.domain.usecase.GetUserSettingsUseCase
 import io.github.utubesummary.domain.usecase.UpdateProviderConfigUseCase
+import io.github.utubesummary.domain.usecase.UpdateSummaryProfilesUseCase
 import io.github.utubesummary.domain.usecase.UpdateUserPreferencesUseCase
 import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.util.SecureStorageException
@@ -29,6 +30,7 @@ import io.github.utubesummary.domain.provider.AppLocaleProvider
 import io.github.utubesummary.llm.defaultSystemPromptPlaceholder
 import io.github.utubesummary.model.ProviderConfig
 import io.github.utubesummary.model.SummaryLength
+import io.github.utubesummary.model.ProfileEntry
 import io.github.utubesummary.model.UserPreferences
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -143,6 +145,14 @@ class SettingsViewModelTest {
         override suspend fun setAdditionalSystemPrompt(value: String) {
             prefs.value = prefs.value.copy(additionalSystemPrompt = value)
         }
+
+        override suspend fun setProfileEntries(value: List<ProfileEntry>) {
+            prefs.value = prefs.value.copy(profileEntries = value)
+        }
+
+        override suspend fun setSelectedProfileId(value: String) {
+            prefs.value = prefs.value.copy(selectedProfileId = value)
+        }
     }
 
     private lateinit var fakePrefsRepo: FakeUserPreferencesRepository
@@ -192,6 +202,7 @@ class SettingsViewModelTest {
                     return importOutcome
                 }
             },
+            UpdateSummaryProfilesUseCase(fakePrefsRepo),
         )
 
     private var lastImportUri: String? = null

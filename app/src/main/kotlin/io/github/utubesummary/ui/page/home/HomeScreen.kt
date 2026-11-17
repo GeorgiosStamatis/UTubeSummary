@@ -65,6 +65,7 @@ import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
 import io.github.utubesummary.ui.Nav
 import io.github.utubesummary.ui.component.LengthSelector
+import io.github.utubesummary.ui.component.ProfileSelector
 import io.github.utubesummary.ui.page.home.action.HomeFloatingActionButtons
 import io.github.utubesummary.ui.page.home.appbar.HomeTopAppBar
 import io.github.utubesummary.ui.page.home.input.InputSection
@@ -94,6 +95,7 @@ data class HomeActions(
     val onClearInput: () -> Unit,
     val onUrlChange: (String) -> Unit,
     val onLengthSelect: (SummaryLength) -> Unit,
+    val onProfileSelect: (String) -> Unit = {},
     val onPasteFromClipboard: () -> Unit,
     val onPlaySummary: () -> Unit,
     val onCopySummary: (String) -> Unit,
@@ -140,7 +142,7 @@ fun HomeScreen(
     fun summarize() {
         focusManager.clearFocus()
         isScrollingDown = false
-        summaryViewModel.summarize(urlOrText)
+        summaryViewModel.summarize(urlOrText, profileId = settings.selectedProfileId)
     }
 
     fun clearInput() {
@@ -263,9 +265,14 @@ fun HomeScreen(
         documentFilename != null || urlOrText.isNotBlank()
     }
     val hasResult = summarizationState.summaryResult?.summary?.isNotEmpty() == true
-    val isDirty =
+    val isLengthDirty =
         settings.showLength && (summarizationState.summaryResult?.let { it.length != settings.summaryLength }
             ?: false)
+    // A result from a known, different profile is stale. Unknown (restored from history) is not.
+    val isProfileDirty = summarizationState.summaryResult != null &&
+            summarizationState.profileId != null &&
+            summarizationState.profileId != settings.selectedProfileId
+    val isDirty = isLengthDirty || isProfileDirty
 
     val actions = HomeActions(
         onSummarize = {
@@ -278,6 +285,7 @@ fun HomeScreen(
             settingsViewModel.setSummaryLength(length)
             summaryViewModel.switchLength(length)
         },
+        onProfileSelect = settingsViewModel::selectProfile,
         onPasteFromClipboard = {
             clearInput()
             scope.launch {
@@ -433,6 +441,15 @@ private fun HomeContent(
                         focusRequester = focusRequester,
                         isLoading = summarizationState.isLoading,
                     )
+
+                    if (settings.profiles.size > 1) {
+                        ProfileSelector(
+                            profiles = settings.profiles,
+                            selectedProfileId = settings.selectedProfileId,
+                            onProfileSelect = actions.onProfileSelect,
+                            enabled = !summarizationState.isLoading,
+                        )
+                    }
 
                     if (settings.showLength) {
                         LengthSelector(

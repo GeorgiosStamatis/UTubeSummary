@@ -11,4 +11,6 @@ data class HistoryLengthResult(
     val overview: String? = null,
     val keyPoints: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
+    val profileId: String? = null,
+    val profileName: String? = null,
 )

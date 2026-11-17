@@ -20,6 +20,7 @@ import io.github.utubesummary.ui.page.history.HistoryScreen
 import io.github.utubesummary.ui.page.home.HomeScreen
 import io.github.utubesummary.ui.page.onboarding.OnboardingScreen
 import io.github.utubesummary.ui.page.settings.AdvancedSummarySetupScreen
+import io.github.utubesummary.ui.page.settings.SummaryProfilesScreen
 import io.github.utubesummary.ui.page.settings.SettingsScreen
 import io.github.utubesummary.vm.AppViewModel
 import io.github.utubesummary.vm.SettingsViewModel
@@ -101,6 +102,14 @@ fun AppNavigation(
 
             entry<Nav.AdvancedSummarySetup> {
                 AdvancedSummarySetupScreen(
+                    onBack = { backStack.removeLastOrNull() },
+                    settingsViewModel = settingsViewModel,
+                    onOpenProfiles = { backStack.add(Nav.SummaryProfiles) }
+                )
+            }
+
+            entry<Nav.SummaryProfiles> {
+                SummaryProfilesScreen(
                     onBack = { backStack.removeLastOrNull() },
                     settingsViewModel = settingsViewModel
                 )

@@ -3,6 +3,7 @@ package io.github.utubesummary.data
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.protobuf.ProtoBuf
+import io.github.utubesummary.model.ProfileEntry
 import io.github.utubesummary.model.UserPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -83,5 +84,20 @@ class UserPreferencesCompatibilityTest {
         val prefs = UserPreferences(isOnboarded = true, showThumbnails = false, theme = 1)
         val bytes = ProtoBuf.encodeToByteArray(UserPreferences.serializer(), prefs)
         assertEquals(prefs, ProtoBuf.decodeFromByteArray(UserPreferences.serializer(), bytes))
+    }
+
+    @Test
+    fun `profile entries and selected profile survive a round trip`() {
+        val prefs = UserPreferences(
+            profileEntries = listOf(ProfileEntry("custom-1", "Mine", "prompt [Language instructions]")),
+            selectedProfileId = "custom-1",
+        )
+
+        val decoded = ProtoBuf.decodeFromByteArray(
+            UserPreferences.serializer(),
+            ProtoBuf.encodeToByteArray(UserPreferences.serializer(), prefs)
+        )
+
+        assertEquals(prefs, decoded)
     }
 }

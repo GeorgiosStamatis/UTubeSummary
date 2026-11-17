@@ -13,10 +13,12 @@ import io.github.utubesummary.exception.SummaryException
 import io.github.utubesummary.exception.toSummaryException
 import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.llm.LLMHandler
+import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import io.github.utubesummary.model.HistoryLengthResult
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
+import io.github.utubesummary.model.SummaryProfile
 import io.github.utubesummary.model.SummarySource
 import io.github.utubesummary.model.SummaryType
 import io.github.utubesummary.model.VideoSubtype
@@ -26,6 +28,7 @@ interface SummarizeContentUseCase {
     suspend operator fun invoke(
         text: String,
         overrideLength: SummaryLength? = null,
+        profileId: String? = null,
     ): Result<SummaryOutput>
 }
 
@@ -41,6 +44,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
     override suspend operator fun invoke(
         text: String,
         overrideLength: SummaryLength?,
+        profileId: String?,
     ): Result<SummaryOutput> = withContext(Dispatchers.IO) {
         var requestContext = ""
         runCatching {
@@ -63,6 +67,8 @@ class SummarizeContentUseCaseImpl @Inject constructor(
                 SummaryLength.NONE
             }
 
+            val profile = resolveProfile(prefs, profileId)
+
             val agent = llmHandler.getSummarizationAgent(
                 provider = active.provider,
                 apiKey = active.apiKey,
@@ -75,6 +81,8 @@ class SummarizeContentUseCaseImpl @Inject constructor(
                 isAppendMode = prefs.isAppendMode,
                 customBasePrompt = prefs.customBasePrompt,
                 additionalSystemPrompt = prefs.additionalSystemPrompt,
+                // Default profile keeps the legacy base/custom prompt behavior.
+                profileBasePrompt = profile.basePrompt.takeIf { profile.id != DEFAULT_PROFILE_ID },
             )
 
             val outcome = agent.run(source)
@@ -88,6 +96,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
                 source = source,
                 provider = active.provider.name,
                 model = active.model,
+                profile = profile,
             )
 
             summaryOutput
@@ -142,6 +151,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
         source: SummarySource,
         provider: String,
         model: String?,
+        profile: SummaryProfile,
     ) {
         if (source is SummarySource.None) return
 
@@ -183,6 +193,8 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             overview = summaryOutput.overview,
             keyPoints = summaryOutput.keyPoints,
             tags = summaryOutput.tags,
+            profileId = profile.id,
+            profileName = profile.name,
         )
 
         val summary = HistorySummary(

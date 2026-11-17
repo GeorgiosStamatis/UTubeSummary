@@ -125,4 +125,57 @@ class PromptsTest {
         assertTrue(prompt.contains("Jump directly into the summary without introductory meta-phrases"))
         assertTrue(prompt.contains("Maintain an objective, neutral tone"))
     }
+
+    @Test
+    fun `profile base prompt replaces the default base and interpolates tokens`() {
+        val prompt = generateFinalPromptString(
+            length = SummaryLength.SHORT,
+            showLength = true,
+            useContentLanguage = false,
+            appLanguage = "English",
+            isAppendMode = false,
+            customBasePrompt = "legacy custom prompt",
+            additionalSystemPrompt = "",
+            profileBasePrompt = criticalAnalystPrompt,
+        )
+
+        assertTrue(prompt.contains("Critical Analyst"))
+        assertFalse(prompt.contains("legacy custom prompt"))
+        assertFalse(prompt.contains("[Length instructions]"))
+        assertFalse(prompt.contains("[Language instructions]"))
+        assertTrue(prompt.contains("The summary should be written in English."))
+    }
+
+    @Test
+    fun `profile prompt gets additional instructions only in append mode`() {
+        fun build(append: Boolean) = generateFinalPromptString(
+            length = SummaryLength.MEDIUM,
+            showLength = true,
+            useContentLanguage = false,
+            appLanguage = "English",
+            isAppendMode = append,
+            customBasePrompt = "",
+            additionalSystemPrompt = "Use bullet points",
+            profileBasePrompt = technicalAnalysisPrompt,
+        )
+
+        assertTrue(build(append = true).contains("Additional Instructions:\nUse bullet points"))
+        assertFalse(build(append = false).contains("Use bullet points"))
+    }
+
+    @Test
+    fun `null profile prompt keeps the default behavior`() {
+        val prompt = generateFinalPromptString(
+            length = SummaryLength.MEDIUM,
+            showLength = true,
+            useContentLanguage = false,
+            appLanguage = "English",
+            isAppendMode = true,
+            customBasePrompt = "",
+            additionalSystemPrompt = "",
+            profileBasePrompt = null,
+        )
+
+        assertTrue(prompt.contains("You are an expert summarization assistant."))
+    }
 }

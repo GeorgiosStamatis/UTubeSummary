@@ -1,6 +1,7 @@
 package io.github.utubesummary.domain.repository
 
 import kotlinx.coroutines.flow.Flow
+import io.github.utubesummary.model.ProfileEntry
 import io.github.utubesummary.model.UserPreferences
 
 interface UserPreferencesRepository {
@@ -21,4 +22,6 @@ interface UserPreferencesRepository {
     suspend fun setIsAppendMode(value: Boolean)
     suspend fun setCustomBasePrompt(value: String)
     suspend fun setAdditionalSystemPrompt(value: String)
+    suspend fun setProfileEntries(value: List<ProfileEntry>)
+    suspend fun setSelectedProfileId(value: String)
 }

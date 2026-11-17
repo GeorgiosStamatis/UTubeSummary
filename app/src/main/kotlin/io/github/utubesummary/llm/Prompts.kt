@@ -31,6 +31,7 @@ fun generateFinalPromptString(
     isAppendMode: Boolean,
     customBasePrompt: String,
     additionalSystemPrompt: String,
+    profileBasePrompt: String? = null,
 ): String {
     val effectiveShowLength = showLength && length != SummaryLength.NONE
     val lengthInstruction = when (length) {
@@ -50,7 +51,9 @@ fun generateFinalPromptString(
         "The summary should be written in $appLanguage."
     }
 
-    var baseToUse = if (!isAppendMode && customBasePrompt.isNotBlank()) {
+    var baseToUse = if (!profileBasePrompt.isNullOrBlank()) {
+        profileBasePrompt
+    } else if (!isAppendMode && customBasePrompt.isNotBlank()) {
         customBasePrompt
     } else {
         defaultSystemPromptPlaceholder

@@ -14,6 +14,7 @@ import io.github.utubesummary.domain.usecase.GetOnboardingStatusUseCase
 import io.github.utubesummary.domain.usecase.SetOnboardingStatusUseCase
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
+import io.github.utubesummary.model.ProfileEntry
 import io.github.utubesummary.model.UserPreferences
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -51,6 +52,8 @@ class AppViewModelTest {
         override suspend fun setIsAppendMode(value: Boolean) {}
         override suspend fun setCustomBasePrompt(value: String) {}
         override suspend fun setAdditionalSystemPrompt(value: String) {}
+        override suspend fun setProfileEntries(value: List<ProfileEntry>) {}
+        override suspend fun setSelectedProfileId(value: String) {}
     }
 
     private lateinit var fakePrefsRepo: FakeUserPreferencesRepository

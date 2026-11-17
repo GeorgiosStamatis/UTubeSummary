@@ -1,5 +1,7 @@
 package io.github.utubesummary.vm
 
+import io.github.utubesummary.model.DEFAULT_PROFILE_ID
+import io.github.utubesummary.model.SummaryProfile
 import io.github.utubesummary.exception.SummaryException
 import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.model.ImportResult
@@ -34,6 +36,8 @@ data class SettingsUiState(
     val customBasePrompt: String = "",
     val additionalSystemPrompt: String = "",
     val providerOrder: List<String> = emptyList(),
+    val profiles: List<SummaryProfile> = emptyList(),
+    val selectedProfileId: String = DEFAULT_PROFILE_ID,
 )
 
 data class SummarizationState(
@@ -41,6 +45,8 @@ data class SummarizationState(
     val summaryResult: SummaryOutput? = null,
     val error: SummaryException? = null,
     val lengthResults: Map<SummaryLength, SummaryOutput> = emptyMap(),
+    /** Profile used for [summaryResult]; null when unknown (e.g. restored from history). */
+    val profileId: String? = null,
 )
 
 /** State of the "Test" button in the AI provider dialog. */

@@ -19,8 +19,11 @@ import io.github.utubesummary.domain.usecase.GetUserSettingsUseCase
 import io.github.utubesummary.domain.usecase.ImportVideoSummariesUseCase
 import io.github.utubesummary.domain.usecase.TestProviderConnectionUseCase
 import io.github.utubesummary.domain.usecase.UpdateProviderConfigUseCase
+import io.github.utubesummary.domain.usecase.UpdateSummaryProfilesUseCase
+import io.github.utubesummary.domain.usecase.resolveProfiles
 import io.github.utubesummary.domain.usecase.UpdateUserPreferencesUseCase
 import io.github.utubesummary.llm.AIProvider
+import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import io.github.utubesummary.model.ProviderTestResult
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.util.SecureStorageException
@@ -33,6 +36,7 @@ class SettingsViewModel @Inject constructor(
     private val updateProviderConfigUseCase: UpdateProviderConfigUseCase,
     private val testProviderConnectionUseCase: TestProviderConnectionUseCase,
     private val importVideoSummariesUseCase: ImportVideoSummariesUseCase,
+    private val updateSummaryProfilesUseCase: UpdateSummaryProfilesUseCase,
 ) : ViewModel() {
 
     private val _importState = MutableStateFlow<ImportState>(ImportState.Idle)
@@ -137,6 +141,9 @@ class SettingsViewModel @Inject constructor(
             customBasePrompt = prefs.customBasePrompt,
             additionalSystemPrompt = prefs.additionalSystemPrompt,
             providerOrder = prefs.providerOrder,
+            profiles = resolveProfiles(prefs),
+            selectedProfileId = resolveProfiles(prefs).firstOrNull { it.id == prefs.selectedProfileId }?.id
+                ?: DEFAULT_PROFILE_ID,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -321,6 +328,21 @@ class SettingsViewModel @Inject constructor(
 
     fun setAdditionalSystemPrompt(newValue: String) =
         savePreference(updateUserPreferencesUseCase::setAdditionalSystemPrompt, newValue)
+
+    // Summarization profiles
+    fun selectProfile(profileId: String) =
+        savePreference(updateSummaryProfilesUseCase::select, profileId)
+
+    /** Saves a profile; [onSaved] receives its id (new for custom profiles when [id] is null). */
+    fun saveProfile(id: String?, name: String, basePrompt: String, onSaved: (String) -> Unit = {}) {
+        launchSecure {
+            onSaved(updateSummaryProfilesUseCase.save(id, name, basePrompt))
+        }
+    }
+
+    /** Deletes a custom profile, or resets a built-in one to its shipped prompt. */
+    fun deleteOrResetProfile(profileId: String) =
+        savePreference(updateSummaryProfilesUseCase::deleteOrReset, profileId)
 
     // --- Preference Handling Helpers ---
     private fun <T> savePreference(setter: suspend (T) -> Unit, value: T) {

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import io.github.utubesummary.data.local.datastore.userPreferencesDataStore
 import io.github.utubesummary.domain.repository.UserPreferencesRepository
+import io.github.utubesummary.model.ProfileEntry
 import io.github.utubesummary.model.UserPreferences
 import io.github.utubesummary.util.DecodedSecret
 import io.github.utubesummary.util.SecurityUtil
@@ -107,4 +108,10 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setAdditionalSystemPrompt(value: String) =
         updatePreferences { it.copy(additionalSystemPrompt = value) }
+
+    override suspend fun setProfileEntries(value: List<ProfileEntry>) =
+        updatePreferences { it.copy(profileEntries = value) }
+
+    override suspend fun setSelectedProfileId(value: String) =
+        updatePreferences { it.copy(selectedProfileId = value) }
 }

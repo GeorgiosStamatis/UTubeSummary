@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - LM Studio and Custom Provider (URL + optional token)
 - Test button and automatic model list in the AI provider dialog
+- Summarization profiles: pick a base prompt (Technical Analysis, Critical Analyst, Curious Learner or your own) next to the summary length
 
 ### Fixed
 

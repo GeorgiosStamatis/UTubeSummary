@@ -30,4 +30,15 @@ data class UserPreferences(
     @ProtoNumber(13) val additionalSystemPrompt: String = "",
     @ProtoNumber(14) val providerOrder: List<String> = emptyList(),
     @ProtoNumber(15) val showThumbnails: Boolean = true,
+    @ProtoNumber(16) val profileEntries: List<ProfileEntry> = emptyList(),
+    @ProtoNumber(17) val selectedProfileId: String = DEFAULT_PROFILE_ID,
+)
+
+/** A user-created profile, or a user-edited override of a built-in profile with the same [id]. */
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+data class ProfileEntry(
+    @ProtoNumber(1) val id: String,
+    @ProtoNumber(2) val name: String = "",
+    @ProtoNumber(3) val basePrompt: String = "",
 )
