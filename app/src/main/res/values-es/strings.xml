@@ -150,4 +150,13 @@
     <string name="history_pin">Fijar</string>
     <string name="history_unpin">Desfijar</string>
     <string name="history_all_profiles">Todos los perfiles</string>
+
+    <!-- History management -->
+    <string name="history_remove_summary">Quitar este resumen</string>
+    <string name="history_summary_removed">Resumen eliminado</string>
+    <string name="history_selected">Seleccionado</string>
+    <string name="history_selected_count">%1$d seleccionados</string>
+    <string name="history_sort_newest">Más recientes primero</string>
+    <string name="history_sort_oldest">Más antiguos primero</string>
+    <string name="history_sort_title">Título A-Z</string>
 </resources>

@@ -188,4 +188,13 @@
     <string name="history_pin">置顶</string>
     <string name="history_unpin">取消置顶</string>
     <string name="history_all_profiles">所有配置</string>
+
+    <!-- History management -->
+    <string name="history_remove_summary">移除此摘要</string>
+    <string name="history_summary_removed">摘要已移除</string>
+    <string name="history_selected">已选择</string>
+    <string name="history_selected_count">已选择 %1$d 项</string>
+    <string name="history_sort_newest">最新优先</string>
+    <string name="history_sort_oldest">最早优先</string>
+    <string name="history_sort_title">标题 A-Z</string>
 </resources>

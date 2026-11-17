@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.utubesummary.R
+import io.github.utubesummary.model.HistorySort
 import io.github.utubesummary.model.SummaryProfile
 import io.github.utubesummary.model.SummaryType
 import io.github.utubesummary.ui.component.displayName
@@ -43,6 +44,8 @@ fun HistoryFilterChips(
     profiles: List<SummaryProfile> = emptyList(),
     selectedProfileId: String? = null,
     onProfileFilterChanged: (String?) -> Unit = {},
+    sort: HistorySort = HistorySort.NEWEST,
+    onSortChanged: (HistorySort) -> Unit = {},
 ) {
     LazyRow(
         modifier = modifier,
@@ -71,6 +74,10 @@ fun HistoryFilterChips(
                     onProfileFilterChanged = onProfileFilterChanged,
                 )
             }
+        }
+
+        item(key = "sort") {
+            SortChip(sort = sort, onSortChanged = onSortChanged)
         }
 
         items(SummaryType.entries) { filter ->
@@ -135,6 +142,51 @@ private fun ProfileFilterChip(
                         expanded = false
                         // The view model toggles: choosing the active profile again clears it.
                         onProfileFilterChanged(profile.id)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun sortLabel(sort: HistorySort): String = stringResource(
+    when (sort) {
+        HistorySort.NEWEST -> R.string.history_sort_newest
+        HistorySort.OLDEST -> R.string.history_sort_oldest
+        HistorySort.TITLE -> R.string.history_sort_title
+    }
+)
+
+@Composable
+private fun SortChip(
+    sort: HistorySort,
+    onSortChanged: (HistorySort) -> Unit,
+) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+
+    Box {
+        FilterChip(
+            selected = sort != HistorySort.NEWEST,
+            onClick = { expanded = true },
+            label = {
+                Text(
+                    text = sortLabel(sort),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
+            trailingIcon = {
+                Icon(Icons.Rounded.ExpandMore, contentDescription = null, modifier = Modifier.size(18.dp))
+            }
+        )
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            HistorySort.entries.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(sortLabel(option)) },
+                    onClick = {
+                        expanded = false
+                        onSortChanged(option)
                     }
                 )
             }

@@ -150,4 +150,13 @@
     <string name="history_pin">Épingler</string>
     <string name="history_unpin">Désépingler</string>
     <string name="history_all_profiles">Tous les profils</string>
+
+    <!-- History management -->
+    <string name="history_remove_summary">Retirer ce résumé</string>
+    <string name="history_summary_removed">Résumé retiré</string>
+    <string name="history_selected">Sélectionné</string>
+    <string name="history_selected_count">%1$d sélectionné(s)</string>
+    <string name="history_sort_newest">Plus récents d\'abord</string>
+    <string name="history_sort_oldest">Plus anciens d\'abord</string>
+    <string name="history_sort_title">Titre A-Z</string>
 </resources>

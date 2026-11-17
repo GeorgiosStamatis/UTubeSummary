@@ -20,5 +20,8 @@ interface HistoryRepository {
 
     /** The source link of every history entry that has one. */
     suspend fun getAllSourceLinks(): List<String>
+    /** The entries with these ids (ids that no longer exist are left out). */
+    suspend fun getSummariesByIds(ids: List<String>): List<HistorySummary>
+
     suspend fun deleteSummary(id: String)
 }

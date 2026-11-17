@@ -1,5 +1,7 @@
 package io.github.utubesummary.ui.page.history.section
 
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.material.icons.filled.PushPin
 import io.github.utubesummary.R
 import androidx.compose.ui.res.stringResource
@@ -108,6 +110,8 @@ fun HistoryItemRow(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     showThumbnails: Boolean = true,
+    selected: Boolean = false,
+    onLongClick: (() -> Unit)? = null,
 ) {
     val shape = groupShape(position)
     val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
@@ -157,9 +161,13 @@ fun HistoryItemRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape)
-                .clickable(onClick = onClick),
+                .combinedClickable(onClick = onClick, onLongClick = onLongClick),
             shape = shape,
-            color = MaterialTheme.colorScheme.surfaceContainer
+            color = if (selected) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceContainer
+            }
         ) {
             Row(
                 modifier = Modifier
@@ -188,6 +196,16 @@ fun HistoryItemRow(
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
+
+                if (selected) {
+                    Icon(
+                        imageVector = Icons.Filled.CheckCircle,
+                        contentDescription = stringResource(R.string.history_selected),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
 
                 if (summary.pinned) {
                     Icon(

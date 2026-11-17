@@ -1,5 +1,11 @@
 package io.github.utubesummary.ui.page.history
 
+import io.github.utubesummary.model.HistorySort
+import androidx.activity.compose.BackHandler
+import androidx.compose.ui.draw.alpha
+import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -96,9 +102,13 @@ fun HistoryScreen(
     val deletedMessage = stringResource(id = R.string.deleted)
     val undoMessage = stringResource(id = R.string.undo)
     val pinnedTitle = stringResource(id = R.string.history_pinned)
+    val selectedIds by viewModel.selectedIds.collectAsState()
+    val selecting = selectedIds.isNotEmpty()
+    BackHandler(enabled = selecting) { viewModel.clearSelection() }
+    val selectedCountText = stringResource(id = R.string.history_selected_count, selectedIds.size)
     val removedSummaryMessage = stringResource(id = R.string.history_summary_removed)
 
-    LaunchedEffect(searchState.query, searchState.selectedFilter, searchState.selectedProfileId, searchState.pinnedOnly) {
+    LaunchedEffect(searchState.query, searchState.selectedFilter, searchState.selectedProfileId, searchState.pinnedOnly, searchState.sort) {
         lazyListState.scrollToItem(0)
     }
 
@@ -110,14 +120,51 @@ fun HistoryScreen(
         topBar = {
             LargeTopAppBar(
                 title = {
-                    Text(text = stringResource(id = R.string.history))
+                    Text(text = if (selecting) selectedCountText else stringResource(id = R.string.history))
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = if (selecting) viewModel::clearSelection else onBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.go_back)
+                            imageVector = if (selecting) Icons.Filled.Close else Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(if (selecting) R.string.close else R.string.go_back)
                         )
+                    }
+                },
+                actions = {
+                    if (selecting) {
+                        IconButton(onClick = { viewModel.setSelectedPinned(true) }) {
+                            Icon(
+                                imageVector = Icons.Outlined.PushPin,
+                                contentDescription = stringResource(R.string.history_pin)
+                            )
+                        }
+                        IconButton(onClick = { viewModel.setSelectedPinned(false) }) {
+                            Icon(
+                                imageVector = Icons.Outlined.PushPin,
+                                contentDescription = stringResource(R.string.history_unpin),
+                                modifier = Modifier.alpha(0.5f)
+                            )
+                        }
+                        IconButton(onClick = {
+                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                            viewModel.deleteSelected { deleted ->
+                                scope.launch {
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = deletedMessage,
+                                        actionLabel = undoMessage,
+                                        duration = SnackbarDuration.Long
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        viewModel.restoreSummaries(deleted)
+                                    }
+                                }
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Delete,
+                                contentDescription = stringResource(R.string.delete)
+                            )
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior
@@ -200,6 +247,8 @@ fun HistoryScreen(
                             profiles = profiles,
                             selectedProfileId = searchState.selectedProfileId,
                             onProfileFilterChanged = searchState.onProfileFilterChanged,
+                            sort = searchState.sort,
+                            onSortChanged = searchState.onSortChanged,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 8.dp)
@@ -239,14 +288,20 @@ fun HistoryScreen(
                     val summary = historySummaries[index]
                     if (summary != null) {
                         // Pinned items form their own section at the top.
-                        val currentSection = if (summary.pinned) pinnedTitle else getDateSectionTitle(summary.createdOn)
+                        // Sorted by title there are no date headers.
+                        val byTitle = searchState.sort == HistorySort.TITLE
+                        val currentSection = when {
+                            summary.pinned -> pinnedTitle
+                            byTitle -> ""
+                            else -> getDateSectionTitle(summary.createdOn)
+                        }
                         val prevSection = if (index > 0) {
                             historySummaries.peek(index - 1)
-                                ?.let { if (it.pinned) pinnedTitle else getDateSectionTitle(it.createdOn) }
+                                ?.let { if (it.pinned) pinnedTitle else if (byTitle) "" else getDateSectionTitle(it.createdOn) }
                         } else null
                         val nextSection = if (index < historySummaries.itemCount - 1) {
                             historySummaries.peek(index + 1)
-                                ?.let { if (it.pinned) pinnedTitle else getDateSectionTitle(it.createdOn) }
+                                ?.let { if (it.pinned) pinnedTitle else if (byTitle) "" else getDateSectionTitle(it.createdOn) }
                         } else null
 
                         val isFirstInSection = prevSection != currentSection
@@ -277,7 +332,7 @@ fun HistoryScreen(
                                     )
                                 )
                         ) {
-                            if (isFirstInSection) {
+                            if (isFirstInSection && currentSection.isNotBlank()) {
                                 HistorySectionHeader(
                                     title = currentSection,
                                     modifier = Modifier.padding(
@@ -291,7 +346,14 @@ fun HistoryScreen(
                                 summary = summary,
                                 position = position,
                                 showThumbnails = showThumbnails,
-                                onClick = { selectedSummary = summary },
+                                selected = summary.id in selectedIds,
+                                onClick = {
+                                    if (selecting) viewModel.toggleSelection(summary.id) else selectedSummary = summary
+                                },
+                                onLongClick = {
+                                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    viewModel.toggleSelection(summary.id)
+                                },
                                 onDismiss = {
                                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                                     viewModel.deleteSummary(summary.id)

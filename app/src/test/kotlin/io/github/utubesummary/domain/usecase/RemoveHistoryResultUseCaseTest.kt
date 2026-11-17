@@ -20,6 +20,7 @@ class RemoveHistoryResultUseCaseTest {
         override fun getSummaries(query: String, filter: HistoryFilter): Flow<PagingData<HistorySummary>> = emptyFlow()
         override suspend fun setPinned(id: String, pinned: Boolean) {}
         override suspend fun addSummary(summary: HistorySummary) {}
+        override suspend fun getSummariesByIds(ids: List<String>): List<HistorySummary> = emptyList()
         override suspend fun replaceSummary(summary: HistorySummary) { stored = summary }
         override suspend fun addSummaries(summaries: List<HistorySummary>) {}
         override suspend fun getAllSourceLinks(): List<String> = emptyList()

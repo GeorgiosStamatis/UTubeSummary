@@ -132,4 +132,13 @@
     <string name="history_pin">Anheften</string>
     <string name="history_unpin">Lösen</string>
     <string name="history_all_profiles">Alle Profile</string>
+
+    <!-- History management -->
+    <string name="history_remove_summary">Diese Zusammenfassung entfernen</string>
+    <string name="history_summary_removed">Zusammenfassung entfernt</string>
+    <string name="history_selected">Ausgewählt</string>
+    <string name="history_selected_count">%1$d ausgewählt</string>
+    <string name="history_sort_newest">Neueste zuerst</string>
+    <string name="history_sort_oldest">Älteste zuerst</string>
+    <string name="history_sort_title">Titel A-Z</string>
 </resources>

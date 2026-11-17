@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import io.github.utubesummary.domain.usecase.DeleteHistorySummariesUseCase
 import io.github.utubesummary.domain.usecase.DeleteHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.GetHistorySummariesUseCase
 import io.github.utubesummary.domain.usecase.RemoveHistoryResultUseCase
@@ -22,6 +23,7 @@ import io.github.utubesummary.domain.usecase.RestoreHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.SetHistoryPinnedUseCase
 import io.github.utubesummary.model.HistoryFilter
 import io.github.utubesummary.model.HistoryLengthResult
+import io.github.utubesummary.model.HistorySort
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryType
 import javax.inject.Inject
@@ -36,6 +38,7 @@ class HistoryViewModel @Inject constructor(
     private val restoreHistorySummaryUseCase: RestoreHistorySummaryUseCase,
     private val setHistoryPinnedUseCase: SetHistoryPinnedUseCase,
     private val removeHistoryResultUseCase: RemoveHistoryResultUseCase,
+    private val deleteHistorySummariesUseCase: DeleteHistorySummariesUseCase,
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -50,14 +53,22 @@ class HistoryViewModel @Inject constructor(
     private val _pinnedOnly = MutableStateFlow(false)
     val pinnedOnly: StateFlow<Boolean> = _pinnedOnly.asStateFlow()
 
+    private val _sort = MutableStateFlow(HistorySort.NEWEST)
+    val sort: StateFlow<HistorySort> = _sort.asStateFlow()
+
+    private val _selectedIds = MutableStateFlow<Set<String>>(emptySet())
+
+    /** Entries selected for a bulk action; empty when not selecting. */
+    val selectedIds: StateFlow<Set<String>> = _selectedIds.asStateFlow()
+
     @OptIn(FlowPreview::class)
     private val debouncedSearchText = _searchQuery
         .debounce(SEARCH_DEBOUNCE_MILLIS.milliseconds)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val historySummaries: Flow<PagingData<HistorySummary>> =
-        combine(debouncedSearchText, _filterType, _profileFilter, _pinnedOnly) { text, type, profile, pinned ->
-            text to HistoryFilter(type = type, profileId = profile, pinnedOnly = pinned)
+        combine(debouncedSearchText, _filterType, _profileFilter, _pinnedOnly, _sort) { text, type, profile, pinned, sort ->
+            text to HistoryFilter(type = type, profileId = profile, pinnedOnly = pinned, sort = sort)
         }.flatMapLatest { (text, filter) ->
             getHistorySummariesUseCase(text, filter)
         }.cachedIn(viewModelScope)
@@ -73,6 +84,10 @@ class HistoryViewModel @Inject constructor(
     /** Selecting the active profile again clears the filter. */
     fun onProfileFilterChanged(profileId: String?) {
         _profileFilter.value = if (_profileFilter.value == profileId) null else profileId
+    }
+
+    fun onSortChanged(sort: HistorySort) {
+        _sort.value = sort
     }
 
     fun onPinnedOnlyChanged(pinnedOnly: Boolean) {
@@ -99,6 +114,38 @@ class HistoryViewModel @Inject constructor(
     fun undoRemoveResult(original: HistorySummary) {
         viewModelScope.launch {
             removeHistoryResultUseCase.undo(original)
+        }
+    }
+
+    fun toggleSelection(id: String) {
+        _selectedIds.value = _selectedIds.value.let { if (id in it) it - id else it + id }
+    }
+
+    fun clearSelection() {
+        _selectedIds.value = emptySet()
+    }
+
+    fun setSelectedPinned(pinned: Boolean) {
+        val ids = _selectedIds.value
+        viewModelScope.launch {
+            setHistoryPinnedUseCase(ids, pinned)
+            clearSelection()
+        }
+    }
+
+    /** Deletes the selected entries; [onDeleted] gets them so the deletion can be undone. */
+    fun deleteSelected(onDeleted: (List<HistorySummary>) -> Unit) {
+        val ids = _selectedIds.value
+        viewModelScope.launch {
+            val deleted = deleteHistorySummariesUseCase(ids)
+            clearSelection()
+            onDeleted(deleted)
+        }
+    }
+
+    fun restoreSummaries(summaries: List<HistorySummary>) {
+        viewModelScope.launch {
+            restoreHistorySummaryUseCase(summaries)
         }
     }
 

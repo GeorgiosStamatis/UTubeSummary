@@ -142,4 +142,13 @@
     <string name="history_pin">Sabitle</string>
     <string name="history_unpin">Sabitlemeyi kaldır</string>
     <string name="history_all_profiles">Tüm profiller</string>
+
+    <!-- History management -->
+    <string name="history_remove_summary">Bu özeti kaldır</string>
+    <string name="history_summary_removed">Özet kaldırıldı</string>
+    <string name="history_selected">Seçildi</string>
+    <string name="history_selected_count">%1$d seçildi</string>
+    <string name="history_sort_newest">Önce en yeni</string>
+    <string name="history_sort_oldest">Önce en eski</string>
+    <string name="history_sort_title">Başlık A-Z</string>
 </resources>

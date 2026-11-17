@@ -249,4 +249,13 @@
     <!-- Removing one summary of a History entry -->
     <string name="history_remove_summary">Remove this summary</string>
     <string name="history_summary_removed">Summary removed</string>
+
+    <!-- Selecting History entries -->
+    <string name="history_selected">Selected</string>
+    <string name="history_selected_count">%1$d selected</string>
+
+    <!-- History sorting -->
+    <string name="history_sort_newest">Newest first</string>
+    <string name="history_sort_oldest">Oldest first</string>
+    <string name="history_sort_title">Title A-Z</string>
 </resources>

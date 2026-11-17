@@ -119,4 +119,13 @@
     <string name="history_pin">Закріпити</string>
     <string name="history_unpin">Відкріпити</string>
     <string name="history_all_profiles">Усі профілі</string>
+
+    <!-- History management -->
+    <string name="history_remove_summary">Видалити цей підсумок</string>
+    <string name="history_summary_removed">Підсумок видалено</string>
+    <string name="history_selected">Вибрано</string>
+    <string name="history_selected_count">Вибрано: %1$d</string>
+    <string name="history_sort_newest">Спочатку новіші</string>
+    <string name="history_sort_oldest">Спочатку старіші</string>
+    <string name="history_sort_title">Назва А-Я</string>
 </resources>

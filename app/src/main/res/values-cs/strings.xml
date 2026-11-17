@@ -124,5 +124,14 @@
     <string name="history_pin">Připnout</string>
     <string name="history_unpin">Odepnout</string>
     <string name="history_all_profiles">Všechny profily</string>
+
+    <!-- History management -->
+    <string name="history_remove_summary">Odebrat toto shrnutí</string>
+    <string name="history_summary_removed">Shrnutí odebráno</string>
+    <string name="history_selected">Vybráno</string>
+    <string name="history_selected_count">Vybráno: %1$d</string>
+    <string name="history_sort_newest">Nejnovější první</string>
+    <string name="history_sort_oldest">Nejstarší první</string>
+    <string name="history_sort_title">Název A-Z</string>
 </resources>
 

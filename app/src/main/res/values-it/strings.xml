@@ -147,4 +147,13 @@
     <string name="history_pin">Fissa</string>
     <string name="history_unpin">Rimuovi dai fissati</string>
     <string name="history_all_profiles">Tutti i profili</string>
+
+    <!-- History management -->
+    <string name="history_remove_summary">Rimuovi questo riassunto</string>
+    <string name="history_summary_removed">Riassunto rimosso</string>
+    <string name="history_selected">Selezionato</string>
+    <string name="history_selected_count">%1$d selezionati</string>
+    <string name="history_sort_newest">Più recenti prima</string>
+    <string name="history_sort_oldest">Più vecchi prima</string>
+    <string name="history_sort_title">Titolo A-Z</string>
 </resources>

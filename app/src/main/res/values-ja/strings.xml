@@ -150,4 +150,13 @@
     <string name="history_pin">ピン留めする</string>
     <string name="history_unpin">ピン留めを外す</string>
     <string name="history_all_profiles">すべてのプロファイル</string>
+
+    <!-- History management -->
+    <string name="history_remove_summary">この要約を削除</string>
+    <string name="history_summary_removed">要約を削除しました</string>
+    <string name="history_selected">選択中</string>
+    <string name="history_selected_count">%1$d件を選択</string>
+    <string name="history_sort_newest">新しい順</string>
+    <string name="history_sort_oldest">古い順</string>
+    <string name="history_sort_title">タイトル順 (A-Z)</string>
 </resources>

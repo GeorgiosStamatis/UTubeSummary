@@ -127,4 +127,13 @@
     <string name="history_pin">تثبيت</string>
     <string name="history_unpin">إلغاء التثبيت</string>
     <string name="history_all_profiles">جميع الملفات</string>
+
+    <!-- History management -->
+    <string name="history_remove_summary">إزالة هذا الملخص</string>
+    <string name="history_summary_removed">تمت إزالة الملخص</string>
+    <string name="history_selected">محدد</string>
+    <string name="history_selected_count">تم تحديد %1$d</string>
+    <string name="history_sort_newest">الأحدث أولًا</string>
+    <string name="history_sort_oldest">الأقدم أولًا</string>
+    <string name="history_sort_title">العنوان أ-ي</string>
 </resources>

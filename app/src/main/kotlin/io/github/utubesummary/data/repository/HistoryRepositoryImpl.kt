@@ -48,7 +48,9 @@ class HistoryRepositoryImpl @Inject constructor(
                 enablePlaceholders = false
             ),
             pagingSourceFactory = {
-                historyDao.getSummaries(escapeLikePattern(query), filter.type, profileKey, filter.pinnedOnly)
+                historyDao.getSummaries(
+                    escapeLikePattern(query), filter.type, profileKey, filter.pinnedOnly, filter.sort.code
+                )
             }
         ).flow
             .onStart { ensureDeduplicated() }
@@ -109,6 +111,9 @@ class HistoryRepositoryImpl @Inject constructor(
             historyDao.insert(newSummary.toEntity())
         }
     }
+
+    override suspend fun getSummariesByIds(ids: List<String>): List<HistorySummary> =
+        if (ids.isEmpty()) emptyList() else historyDao.getByIds(ids).map { it.toDomain() }
 
     override suspend fun replaceSummary(summary: HistorySummary) {
         historyDao.insert(summary.toEntity())

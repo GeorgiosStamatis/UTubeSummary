@@ -10,12 +10,14 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import io.github.utubesummary.domain.repository.HistoryRepository
+import io.github.utubesummary.domain.usecase.DeleteHistorySummariesUseCase
 import io.github.utubesummary.domain.usecase.DeleteHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.GetHistorySummariesUseCase
 import io.github.utubesummary.domain.usecase.RemoveHistoryResultUseCase
 import io.github.utubesummary.domain.usecase.RestoreHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.SetHistoryPinnedUseCase
 import io.github.utubesummary.model.HistoryFilter
+import io.github.utubesummary.model.HistorySort
 import io.github.utubesummary.model.HistoryLengthResult
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryLength
@@ -49,6 +51,9 @@ class HistoryViewModelTest {
         override suspend fun setPinned(id: String, pinned: Boolean) {
             this.pinned[id] = pinned
         }
+
+        override suspend fun getSummariesByIds(ids: List<String>): List<HistorySummary> =
+            items.filter { it.id in ids }
 
         override suspend fun replaceSummary(summary: HistorySummary) {
             items.removeAll { it.id == summary.id }
@@ -84,6 +89,7 @@ class HistoryViewModelTest {
             restoreHistorySummaryUseCase = RestoreHistorySummaryUseCase(fakeRepository),
             setHistoryPinnedUseCase = SetHistoryPinnedUseCase(fakeRepository),
             removeHistoryResultUseCase = RemoveHistoryResultUseCase(fakeRepository),
+            deleteHistorySummariesUseCase = DeleteHistorySummariesUseCase(fakeRepository),
         )
     }
 
@@ -177,5 +183,48 @@ class HistoryViewModelTest {
 
         viewModel.setPinned("abc", true)
         assertEquals(true, fakeRepository.pinned["abc"])
+    }
+
+    private fun entry(id: String) = HistorySummary(id = id, title = id, type = SummaryType.ARTICLE)
+
+    @Test
+    fun `selection toggles and bulk delete returns the deleted entries for undo`() = runTest(testDispatcher) {
+        fakeRepository.items.addAll(listOf(entry("a"), entry("b"), entry("c")))
+
+        viewModel.toggleSelection("a")
+        viewModel.toggleSelection("c")
+        viewModel.toggleSelection("b")
+        viewModel.toggleSelection("b")
+        assertEquals(setOf("a", "c"), viewModel.selectedIds.value)
+
+        var deleted: List<HistorySummary> = emptyList()
+        viewModel.deleteSelected { deleted = it }
+
+        assertEquals(listOf("a", "c"), deleted.map { it.id })
+        assertEquals(listOf("b"), fakeRepository.items.map { it.id })
+        assertTrue(viewModel.selectedIds.value.isEmpty())
+
+        viewModel.restoreSummaries(deleted)
+        assertEquals(setOf("a", "b", "c"), fakeRepository.items.map { it.id }.toSet())
+    }
+
+    @Test
+    fun `bulk pin applies to every selected entry and ends the selection`() = runTest(testDispatcher) {
+        viewModel.toggleSelection("a")
+        viewModel.toggleSelection("b")
+
+        viewModel.setSelectedPinned(true)
+
+        assertEquals(mapOf("a" to true, "b" to true), fakeRepository.pinned)
+        assertTrue(viewModel.selectedIds.value.isEmpty())
+    }
+
+    @Test
+    fun `the sort order can be changed and defaults to newest first`() {
+        assertEquals(HistorySort.NEWEST, viewModel.sort.value)
+
+        viewModel.onSortChanged(HistorySort.TITLE)
+
+        assertEquals(HistorySort.TITLE, viewModel.sort.value)
     }
 }

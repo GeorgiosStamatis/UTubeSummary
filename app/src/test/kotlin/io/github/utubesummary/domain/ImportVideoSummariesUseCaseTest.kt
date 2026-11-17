@@ -30,6 +30,8 @@ class ImportVideoSummariesUseCaseTest {
 
         override suspend fun setPinned(id: String, pinned: Boolean) {}
 
+        override suspend fun getSummariesByIds(ids: List<String>): List<HistorySummary> = emptyList()
+
         override suspend fun replaceSummary(summary: HistorySummary) {
             items += summary
         }

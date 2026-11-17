@@ -27,6 +27,7 @@ class HistoryRepositoryImplTest {
             type: SummaryType?,
             profileKey: String?,
             pinnedOnly: Boolean,
+            sort: Int,
         ): PagingSource<Int, HistoryEntity> = error("not used")
 
         override suspend fun setPinned(id: String, pinned: Boolean) {
@@ -40,6 +41,8 @@ class HistoryRepositoryImplTest {
         override suspend fun insertAll(summaries: List<HistoryEntity>) {
             summaries.forEach { rows.putIfAbsent(it.id, it) }
         }
+
+        override suspend fun getByIds(ids: List<String>): List<HistoryEntity> = rows.values.filter { it.id in ids }
 
         override suspend fun getAllSourceLinks(): List<String> = rows.values.mapNotNull { it.sourceLink }
 

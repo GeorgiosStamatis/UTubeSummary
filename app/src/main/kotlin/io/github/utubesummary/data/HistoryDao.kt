@@ -20,7 +20,10 @@ interface HistoryDao {
          AND (:profileKey IS NULL OR variantKeys LIKE '%' || :profileKey || '%' ESCAPE '\')
          AND (:pinnedOnly = 0 OR pinned = 1)
          AND (:query = '' OR title LIKE '%' || :query || '%' ESCAPE '\' OR author LIKE '%' || :query || '%' ESCAPE '\' OR summary LIKE '%' || :query || '%' ESCAPE '\' OR lengthResults LIKE '%' || :query || '%' ESCAPE '\' OR alternatives LIKE '%' || :query || '%' ESCAPE '\')
-         ORDER BY pinned DESC, createdOn DESC
+         ORDER BY pinned DESC,
+                  (CASE WHEN :sort = 1 THEN title END) COLLATE NOCASE ASC,
+                  (CASE WHEN :sort = 2 THEN createdOn END) ASC,
+                  createdOn DESC
     """
     )
     fun getSummaries(
@@ -28,6 +31,7 @@ interface HistoryDao {
         type: SummaryType?,
         profileKey: String?,
         pinnedOnly: Boolean,
+        sort: Int,
     ): PagingSource<Int, HistoryEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -35,6 +39,9 @@ interface HistoryDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(summaries: List<HistoryEntity>)
+
+    @Query("SELECT * FROM history WHERE id IN (:ids)")
+    suspend fun getByIds(ids: List<String>): List<HistoryEntity>
 
     @Query("SELECT sourceLink FROM history WHERE sourceLink IS NOT NULL")
     suspend fun getAllSourceLinks(): List<String>
