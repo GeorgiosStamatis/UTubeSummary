@@ -61,4 +61,23 @@ class ResolveProfilesTest {
 
         assertEquals(DEFAULT_PROFILE_ID, resolveProfile(prefs, null).id)
     }
+
+    @Test
+    fun `built-in profiles are listed in order with distinct non blank prompts`() {
+        val profiles = resolveProfiles(UserPreferences())
+
+        assertEquals(
+            listOf(
+                DEFAULT_PROFILE_ID,
+                "technical_analysis",
+                "critical_analyst",
+                "curious_learner",
+                "technical_content_evaluator",
+                "quick_brief",
+            ),
+            profiles.map { it.id },
+        )
+        assertTrue(profiles.all { it.basePrompt.isNotBlank() })
+        assertEquals(profiles.size, profiles.map { it.basePrompt }.toSet().size)
+    }
 }

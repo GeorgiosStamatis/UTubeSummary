@@ -139,7 +139,7 @@ class PromptsTest {
             profileBasePrompt = criticalAnalystPrompt,
         )
 
-        assertTrue(prompt.contains("Critical Analyst"))
+        assertTrue(prompt.contains("Critical Analysis"))
         assertFalse(prompt.contains("legacy custom prompt"))
         assertFalse(prompt.contains("[Length instructions]"))
         assertFalse(prompt.contains("[Language instructions]"))

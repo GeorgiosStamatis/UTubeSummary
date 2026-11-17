@@ -156,9 +156,11 @@
     <!-- Summarization profiles -->
     <string name="summary_profile">Profile</string>
     <string name="profile_default">Default</string>
-    <string name="profile_technical_analysis">Technical Analysis</string>
-    <string name="profile_critical_analyst">Critical Analyst</string>
-    <string name="profile_curious_learner">Curious Learner</string>
+    <string name="profile_technical_analysis">Technical Deep Dive</string>
+    <string name="profile_critical_analyst">Critical Analysis</string>
+    <string name="profile_curious_learner">Learning Mode</string>
+    <string name="profile_technical_content_evaluator">Technical Content Quality Evaluator</string>
+    <string name="profile_quick_brief">Quick Brief</string>
     <string name="profile_unnamed">Untitled profile</string>
     <string name="manage_profiles">Summarization profiles</string>
     <string name="manage_profiles_description">Choose a different base prompt for each kind of summary, or create your own.</string>

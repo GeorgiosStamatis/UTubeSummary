@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import io.github.utubesummary.R
 import io.github.utubesummary.llm.CRITICAL_ANALYST_PROFILE_ID
 import io.github.utubesummary.llm.CURIOUS_LEARNER_PROFILE_ID
+import io.github.utubesummary.llm.QUICK_BRIEF_PROFILE_ID
+import io.github.utubesummary.llm.TECHNICAL_CONTENT_EVALUATOR_PROFILE_ID
 import io.github.utubesummary.llm.TECHNICAL_ANALYSIS_PROFILE_ID
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import io.github.utubesummary.model.SummaryProfile
@@ -37,6 +39,8 @@ fun SummaryProfile.displayName(): String {
         TECHNICAL_ANALYSIS_PROFILE_ID -> R.string.profile_technical_analysis
         CRITICAL_ANALYST_PROFILE_ID -> R.string.profile_critical_analyst
         CURIOUS_LEARNER_PROFILE_ID -> R.string.profile_curious_learner
+        TECHNICAL_CONTENT_EVALUATOR_PROFILE_ID -> R.string.profile_technical_content_evaluator
+        QUICK_BRIEF_PROFILE_ID -> R.string.profile_quick_brief
         else -> R.string.profile_unnamed
     }
     return stringResource(resId)
