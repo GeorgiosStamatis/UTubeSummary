@@ -96,6 +96,7 @@ data class HomeActions(
     val onUrlChange: (String) -> Unit,
     val onLengthSelect: (SummaryLength) -> Unit,
     val onProfileSelect: (String) -> Unit = {},
+    val onCancelSummarize: () -> Unit = {},
     val onPasteFromClipboard: () -> Unit,
     val onPlaySummary: () -> Unit,
     val onCopySummary: (String) -> Unit,
@@ -286,6 +287,7 @@ fun HomeScreen(
             summaryViewModel.switchLength(length)
         },
         onProfileSelect = settingsViewModel::selectProfile,
+        onCancelSummarize = summaryViewModel::cancelSummarize,
         onPasteFromClipboard = {
             clearInput()
             scope.launch {
@@ -470,6 +472,7 @@ private fun HomeContent(
                         chatState = chatState,
                         onAskQuestion = actions.onAskQuestion,
                         onCopyAnswer = actions.onCopySummary,
+                        onCancel = actions.onCancelSummarize,
                     )
 
                     Spacer(modifier = Modifier.height(88.dp))

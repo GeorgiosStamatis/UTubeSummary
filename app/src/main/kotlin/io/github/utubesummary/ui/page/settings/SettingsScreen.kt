@@ -152,18 +152,18 @@ fun SettingsScreen(
     if (showClearBilibiliSessDataDialog) {
         AlertDialog(
             onDismissRequest = { showClearBilibiliSessDataDialog = false },
-            title = { Text("Clear BiliBili Login") },
-            text = { Text("Are you sure you want to clear your BiliBili login information?") },
+            title = { Text(stringResource(R.string.clear_bilibili_login)) },
+            text = { Text(stringResource(R.string.clear_bilibili_login_confirm)) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         actions.onBilibiliSessDataClear()
                         showClearBilibiliSessDataDialog = false
                     }
-                ) { Text("Clear") }
+                ) { Text(stringResource(R.string.clear)) }
             },
             dismissButton = {
-                TextButton(onClick = { showClearBilibiliSessDataDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showClearBilibiliSessDataDialog = false }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -254,7 +254,7 @@ fun SettingsScreen(
                     IconButton(onClick = { onBack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Go Back"
+                            contentDescription = stringResource(R.string.go_back)
                         )
                     }
                 },

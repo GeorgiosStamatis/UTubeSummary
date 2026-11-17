@@ -1,5 +1,7 @@
 package io.github.utubesummary.ui.page.history.section
 
+import io.github.utubesummary.R
+import androidx.compose.ui.res.stringResource
 import android.text.format.DateUtils
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -50,6 +52,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.model.HistorySummary
+import io.github.utubesummary.ui.component.historyProfileLabel
 import io.github.utubesummary.model.youtubeThumbnailUrl
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.ui.component.ContentBadge
@@ -220,7 +223,7 @@ private fun DismissBackground(
     ) {
         Icon(
             imageVector = Icons.Default.Delete,
-            contentDescription = "Delete",
+            contentDescription = stringResource(R.string.delete),
             tint = MaterialTheme.colorScheme.onErrorContainer
         )
     }
@@ -277,6 +280,21 @@ private fun HistoryItemContent(
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
+
+        val profileLabel = historyProfileLabel(
+            profileId = summary.activeResult?.profileId,
+            profileName = summary.activeResult?.profileName,
+        )
+        if (profileLabel != null) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = profileLabel,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
 
         Spacer(modifier = Modifier.height(6.dp))
 

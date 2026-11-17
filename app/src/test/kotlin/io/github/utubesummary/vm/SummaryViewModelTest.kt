@@ -1,5 +1,6 @@
 package io.github.utubesummary.vm
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -34,6 +35,10 @@ class SummaryViewModelTest {
         var lastOverrideLength: SummaryLength? = null
         var lastProfileId: String? = null
 
+        /** When set, every call suspends until it is completed (simulates a slow request). */
+        var gate: CompletableDeferred<Unit>? = null
+        val inputs = mutableListOf<String>()
+
         override suspend operator fun invoke(
             text: String,
             overrideLength: SummaryLength?,
@@ -41,6 +46,8 @@ class SummaryViewModelTest {
         ): Result<SummaryOutput> {
             lastProfileId = profileId
             lastInput = text
+            inputs += text
+            gate?.await()
             lastOverrideLength = overrideLength
             errorToThrow?.let { return Result.failure(it) }
             val length = overrideLength ?: SummaryLength.MEDIUM
@@ -110,6 +117,53 @@ class SummaryViewModelTest {
         assertFalse(state.isLoading)
         assertNull(state.summaryResult)
         assertTrue(state.error is SummaryException.NoKeyException)
+    }
+
+    @Test
+    fun `cancelSummarize stops loading and a late result is ignored`() = runTest(testDispatcher) {
+        val gate = CompletableDeferred<Unit>()
+        fakeUseCase.gate = gate
+
+        viewModel.summarize("https://example.com/slow")
+        assertTrue(viewModel.summarizationState.value.isLoading)
+
+        viewModel.cancelSummarize()
+        assertFalse(viewModel.summarizationState.value.isLoading)
+
+        gate.complete(Unit)
+        val state = viewModel.summarizationState.value
+        assertFalse(state.isLoading)
+        assertNull(state.summaryResult)
+        assertNull(state.error)
+    }
+
+    @Test
+    fun `a new summarize replaces the running one`() = runTest(testDispatcher) {
+        val gate = CompletableDeferred<Unit>()
+        fakeUseCase.gate = gate
+        val output = createSummaryOutput(SummaryLength.MEDIUM, "Second")
+        fakeUseCase.summaryToReturn = output
+
+        viewModel.summarize("https://example.com/first")
+        viewModel.summarize("https://example.com/second")
+        gate.complete(Unit)
+
+        val state = viewModel.summarizationState.value
+        assertFalse(state.isLoading)
+        assertEquals(output, state.summaryResult)
+        assertEquals(listOf("https://example.com/first", "https://example.com/second"), fakeUseCase.inputs)
+    }
+
+    @Test
+    fun `clearCurrentSummary also stops loading`() = runTest(testDispatcher) {
+        fakeUseCase.gate = CompletableDeferred()
+
+        viewModel.summarize("https://example.com/slow")
+        viewModel.clearCurrentSummary()
+
+        val state = viewModel.summarizationState.value
+        assertFalse(state.isLoading)
+        assertNull(state.summaryResult)
     }
 
     @Test

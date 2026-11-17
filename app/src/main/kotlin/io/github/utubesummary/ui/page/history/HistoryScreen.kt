@@ -111,7 +111,7 @@ fun HistoryScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Go Back"
+                            contentDescription = stringResource(R.string.go_back)
                         )
                     }
                 },

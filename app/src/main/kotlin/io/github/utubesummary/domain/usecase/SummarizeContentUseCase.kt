@@ -1,5 +1,6 @@
 package io.github.utubesummary.domain.usecase
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -104,6 +105,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
         }.fold(
             onSuccess = { Result.success(it) },
             onFailure = { error ->
+                if (error is CancellationException) throw error
                 val summaryException = error.toSummaryException()
                 if (requestContext.isNotEmpty()) {
                     summaryException.technicalDetails =

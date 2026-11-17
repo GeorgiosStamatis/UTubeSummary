@@ -249,7 +249,7 @@ fun ServicesSettingsGroup(
     SettingsGroup(modifier = modifier) {
         // BiliBili Account
         SettingItem(
-            title = "BiliBili Account",
+            title = stringResource(R.string.bilibili_account),
             subtitle = bilibiliSubtitle,
             position = GroupPosition.TOP,
             highlighted = highlighted,

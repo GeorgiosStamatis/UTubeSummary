@@ -7,7 +7,8 @@ import javax.inject.Inject
 class RestoreHistorySummaryUseCase @Inject constructor(
     private val historyRepository: HistoryRepository,
 ) {
+    /** Puts the deleted entry back exactly as it was (same id and date, no merging). */
     suspend operator fun invoke(summary: HistorySummary) {
-        historyRepository.addSummary(summary)
+        historyRepository.addSummaries(listOf(summary))
     }
 }

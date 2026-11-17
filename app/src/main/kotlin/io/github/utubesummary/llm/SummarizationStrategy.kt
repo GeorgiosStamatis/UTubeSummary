@@ -1,5 +1,6 @@
 package io.github.utubesummary.llm
 
+import kotlinx.coroutines.CancellationException
 import ai.koog.agents.core.agent.context.AIAgentLLMContext
 import ai.koog.agents.core.agent.entity.AIAgentGraphStrategy
 import ai.koog.agents.core.dsl.builder.node
@@ -61,6 +62,8 @@ fun createSummarizationStrategy(
             val nodeExtractArticle by node<SummarySource.Article, ExtractedPayload>("extract_article") { source ->
                 val content = try {
                     articleExtractorTool.execute(Article(source.url))
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Throwable) {
                     throw e.toSummaryException()
                 }
@@ -70,6 +73,8 @@ fun createSummarizationStrategy(
             val nodeExtractYoutube by node<SummarySource.Video, ExtractedPayload>("extract_youtube") { source ->
                 val content = try {
                     youTubeTranscriptTool.execute(YouTubeTranscript(source.url))
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Throwable) {
                     throw e.toSummaryException()
                 }
@@ -79,6 +84,8 @@ fun createSummarizationStrategy(
             val nodeExtractBiliBili by node<SummarySource.Video, ExtractedPayload>("extract_bilibili") { source ->
                 val content = try {
                     bilibiliSubtitleTool.execute(BiliBiliVideo(source.url))
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Throwable) {
                     throw e.toSummaryException()
                 }
@@ -88,6 +95,8 @@ fun createSummarizationStrategy(
             val nodeExtractFile by node<SummarySource.Document, ExtractedPayload>("extract_file") { source ->
                 val content = try {
                     fileExtractorTool.execute(File(source.uri))
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Throwable) {
                     throw e.toSummaryException()
                 }

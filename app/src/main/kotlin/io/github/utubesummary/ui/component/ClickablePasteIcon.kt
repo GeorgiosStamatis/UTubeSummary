@@ -1,5 +1,7 @@
 package io.github.utubesummary.ui.component
 
+import io.github.utubesummary.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.outlined.ContentPaste
@@ -21,7 +23,7 @@ fun ClickablePasteIcon(
 
     if (text.isNotBlank()) {
         IconButton(onClick = onClear) {
-            Icon(Icons.Outlined.Clear, contentDescription = "Clear")
+            Icon(Icons.Outlined.Clear, contentDescription = stringResource(R.string.clear))
         }
     } else {
         IconButton(onClick = {
@@ -32,7 +34,7 @@ fun ClickablePasteIcon(
                 }
             }
         }) {
-            Icon(Icons.Outlined.ContentPaste, contentDescription = "Paste")
+            Icon(Icons.Outlined.ContentPaste, contentDescription = stringResource(R.string.paste))
         }
     }
 }

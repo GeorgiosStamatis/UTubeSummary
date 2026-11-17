@@ -1,5 +1,7 @@
 package io.github.utubesummary.ui.page.settings
 
+import io.github.utubesummary.R
+import androidx.compose.ui.res.stringResource
 import android.annotation.SuppressLint
 import android.webkit.CookieManager
 import android.webkit.WebView
@@ -67,13 +69,13 @@ fun BiliBiliLoginSheetContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "BiliBili Login",
+                text = stringResource(R.string.bilibili_login),
                 style = MaterialTheme.typography.titleLarge
             )
             IconButton(onClick = onDismiss) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Close"
+                    contentDescription = stringResource(R.string.close)
                 )
             }
         }

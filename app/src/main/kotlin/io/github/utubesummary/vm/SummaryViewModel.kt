@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,6 +33,7 @@ class SummaryViewModel @Inject constructor(
 
     private var currentInput: String? = null
     private var currentProfileId: String? = null
+    private var summarizeJob: Job? = null
 
     /** Questions about the current content; the text itself stays in memory in the use case. */
     fun askQuestion(question: String) {
@@ -69,12 +71,22 @@ class SummaryViewModel @Inject constructor(
         )
     }
 
+    /** Stops the running summarization, if any. Results already cached stay available. */
+    fun cancelSummarize() {
+        summarizeJob?.cancel()
+        summarizeJob = null
+        _summarizationState.update { it.copy(isLoading = false) }
+    }
+
     fun clearCurrentSummary() {
+        summarizeJob?.cancel()
+        summarizeJob = null
         currentInput = null
         currentProfileId = null
         resetChat(null)
         _summarizationState.update {
             it.copy(
+                isLoading = false,
                 summaryResult = null,
                 error = null,
                 lengthResults = emptyMap()
@@ -87,6 +99,8 @@ class SummaryViewModel @Inject constructor(
         input: String? = null,
         lengthResults: Map<SummaryLength, SummaryOutput> = emptyMap(),
     ) {
+        summarizeJob?.cancel()
+        summarizeJob = null
         currentInput = input ?: output.sourceLink
         currentProfileId = null
         resetChat(currentInput)
@@ -124,7 +138,9 @@ class SummaryViewModel @Inject constructor(
     }
 
     fun summarize(text: String, overrideLength: SummaryLength? = null, profileId: String? = null) {
-        viewModelScope.launch {
+        // A newer request replaces the running one, so a late result can never overwrite it.
+        summarizeJob?.cancel()
+        summarizeJob = viewModelScope.launch {
             if (currentInput != text || currentProfileId != profileId) {
                 // New content or a different profile: cached results no longer apply.
                 if (currentInput != text) resetChat(null)

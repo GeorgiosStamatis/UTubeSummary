@@ -103,7 +103,7 @@ fun AdvancedSummarySetupScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Go Back"
+                            contentDescription = stringResource(R.string.go_back)
                         )
                     }
                 },
@@ -169,13 +169,13 @@ fun AdvancedSummarySetupScreen(
                                     onClick = { basePrompt = "" },
                                     enabled = basePrompt.isNotEmpty()
                                 ) {
-                                    Text("Clear")
+                                    Text(stringResource(R.string.clear))
                                 }
                                 FilledTonalButton(
                                     onClick = { basePrompt = defaultSystemPromptPlaceholder },
                                     enabled = basePrompt != defaultSystemPromptPlaceholder
                                 ) {
-                                    Text("Reset to Default")
+                                    Text(stringResource(R.string.reset_to_default))
                                 }
                             }
                         }
@@ -216,7 +216,7 @@ fun AdvancedSummarySetupScreen(
                                 shape = MaterialTheme.shapes.large,
                                 placeholder = {
                                     Text(
-                                        text = "Enter additional instructions...",
+                                        text = stringResource(R.string.additional_instructions_hint),
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }

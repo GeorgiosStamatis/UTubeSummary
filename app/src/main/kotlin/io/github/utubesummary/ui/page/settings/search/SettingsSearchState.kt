@@ -282,7 +282,7 @@ fun rememberSettingsSearchState(
             ),
             SearchableSetting(
                 id = "bilibili",
-                title = "BiliBili Account",
+                title = stringResource(R.string.bilibili_account),
                 subtitle = bilibiliSubtitle,
                 group = "Services & Tools",
                 iconBadge = {

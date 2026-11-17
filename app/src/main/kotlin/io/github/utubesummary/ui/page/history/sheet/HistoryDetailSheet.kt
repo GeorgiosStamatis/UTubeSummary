@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
+import io.github.utubesummary.ui.component.historyProfileLabel
 import io.github.utubesummary.ui.component.LengthSelector
 import io.github.utubesummary.ui.component.SummaryCard
 
@@ -99,6 +101,18 @@ fun HistoryDetailSheet(
                         enabled = true,
                         useContainerBackground = false,
                         modifier = Modifier.padding(bottom = 12.dp)
+                    )
+                }
+
+                historyProfileLabel(
+                    profileId = activeSummary.activeResult?.profileId,
+                    profileName = activeSummary.activeResult?.profileName,
+                )?.let { label ->
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
 

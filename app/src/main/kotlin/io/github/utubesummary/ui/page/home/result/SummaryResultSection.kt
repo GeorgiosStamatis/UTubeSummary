@@ -8,10 +8,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.key
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import io.github.utubesummary.R
 import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
@@ -32,6 +37,7 @@ fun SummaryResultSection(
     chatState: ChatState = ChatState(),
     onAskQuestion: (String) -> Unit = {},
     onCopyAnswer: (String) -> Unit = {},
+    onCancel: (() -> Unit)? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         if (summarizationState.isLoading) {
@@ -40,6 +46,14 @@ fun SummaryResultSection(
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
             )
+            if (onCancel != null) {
+                TextButton(
+                    onClick = onCancel,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
         } else {
             Spacer(modifier = Modifier.height(8.dp))
         }

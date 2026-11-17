@@ -90,6 +90,8 @@ import io.github.utubesummary.model.SummaryOutput
 import io.github.utubesummary.util.getLanguageCode
 import java.util.Locale
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicReference
 
 enum class PlaybackSpeed(val rate: Float, val label: String) {
     HALF(0.5f, "0.5x"),
@@ -293,7 +295,7 @@ fun SummaryCard(
                                     .background(MaterialTheme.colorScheme.primary, CircleShape)
                             )
                             Text(
-                                text = "Overview",
+                                text = stringResource(R.string.overview),
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -457,13 +459,19 @@ private fun SummaryActionButtons(
     val scope = rememberCoroutineScope()
     val clipboard = LocalClipboard.current
     val haptics = LocalHapticFeedback.current
-    val summaryText = summary.summary
+    // What the speech engine reads: the summary without Markdown symbols.
+    val summaryText = remember(summary.summary) { markdownToPlainText(summary.summary) }
+    val failedToPlay = stringResource(R.string.tts_failed_to_play)
+    val ttsInitFailed = stringResource(R.string.tts_init_failed)
+    val ttsLanguageUnsupported = stringResource(R.string.tts_language_not_supported)
 
     var tts: TextToSpeech? by remember { mutableStateOf(null) }
     var isPaused by remember { mutableStateOf(false) }
     var currentPosition by remember { mutableIntStateOf(0) }
     var resumeOffset by remember { mutableIntStateOf(0) }
-    var utteranceId by remember { mutableStateOf("") }
+    // Long summaries are spoken in chunks; each utterance id maps to its start in summaryText.
+    val utteranceOffsets = remember { ConcurrentHashMap<String, Int>() }
+    val lastUtteranceId = remember { AtomicReference("") }
     val copied = stringResource(id = R.string.copied)
     var playbackSpeed by remember { mutableStateOf(PlaybackSpeed.NORMAL) }
 
@@ -476,6 +484,7 @@ private fun SummaryActionButtons(
                 override fun onStart(utteranceId: String) {}
 
                 override fun onDone(utteranceId: String) {
+                    if (utteranceId != lastUtteranceId.get()) return
                     scope.launch {
                         if (updatedIsPlaying) {
                             updatedOnPlayRequest()
@@ -485,7 +494,7 @@ private fun SummaryActionButtons(
 
                 @Deprecated("Deprecated in Java")
                 override fun onError(utteranceId: String) {
-                    onShowSnackbar("Failed to play")
+                    scope.launch { onShowSnackbar(failedToPlay) }
                 }
 
                 override fun onRangeStart(
@@ -494,10 +503,33 @@ private fun SummaryActionButtons(
                     end: Int,
                     frame: Int,
                 ) {
-                    currentPosition = resumeOffset + end
+                    currentPosition = (utteranceOffsets[utteranceId] ?: 0) + end
                 }
             }
         }
+
+    // Speaks summaryText from [offset], split below the engine's maximum input length.
+    fun speakFrom(offset: Int, rate: Float) {
+        val engine = tts ?: return
+        engine.setSpeechRate(rate)
+        utteranceOffsets.clear()
+        val maxLength = TextToSpeech.getMaxSpeechInputLength().coerceAtLeast(500)
+        var start = offset.coerceIn(0, summaryText.length)
+        var queueMode = TextToSpeech.QUEUE_FLUSH
+        while (start < summaryText.length) {
+            var end = minOf(start + maxLength, summaryText.length)
+            if (end < summaryText.length) {
+                val breakAt = summaryText.lastIndexOf(' ', end)
+                if (breakAt > start) end = breakAt + 1
+            }
+            val id = UUID.randomUUID().toString()
+            utteranceOffsets[id] = start
+            lastUtteranceId.set(id)
+            engine.speak(summaryText.substring(start, end), queueMode, null, id)
+            queueMode = TextToSpeech.QUEUE_ADD
+            start = end
+        }
+    }
 
     DisposableEffect(Unit) {
         var textToSpeech: TextToSpeech? = null
@@ -508,7 +540,7 @@ private fun SummaryActionButtons(
                 tts = textToSpeech
             } else {
                 Log.e(TAG, "TTS engine init error.")
-                onShowSnackbar("Text-to-speech engine failed to initialize.")
+                onShowSnackbar(ttsInitFailed)
             }
         }
         textToSpeech = TextToSpeech(context, onInitListener)
@@ -532,7 +564,7 @@ private fun SummaryActionButtons(
                     val defaultResult = tts?.setLanguage(Locale.getDefault())
                     if (defaultResult == TextToSpeech.LANG_MISSING_DATA || defaultResult == TextToSpeech.LANG_NOT_SUPPORTED) {
                         Log.e(TAG, "Default language is also not supported.")
-                        onShowSnackbar("Text-to-speech language not supported.")
+                        onShowSnackbar(ttsLanguageUnsupported)
                     } else {
                         Log.d(TAG, "Language set to default: ${Locale.getDefault()}")
                     }
@@ -541,9 +573,7 @@ private fun SummaryActionButtons(
                 }
 
                 resumeOffset = 0
-                utteranceId = UUID.randomUUID().toString()
-                tts?.setSpeechRate(playbackSpeed.rate)
-                tts?.speak(summaryText, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
+                speakFrom(0, playbackSpeed.rate)
             }
         } else {
             tts?.stop()
@@ -593,15 +623,7 @@ private fun SummaryActionButtons(
                     onClick = {
                         if (isPaused) {
                             resumeOffset = currentPosition
-                            val remainingText = summaryText.substring(currentPosition)
-                            utteranceId = UUID.randomUUID().toString()
-                            tts?.setSpeechRate(playbackSpeed.rate)
-                            tts?.speak(
-                                remainingText,
-                                TextToSpeech.QUEUE_FLUSH,
-                                null,
-                                utteranceId
-                            )
+                            speakFrom(currentPosition, playbackSpeed.rate)
                             isPaused = false
                         } else {
                             tts?.stop()
@@ -612,7 +634,7 @@ private fun SummaryActionButtons(
                 ) {
                     Icon(
                         imageVector = if (isPaused) Icons.Outlined.PlayCircleFilled else Icons.Outlined.PauseCircleFilled,
-                        contentDescription = if (isPaused) "Continue" else "Pause",
+                        contentDescription = if (isPaused) stringResource(R.string.continue_playback) else stringResource(R.string.pause_playback),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
                     )
@@ -625,15 +647,7 @@ private fun SummaryActionButtons(
                         if (!isPaused) {
                             tts?.stop()
                             resumeOffset = currentPosition
-                            val remainingText = summaryText.substring(currentPosition)
-                            utteranceId = UUID.randomUUID().toString()
-                            tts?.setSpeechRate(newSpeed.rate)
-                            tts?.speak(
-                                remainingText,
-                                TextToSpeech.QUEUE_FLUSH,
-                                null,
-                                utteranceId
-                            )
+                            speakFrom(currentPosition, newSpeed.rate)
                         }
                     },
                     label = {
@@ -710,7 +724,7 @@ private fun SummaryActionButtons(
         ) {
             Icon(
                 imageVector = Icons.Outlined.Share,
-                contentDescription = "Share",
+                contentDescription = stringResource(R.string.share),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )

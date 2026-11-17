@@ -1,5 +1,6 @@
 package io.github.utubesummary
 
+import io.github.utubesummary.R
 import android.content.ClipData
 import android.content.Intent
 import android.net.Uri
@@ -302,7 +303,7 @@ fun InstantSummaryDialog(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "Error",
+                                    text = stringResource(R.string.error_title),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.error
@@ -389,7 +390,7 @@ fun InstantSummaryDialog(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Share,
-                                            contentDescription = "Share",
+                                            contentDescription = stringResource(R.string.share),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }

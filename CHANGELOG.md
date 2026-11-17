@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - LM Studio, Custom Provider, Test button, official URLs and auto model list
 - New app icon and logo
 - Summarization profiles: 5 built-in prompts or your own
+- Cancel button; profile shown in History
 
 ### Fixed
 

@@ -27,8 +27,12 @@ private const val PAGE_SIZE = 20
 class HistoryRepositoryImpl @Inject constructor(
     private val historyDao: HistoryDao,
 ) : HistoryRepository {
+    @Volatile
     private var isDeduplicated = false
     private val deduplicationMutex = Mutex()
+
+    // Serializes read-merge-write cycles so overlapping saves cannot overwrite each other.
+    private val writeMutex = Mutex()
 
     override fun getSummaries(query: String, type: SummaryType?): Flow<PagingData<HistorySummary>> {
         return Pager(
@@ -50,7 +54,7 @@ class HistoryRepositoryImpl @Inject constructor(
 
     override suspend fun getAllSourceLinks(): List<String> = historyDao.getAllSourceLinks()
 
-    override suspend fun addSummary(summary: HistorySummary) {
+    override suspend fun addSummary(summary: HistorySummary): Unit = writeMutex.withLock {
         val existingRecords = findExistingRecords(summary)
         if (existingRecords.isNotEmpty()) {
             val primary = existingRecords.first().toDomain()
@@ -67,6 +71,8 @@ class HistoryRepositoryImpl @Inject constructor(
                 keyPoints = summary.keyPoints,
                 tags = summary.tags,
             )
+            // One result is kept per length: the newest replaces an older one, even from another
+            // profile. The result records its profile, which History shows.
             mergedLengthResults[summary.length] = newResult
 
             val updated = primary.copy(
@@ -111,7 +117,7 @@ class HistoryRepositoryImpl @Inject constructor(
         if (isDeduplicated) return
         deduplicationMutex.withLock {
             if (isDeduplicated) return
-            runCatching {
+            val result = runCatching { writeMutex.withLock {
                 val all = historyDao.getAll()
                 val grouped = all.groupBy { entity ->
                     when {
@@ -137,8 +143,9 @@ class HistoryRepositoryImpl @Inject constructor(
                         }
                     }
                 }
-            }
-            isDeduplicated = true
+            } }
+            // A failed pass is retried the next time the history is opened.
+            if (result.isSuccess) isDeduplicated = true
         }
     }
 }

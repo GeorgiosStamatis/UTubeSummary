@@ -172,7 +172,7 @@ fun ModelSettingsDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No models configured",
+                            text = stringResource(R.string.no_models_configured),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyMedium
                         )

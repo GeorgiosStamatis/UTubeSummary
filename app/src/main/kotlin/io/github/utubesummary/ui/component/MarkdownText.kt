@@ -85,3 +85,11 @@ private fun AnnotatedString.Builder.appendInline(text: String) {
     }
     append(text.substring(last))
 }
+
+/** The text a reader would hear: [markdownToAnnotatedString] without its markers and symbols. */
+fun markdownToPlainText(markdown: String): String =
+    markdownToAnnotatedString(markdown).text
+        .replace("────────", "")
+        .replace("•", "")
+        .replace("  ·  ", ", ")
+

@@ -14,6 +14,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.Url
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -58,6 +59,9 @@ class YouTubeTranscriptTool(client: HttpClient) : Tool<YouTubeTranscript, Extrac
 
     companion object {
         fun isYouTubeLink(input: String): Boolean = VideoSubtype.isYouTube(input)
+
+        /** The video id of any YouTube link form (watch, youtu.be, shorts, embed, live), or null. */
+        fun extractVideoId(url: String): String? = YouTubeExtractor.extractVideoId(url)
     }
 }
 
@@ -126,6 +130,8 @@ private class YouTubeExtractor(private val client: HttpClient) {
 
                 // Standard YouTube video IDs are 11 characters long and use alphanumeric characters, underscores, and hyphens.
                 return vid?.takeIf { it.matches(Regex("[a-zA-Z0-9_-]{11}")) }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e(TAG, "Error parsing URL to extract video ID: $urlInput", e)
                 return null
@@ -147,6 +153,8 @@ private class YouTubeExtractor(private val client: HttpClient) {
                 Log.e(TAG, "Failed to fetch watch page: ${watchPageResponse.status}")
                 return@withContext null
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Exception in getWatchPageHtml for video $videoId", e)
             return@withContext null
@@ -184,6 +192,8 @@ private class YouTubeExtractor(private val client: HttpClient) {
                     )
                     return@withContext null
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e(TAG, "Exception in getPlayerResponseFromApi for video $videoId", e)
                 return@withContext null
@@ -215,6 +225,8 @@ private class YouTubeExtractor(private val client: HttpClient) {
                     )
                     return@withContext null
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e(TAG, "Exception in getVideoDetails for video $videoId", e)
                 return@withContext null
@@ -298,6 +310,8 @@ private class YouTubeExtractor(private val client: HttpClient) {
 
             val transcriptText = parseJsonTranscript(transcriptJson)
             return@withContext Pair(transcriptText, track.languageCode)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Exception in getTranscript for video $videoId", e)
             return@withContext null
@@ -325,6 +339,8 @@ private class YouTubeExtractor(private val client: HttpClient) {
             // The JSON can contain newlines which should be spaces, and segments may or may not have spaces.
             // Joining with empty string and then replacing newline with space is the safest bet.
             texts.joinToString("").replace('\n', ' ').trim()
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Failed to parse JSON transcript", e)
             ""
