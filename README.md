@@ -128,7 +128,9 @@ than #17 (signed with a different key).
   **Quick Brief**. Tap a profile to use it, edit its prompt (in Summarization profiles or in the Base
   Prompt box of Advanced Summary Setup), reset a preset, or create and delete your own profiles;
   "Append Custom Prompt" is applied on top of any profile. Default keeps the overview / key points /
-  tags card; the other profiles answer in the format defined by their prompt (Markdown is rendered).
+  tags card; the other profiles answer in the format defined by their prompt (Markdown is rendered),
+  unless a profile's "Overview, key points and tags" switch is on. Share a profile as JSON text and
+  import one from the clipboard.
 
 - **Summary language**: choose the language of the summary on Home or in Advanced Summary Setup:
   the video's own language, the app language or one of about 20 other languages. If the content is
@@ -145,7 +147,9 @@ than #17 (signed with a different key).
 - **Text to speech for the summaries with multilingual and speed adjustment support**; it reads the
   text without Markdown symbols and handles long summaries
 
-- **History search**
+- **History**: search; pin items to the top; filter by pinned, profile or type. Summarizing the same
+  item again (other profile, language or length) keeps every summary in one entry, oldest first,
+  with all but the newest collapsed
 
 - **Private by design**: no analytics or tracking; your API keys and BiliBili login are encrypted on
   your device. Content is only sent to the LLM provider you configure. Two optional third-party
@@ -159,8 +163,11 @@ than #17 (signed with a different key).
 
 - **Summarization profiles**: pick a base prompt per summary (Default, Technical Deep Dive, Critical
   Analysis, Learning Mode, Technical Content Quality Evaluator, Quick Brief) or create your own. Only
-  Default uses the structured overview / key points / tags card; the others answer in the format of
-  their prompt
+  Default uses the structured overview / key points / tags card (unless a profile switches it on);
+  the others answer in the format of their prompt. Profiles can be shared as JSON text
+- **History keeps every summary of an item**: summarizing again with another profile, language or
+  length appends a section to the same entry instead of replacing the old one; pin items and filter
+  by pinned or profile
 - **Summary language**: Video language, App language or one of about 20 languages, chosen on Home
   (under the profile picker), in Advanced Summary Setup and in the instant summary dialog; the old
   "Original Language" switch is used until you pick one
