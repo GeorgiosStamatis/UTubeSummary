@@ -17,7 +17,7 @@ interface HistoryDao {
         """
          SELECT * FROM history 
          WHERE (:type IS NULL OR type = :type) 
-         AND (:query = '' OR title LIKE '%' || :query || '%' OR author LIKE '%' || :query || '%' OR summary LIKE '%' || :query || '%' OR lengthResults LIKE '%' || :query || '%')
+         AND (:query = '' OR title LIKE '%' || :query || '%' ESCAPE '\' OR author LIKE '%' || :query || '%' ESCAPE '\' OR summary LIKE '%' || :query || '%' ESCAPE '\' OR lengthResults LIKE '%' || :query || '%' ESCAPE '\')
          ORDER BY createdOn DESC
     """
     )

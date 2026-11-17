@@ -60,7 +60,6 @@ import androidx.compose.ui.window.DialogProperties
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.ui.component.LlmIndicator
 import io.github.utubesummary.ui.component.resolveUserErrorMessage
@@ -168,15 +167,16 @@ class InstantSummaryActivity : ComponentActivity() {
 
             if (summaryResult != null) {
                 putExtra("auto_trigger", false)
-                val json = Json { ignoreUnknownKeys = true }
-                putExtra("summary_result_json", json.encodeToString(summaryResult))
                 val effectiveLengthResults = if (lengthResults.isNotEmpty()) {
                     lengthResults + (summaryResult.length to summaryResult)
                 } else {
                     mapOf(summaryResult.length to summaryResult)
                 }
-                val stringKeyMap = effectiveLengthResults.mapKeys { it.key.name }
-                putExtra("length_results_json", json.encodeToString(stringKeyMap))
+                // Only an id travels in the intent; the summaries stay in memory (see SummaryHandoff).
+                putExtra(
+                    "handoff_id",
+                    SummaryHandoff.put(SummaryHandoff.Entry(summaryResult, effectiveLengthResults))
+                )
             } else {
                 putExtra("auto_trigger", true)
             }

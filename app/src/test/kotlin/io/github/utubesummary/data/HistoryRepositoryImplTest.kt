@@ -3,6 +3,7 @@ package io.github.utubesummary.data
 import androidx.paging.PagingSource
 import io.github.utubesummary.data.local.database.entity.HistoryEntity
 import io.github.utubesummary.data.repository.HistoryRepositoryImpl
+import io.github.utubesummary.data.repository.escapeLikePattern
 import io.github.utubesummary.model.HistoryLengthResult
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryLength
@@ -119,5 +120,13 @@ class HistoryRepositoryImplTest {
         val restored = dao.rows.getValue(deleted.id)
         assertEquals(1_000L, restored.createdOn)
         assertTrue(restored.lengthResults!!.containsKey(SummaryLength.SHORT))
+    }
+
+    @Test
+    fun `search wildcards are escaped so they match literally`() {
+        assertEquals("100\\% sure", escapeLikePattern("100% sure"))
+        assertEquals("snake\\_case", escapeLikePattern("snake_case"))
+        assertEquals("a\\\\b", escapeLikePattern("a\\b"))
+        assertEquals("plain", escapeLikePattern("plain"))
     }
 }

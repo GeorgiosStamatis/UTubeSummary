@@ -23,6 +23,10 @@ import javax.inject.Singleton
 
 private const val PAGE_SIZE = 20
 
+/** Makes `%`, `_` and `\` in a search text match literally (the DAO query uses `ESCAPE '\'`). */
+internal fun escapeLikePattern(text: String): String =
+    text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
 @Singleton
 class HistoryRepositoryImpl @Inject constructor(
     private val historyDao: HistoryDao,
@@ -40,7 +44,7 @@ class HistoryRepositoryImpl @Inject constructor(
                 pageSize = PAGE_SIZE,
                 enablePlaceholders = false
             ),
-            pagingSourceFactory = { historyDao.getSummaries(query, type) }
+            pagingSourceFactory = { historyDao.getSummaries(escapeLikePattern(query), type) }
         ).flow
             .onStart { ensureDeduplicated() }
             .map { pagingData ->

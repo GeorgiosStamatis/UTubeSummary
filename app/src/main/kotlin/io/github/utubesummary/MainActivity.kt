@@ -15,9 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.core.view.WindowCompat
 import androidx.navigation3.runtime.rememberNavBackStack
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.serialization.json.Json
-import io.github.utubesummary.model.SummaryLength
-import io.github.utubesummary.model.SummaryOutput
 import io.github.utubesummary.ui.AppNavigation
 import io.github.utubesummary.ui.Nav
 import io.github.utubesummary.ui.theme.UTubeSummaryTheme
@@ -76,31 +73,13 @@ class MainActivity : ComponentActivity() {
             Intent.ACTION_SEND -> {
                 val type = intent.type ?: ""
                 val autoTrigger = intent.getBooleanExtra("auto_trigger", false)
-                val summaryJson = intent.getStringExtra("summary_result_json")
-                val lengthResultsJson = intent.getStringExtra("length_results_json")
+                val handoffId = intent.getStringExtra("handoff_id")
+                val handoff = handoffId?.let { SummaryHandoff.take(it) }
+                val initialSummary = handoff?.summary
+                val lengthResults = handoff?.lengthResults ?: emptyMap()
 
-                val json = Json { ignoreUnknownKeys = true }
-                val initialSummary = summaryJson?.let {
-                    runCatching { json.decodeFromString<SummaryOutput>(it) }
-                        .onFailure { e ->
-                            android.util.Log.e(
-                                "MainActivity",
-                                "Failed to decode summaryJson: $summaryJson",
-                                e
-                            )
-                        }
-                        .getOrNull()
-                }
-                val lengthResults = lengthResultsJson?.let {
-                    runCatching {
-                        json.decodeFromString<Map<String, SummaryOutput>>(it)
-                            .mapNotNull { (k, v) ->
-                                runCatching { SummaryLength.valueOf(k) to v }.getOrNull()
-                            }.toMap()
-                    }.getOrDefault(emptyMap())
-                } ?: emptyMap()
-
-                val shouldAutoTrigger = initialSummary == null && autoTrigger
+                // If the summary is gone (the app process was restarted in between), summarize again.
+                val shouldAutoTrigger = initialSummary == null && (autoTrigger || handoffId != null)
 
                 if (type.startsWith("application/") || type.startsWith("image/")) {
                     val contentUri: Uri? =
