@@ -112,6 +112,9 @@ class HistoryRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getAllSummaries(): List<HistorySummary> =
+        historyDao.getAll().map { it.toDomain() }
+
     override suspend fun getSummariesByIds(ids: List<String>): List<HistorySummary> =
         if (ids.isEmpty()) emptyList() else historyDao.getByIds(ids).map { it.toDomain() }
 

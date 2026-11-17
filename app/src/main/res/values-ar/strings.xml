@@ -136,4 +136,14 @@
     <string name="history_sort_newest">الأحدث أولًا</string>
     <string name="history_sort_oldest">الأقدم أولًا</string>
     <string name="history_sort_title">العنوان أ-ي</string>
+
+    <!-- Files: Markdown and History export -->
+    <string name="save_as_markdown">حفظ كملف Markdown</string>
+    <string name="markdown_saved">تم الحفظ</string>
+    <string name="markdown_save_failed">تعذّر حفظ الملف</string>
+    <string name="exportHistory">تصدير السجل</string>
+    <string name="exportHistoryDescription">احفظ ملخصات فيديوهات YouTube في ملف يمكن استيراده مرة أخرى.</string>
+    <string name="history_export_done">تم تصدير السجل</string>
+    <string name="history_export_none">لا توجد ملخصات فيديوهات YouTube للتصدير.</string>
+    <string name="history_export_failed">تعذّر تصدير السجل.</string>
 </resources>

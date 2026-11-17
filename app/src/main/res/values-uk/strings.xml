@@ -128,4 +128,14 @@
     <string name="history_sort_newest">Спочатку новіші</string>
     <string name="history_sort_oldest">Спочатку старіші</string>
     <string name="history_sort_title">Назва А-Я</string>
+
+    <!-- Files: Markdown and History export -->
+    <string name="save_as_markdown">Зберегти як файл Markdown</string>
+    <string name="markdown_saved">Збережено</string>
+    <string name="markdown_save_failed">Не вдалося зберегти файл</string>
+    <string name="exportHistory">Експортувати історію</string>
+    <string name="exportHistoryDescription">Збережіть підсумки відео YouTube у файл, який можна імпортувати знову.</string>
+    <string name="history_export_done">Історію експортовано</string>
+    <string name="history_export_none">Немає підсумків відео YouTube для експорту.</string>
+    <string name="history_export_failed">Не вдалося експортувати історію.</string>
 </resources>

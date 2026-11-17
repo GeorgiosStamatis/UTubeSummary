@@ -20,6 +20,9 @@ interface HistoryRepository {
 
     /** The source link of every history entry that has one. */
     suspend fun getAllSourceLinks(): List<String>
+    /** Every entry, newest first (for exporting). */
+    suspend fun getAllSummaries(): List<HistorySummary>
+
     /** The entries with these ids (ids that no longer exist are left out). */
     suspend fun getSummariesByIds(ids: List<String>): List<HistorySummary>
 

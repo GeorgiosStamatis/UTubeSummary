@@ -156,4 +156,14 @@
     <string name="history_sort_newest">Più recenti prima</string>
     <string name="history_sort_oldest">Più vecchi prima</string>
     <string name="history_sort_title">Titolo A-Z</string>
+
+    <!-- Files: Markdown and History export -->
+    <string name="save_as_markdown">Salva come file Markdown</string>
+    <string name="markdown_saved">Salvato</string>
+    <string name="markdown_save_failed">Impossibile salvare il file</string>
+    <string name="exportHistory">Esporta cronologia</string>
+    <string name="exportHistoryDescription">Salva i riassunti dei video YouTube in un file che può essere importato di nuovo.</string>
+    <string name="history_export_done">Cronologia esportata</string>
+    <string name="history_export_none">Non ci sono riassunti di video YouTube da esportare.</string>
+    <string name="history_export_failed">Impossibile esportare la cronologia.</string>
 </resources>

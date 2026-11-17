@@ -115,6 +115,12 @@ fun SettingsScreen(
         if (uri != null) settingsViewModel.importVideoSummaries(uri.toString())
     }
 
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null) settingsViewModel.exportHistory(uri.toString())
+    }
+
     val screenContext = LocalContext.current
     LaunchedEffect(settingsViewModel) {
         settingsViewModel.userMessages.collect { messageRes ->
@@ -273,6 +279,7 @@ fun SettingsScreen(
             onShowBiliBiliLoginSheet = { showBiliBiliLoginSheet = true },
             onShowClearBilibiliSessDataDialog = { showClearBilibiliSessDataDialog = true },
             onImportSummaries = { importLauncher.launch(arrayOf("application/json", "*/*")) },
+            onExportHistory = { exportLauncher.launch("utubesummary-history.json") },
             highlightSection = highlightSection
         )
     }
@@ -290,6 +297,7 @@ private fun SettingsContent(
     onShowBiliBiliLoginSheet: () -> Unit,
     onShowClearBilibiliSessDataDialog: () -> Unit,
     onImportSummaries: () -> Unit,
+    onExportHistory: () -> Unit = {},
     highlightSection: String?,
 ) {
     val context = LocalContext.current
@@ -396,7 +404,7 @@ private fun SettingsContent(
 
                 // History data: import
                 item(key = "group_data") {
-                    DataSettingsGroup(onImportSummaries = onImportSummaries)
+                    DataSettingsGroup(onImportSummaries = onImportSummaries, onExportHistory = onExportHistory)
                 }
 
                 // Group 4: Help & Community

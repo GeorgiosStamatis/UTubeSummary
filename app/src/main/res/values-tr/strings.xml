@@ -151,4 +151,14 @@
     <string name="history_sort_newest">Önce en yeni</string>
     <string name="history_sort_oldest">Önce en eski</string>
     <string name="history_sort_title">Başlık A-Z</string>
+
+    <!-- Files: Markdown and History export -->
+    <string name="save_as_markdown">Markdown dosyası olarak kaydet</string>
+    <string name="markdown_saved">Kaydedildi</string>
+    <string name="markdown_save_failed">Dosya kaydedilemedi</string>
+    <string name="exportHistory">Geçmişi dışa aktar</string>
+    <string name="exportHistoryDescription">YouTube video özetlerinizi tekrar içe aktarılabilecek bir dosyaya kaydedin.</string>
+    <string name="history_export_done">Geçmiş dışa aktarıldı</string>
+    <string name="history_export_none">Dışa aktarılacak YouTube video özeti yok.</string>
+    <string name="history_export_failed">Geçmiş dışa aktarılamadı.</string>
 </resources>

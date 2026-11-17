@@ -52,6 +52,8 @@ class HistoryViewModelTest {
             this.pinned[id] = pinned
         }
 
+        override suspend fun getAllSummaries(): List<HistorySummary> = items.toList()
+
         override suspend fun getSummariesByIds(ids: List<String>): List<HistorySummary> =
             items.filter { it.id in ids }
 

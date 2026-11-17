@@ -1,5 +1,6 @@
 package io.github.utubesummary.ui.page.settings.section
 
+import androidx.compose.material.icons.rounded.FileDownload
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -310,12 +311,13 @@ fun ServicesSettingsGroup(
 fun DataSettingsGroup(
     onImportSummaries: () -> Unit,
     modifier: Modifier = Modifier,
+    onExportHistory: () -> Unit = {},
 ) {
     SettingsGroup(modifier = modifier) {
         SettingItem(
             title = stringResource(id = R.string.importSummaries),
             subtitle = stringResource(id = R.string.importSummariesDescription),
-            position = GroupPosition.SINGLE,
+            position = GroupPosition.TOP,
             iconBadge = {
                 val (bg, fg) = SettingBadges.advancedColors()
                 SettingIconBadge(bg, fg) {
@@ -327,6 +329,22 @@ fun DataSettingsGroup(
                 }
             },
             onClick = onImportSummaries
+        )
+        SettingItem(
+            title = stringResource(id = R.string.exportHistory),
+            subtitle = stringResource(id = R.string.exportHistoryDescription),
+            position = GroupPosition.BOTTOM,
+            iconBadge = {
+                val (bg, fg) = SettingBadges.advancedColors()
+                SettingIconBadge(bg, fg) {
+                    Icon(
+                        Icons.Rounded.FileDownload,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            },
+            onClick = onExportHistory
         )
     }
 }

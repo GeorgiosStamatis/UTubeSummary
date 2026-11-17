@@ -133,5 +133,15 @@
     <string name="history_sort_newest">Nejnovější první</string>
     <string name="history_sort_oldest">Nejstarší první</string>
     <string name="history_sort_title">Název A-Z</string>
+
+    <!-- Files: Markdown and History export -->
+    <string name="save_as_markdown">Uložit jako soubor Markdown</string>
+    <string name="markdown_saved">Uloženo</string>
+    <string name="markdown_save_failed">Soubor se nepodařilo uložit</string>
+    <string name="exportHistory">Exportovat historii</string>
+    <string name="exportHistoryDescription">Uložte shrnutí videí z YouTube do souboru, který lze znovu importovat.</string>
+    <string name="history_export_done">Historie exportována</string>
+    <string name="history_export_none">Nejsou žádná shrnutí videí z YouTube k exportu.</string>
+    <string name="history_export_failed">Historii se nepodařilo exportovat.</string>
 </resources>
 

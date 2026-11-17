@@ -263,4 +263,11 @@
     <string name="save_as_markdown">Save as Markdown file</string>
     <string name="markdown_saved">Saved</string>
     <string name="markdown_save_failed">Could not save the file</string>
+
+    <!-- Exporting the History -->
+    <string name="exportHistory">Export History</string>
+    <string name="exportHistoryDescription">Save your YouTube video summaries to a file that can be imported again.</string>
+    <string name="history_export_done">History exported</string>
+    <string name="history_export_none">There are no YouTube video summaries to export.</string>
+    <string name="history_export_failed">The History could not be exported.</string>
 </resources>

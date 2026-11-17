@@ -141,4 +141,14 @@
     <string name="history_sort_newest">Neueste zuerst</string>
     <string name="history_sort_oldest">Älteste zuerst</string>
     <string name="history_sort_title">Titel A-Z</string>
+
+    <!-- Files: Markdown and History export -->
+    <string name="save_as_markdown">Als Markdown-Datei speichern</string>
+    <string name="markdown_saved">Gespeichert</string>
+    <string name="markdown_save_failed">Die Datei konnte nicht gespeichert werden</string>
+    <string name="exportHistory">Verlauf exportieren</string>
+    <string name="exportHistoryDescription">Speichere deine YouTube-Videozusammenfassungen in einer Datei, die wieder importiert werden kann.</string>
+    <string name="history_export_done">Verlauf exportiert</string>
+    <string name="history_export_none">Es gibt keine YouTube-Videozusammenfassungen zum Exportieren.</string>
+    <string name="history_export_failed">Der Verlauf konnte nicht exportiert werden.</string>
 </resources>

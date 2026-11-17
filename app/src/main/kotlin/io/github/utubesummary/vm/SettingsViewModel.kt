@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import io.github.utubesummary.R
 import io.github.utubesummary.domain.importer.InvalidBackupException
 import io.github.utubesummary.domain.provider.FileTooLargeException
+import io.github.utubesummary.domain.usecase.ExportHistoryUseCase
 import io.github.utubesummary.domain.usecase.GetUserSettingsUseCase
 import io.github.utubesummary.domain.usecase.ImportVideoSummariesUseCase
 import io.github.utubesummary.domain.usecase.TestProviderConnectionUseCase
@@ -37,6 +38,7 @@ class SettingsViewModel @Inject constructor(
     private val updateProviderConfigUseCase: UpdateProviderConfigUseCase,
     private val testProviderConnectionUseCase: TestProviderConnectionUseCase,
     private val importVideoSummariesUseCase: ImportVideoSummariesUseCase,
+    private val exportHistoryUseCase: ExportHistoryUseCase,
     private val updateSummaryProfilesUseCase: UpdateSummaryProfilesUseCase,
 ) : ViewModel() {
 
@@ -58,6 +60,17 @@ class SettingsViewModel @Inject constructor(
                     }
                     _importState.value = ImportState.Failed(reason)
                 }
+        }
+    }
+
+    /** Writes the History's video summaries to [uri]; the outcome is announced as a one-shot message. */
+    fun exportHistory(uri: String) {
+        viewModelScope.launch {
+            exportHistoryUseCase(uri)
+                .onSuccess { count ->
+                    _userMessages.tryEmit(if (count > 0) R.string.history_export_done else R.string.history_export_none)
+                }
+                .onFailure { _userMessages.tryEmit(R.string.history_export_failed) }
         }
     }
 

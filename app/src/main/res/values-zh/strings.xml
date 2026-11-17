@@ -197,4 +197,14 @@
     <string name="history_sort_newest">最新优先</string>
     <string name="history_sort_oldest">最早优先</string>
     <string name="history_sort_title">标题 A-Z</string>
+
+    <!-- Files: Markdown and History export -->
+    <string name="save_as_markdown">另存为 Markdown 文件</string>
+    <string name="markdown_saved">已保存</string>
+    <string name="markdown_save_failed">无法保存文件</string>
+    <string name="exportHistory">导出历史记录</string>
+    <string name="exportHistoryDescription">将你的 YouTube 视频摘要保存为可再次导入的文件。</string>
+    <string name="history_export_done">历史记录已导出</string>
+    <string name="history_export_none">没有可导出的 YouTube 视频摘要。</string>
+    <string name="history_export_failed">无法导出历史记录。</string>
 </resources>

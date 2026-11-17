@@ -137,6 +137,10 @@ than #17 (signed with a different key).
   too long for the model's context window, the app says so and suggests a model with a larger one
   (nothing is cut)
 
+- **Files in and out**: summarize `.txt`, `.md` and Word files (tables, tabs and line breaks are
+  kept); save any summary as a Markdown file; export your YouTube video summaries from Settings in the
+  format the importer reads
+
 - **Share and re-run**: share a summary as Markdown (title, source link, key points, tags), see
   whether the app is fetching content or summarizing, cancel a running summary, and summarize a
   History item again with another profile, language or length. The instant summary dialog has the

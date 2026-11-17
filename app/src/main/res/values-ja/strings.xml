@@ -159,4 +159,14 @@
     <string name="history_sort_newest">新しい順</string>
     <string name="history_sort_oldest">古い順</string>
     <string name="history_sort_title">タイトル順 (A-Z)</string>
+
+    <!-- Files: Markdown and History export -->
+    <string name="save_as_markdown">Markdownファイルとして保存</string>
+    <string name="markdown_saved">保存しました</string>
+    <string name="markdown_save_failed">ファイルを保存できませんでした</string>
+    <string name="exportHistory">履歴をエクスポート</string>
+    <string name="exportHistoryDescription">YouTube動画の要約を、再度インポートできるファイルに保存します。</string>
+    <string name="history_export_done">履歴をエクスポートしました</string>
+    <string name="history_export_none">エクスポートできるYouTube動画の要約がありません。</string>
+    <string name="history_export_failed">履歴をエクスポートできませんでした。</string>
 </resources>

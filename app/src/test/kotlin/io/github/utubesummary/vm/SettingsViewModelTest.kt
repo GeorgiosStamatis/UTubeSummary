@@ -6,12 +6,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import io.github.utubesummary.R
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import io.github.utubesummary.domain.repository.AIProviderConfigRepository
 import io.github.utubesummary.domain.repository.UserPreferencesRepository
+import io.github.utubesummary.domain.usecase.ExportHistoryUseCase
 import io.github.utubesummary.domain.usecase.GetUserSettingsUseCase
 import io.github.utubesummary.domain.usecase.UpdateProviderConfigUseCase
 import io.github.utubesummary.domain.usecase.UpdateSummaryProfilesUseCase
@@ -206,9 +208,17 @@ class SettingsViewModelTest {
                     return importOutcome
                 }
             },
+            object : ExportHistoryUseCase {
+                override suspend fun invoke(uri: String): Result<Int> {
+                    lastExportUri = uri
+                    return exportOutcome
+                }
+            },
             UpdateSummaryProfilesUseCase(fakePrefsRepo),
         )
 
+    private var lastExportUri: String? = null
+    private var exportOutcome: Result<Int> = Result.success(3)
     private var lastImportUri: String? = null
     private var importOutcome: Result<ImportResult> = Result.success(ImportResult(2, 1, 0))
 
@@ -619,5 +629,25 @@ class SettingsViewModelTest {
         viewModel.setShowThumbnailsValue(false)
         assertFalse(fakePrefsRepo.prefs.value.showThumbnails)
         assertFalse(viewModel.settingsUiState.value.showThumbnails)
+    }
+
+    @Test
+    fun `exporting the history announces the outcome`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        val messages = mutableListOf<Int>()
+        val job = launch(testDispatcher) { viewModel.userMessages.collect { messages += it } }
+
+        viewModel.exportHistory("content://out.json")
+        exportOutcome = Result.success(0)
+        viewModel.exportHistory("content://out.json")
+        exportOutcome = Result.failure(java.io.IOException("io"))
+        viewModel.exportHistory("content://out.json")
+        job.cancel()
+
+        assertEquals("content://out.json", lastExportUri)
+        assertEquals(
+            listOf(R.string.history_export_done, R.string.history_export_none, R.string.history_export_failed),
+            messages
+        )
     }
 }
