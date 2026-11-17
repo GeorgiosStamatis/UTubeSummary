@@ -62,18 +62,16 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             val active = resolveActiveProvider(prefs, providerConfigs)
             requestContext = active.description
 
-            val source = resolveSummarySource(text, prefs.autoExtractUrl)
+            val source = classifySummarySource(
+                text = text,
+                autoExtractUrl = prefs.autoExtractUrl,
+                documentName = if (isDocumentUri(text)) documentMetadataProvider.getFileName(text) else null,
+            )
             if (source is SummarySource.None) {
                 throw SummaryException.NoContentException()
             }
 
-            val targetLength = if (prefs.showLength) {
-                overrideLength
-                    ?: SummaryLength.entries.find { it.name == prefs.summaryLength && it != SummaryLength.NONE }
-                    ?: SummaryLength.MEDIUM
-            } else {
-                SummaryLength.NONE
-            }
+            val targetLength = resolveTargetLength(prefs.showLength, overrideLength, prefs.summaryLength)
 
             val profile = resolveProfile(prefs, profileId)
             val appLocale = appLocaleProvider.getCurrentLocale()
@@ -129,38 +127,6 @@ class SummarizeContentUseCaseImpl @Inject constructor(
                 Result.failure(summaryException)
             }
         )
-    }
-
-    private suspend fun resolveSummarySource(text: String, autoExtractUrl: Boolean): SummarySource {
-        if (text.startsWith("content://") || text.startsWith("file://")) {
-            val filename = documentMetadataProvider.getFileName(text) ?: "Document"
-            return SummarySource.Document(filename, text)
-        }
-
-        val processedText = if (autoExtractUrl) extractHttpUrl(text) else text
-        return when {
-            processedText.startsWith("http://", ignoreCase = true) ||
-                    processedText.startsWith("https://", ignoreCase = true) -> {
-                if (VideoSubtype.fromUrl(processedText) != null) {
-                    SummarySource.Video(processedText)
-                } else {
-                    SummarySource.Article(processedText)
-                }
-            }
-
-            processedText.isNotBlank() -> SummarySource.Text(processedText)
-            else -> SummarySource.None
-        }
-    }
-
-    private fun extractHttpUrl(text: String): String {
-        val urlRegex = Regex(
-            "(?:^|\\W)((http|https)://)" +
-                    "([\\w\\-]+\\.)+" +
-                    "([\\w\\-]+)" +
-                    "([^\\s<>\"#%{}|\\\\^`]*)"
-        )
-        return urlRegex.find(text)?.value?.trim() ?: text
     }
 
     private suspend fun saveSummaryToHistory(
@@ -230,3 +196,57 @@ class SummarizeContentUseCaseImpl @Inject constructor(
         }
     }
 }
+
+private fun isDocumentUri(text: String): Boolean =
+    text.startsWith("content://") || text.startsWith("file://")
+
+/**
+ * Decides what the user wants summarized: a document/image URI, a video or article link (the first
+ * link found in the text when [autoExtractUrl] is on) or plain text.
+ */
+internal fun classifySummarySource(
+    text: String,
+    autoExtractUrl: Boolean,
+    documentName: String?,
+): SummarySource {
+    if (isDocumentUri(text)) {
+        return SummarySource.Document(documentName ?: "Document", text)
+    }
+
+    val processedText = if (autoExtractUrl) extractHttpUrl(text) else text
+    return when {
+        processedText.startsWith("http://", ignoreCase = true) ||
+                processedText.startsWith("https://", ignoreCase = true) -> {
+            if (VideoSubtype.fromUrl(processedText) != null) {
+                SummarySource.Video(processedText)
+            } else {
+                SummarySource.Article(processedText)
+            }
+        }
+
+        processedText.isNotBlank() -> SummarySource.Text(processedText)
+        else -> SummarySource.None
+    }
+}
+
+/** The length to ask for: none when length options are off, else the override or the saved one. */
+internal fun resolveTargetLength(
+    showLength: Boolean,
+    overrideLength: SummaryLength?,
+    savedLength: String,
+): SummaryLength {
+    if (!showLength) return SummaryLength.NONE
+    return overrideLength
+        ?: SummaryLength.entries.find { it.name == savedLength && it != SummaryLength.NONE }
+        ?: SummaryLength.MEDIUM
+}
+
+private val urlRegex = Regex(
+    "(?:^|\\W)((http|https)://)" +
+            "([\\w\\-]+\\.)+" +
+            "([\\w\\-]+)" +
+            "([^\\s<>\"#%{}|\\\\^`]*)"
+)
+
+private fun extractHttpUrl(text: String): String =
+    urlRegex.find(text)?.value?.trim() ?: text
