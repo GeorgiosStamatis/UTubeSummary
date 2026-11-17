@@ -1,5 +1,8 @@
 package io.github.utubesummary.ui.page.history.sheet
 
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
@@ -61,6 +64,7 @@ fun HistoryDetailSheet(
     onShowSnackbar: (String) -> Unit,
     modifier: Modifier = Modifier,
     onPinnedChange: (Boolean) -> Unit = {},
+    onRemoveResult: ((HistoryLengthResult) -> Unit)? = null,
     onSummarizeAgain: (() -> Unit)? = null,
     sheetState: SheetState = rememberBottomSheetState(
         initialValue = SheetValue.Expanded,
@@ -130,12 +134,26 @@ fun HistoryDetailSheet(
                                 .padding(bottom = 12.dp)
                                 .then(if (isNewest) Modifier.bringIntoViewRequester(newestSection) else Modifier)
                         ) {
-                            Text(
-                                text = header,
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = header,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (onRemoveResult != null) {
+                                    IconButton(onClick = { onRemoveResult(result) }) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Delete,
+                                            contentDescription = stringResource(R.string.history_remove_summary),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            }
                             SummaryCard(
                                 modifier = Modifier.fillMaxWidth(),
                                 summary = SummaryOutput(

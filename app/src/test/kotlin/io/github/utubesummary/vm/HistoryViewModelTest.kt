@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.setMain
 import io.github.utubesummary.domain.repository.HistoryRepository
 import io.github.utubesummary.domain.usecase.DeleteHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.GetHistorySummariesUseCase
+import io.github.utubesummary.domain.usecase.RemoveHistoryResultUseCase
 import io.github.utubesummary.domain.usecase.RestoreHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.SetHistoryPinnedUseCase
 import io.github.utubesummary.model.HistoryFilter
@@ -49,6 +50,11 @@ class HistoryViewModelTest {
             this.pinned[id] = pinned
         }
 
+        override suspend fun replaceSummary(summary: HistorySummary) {
+            items.removeAll { it.id == summary.id }
+            items.add(summary)
+        }
+
         override suspend fun addSummary(summary: HistorySummary) {
             items.removeAll { it.id == summary.id }
             items.add(summary)
@@ -77,6 +83,7 @@ class HistoryViewModelTest {
             deleteHistorySummaryUseCase = DeleteHistorySummaryUseCase(fakeRepository),
             restoreHistorySummaryUseCase = RestoreHistorySummaryUseCase(fakeRepository),
             setHistoryPinnedUseCase = SetHistoryPinnedUseCase(fakeRepository),
+            removeHistoryResultUseCase = RemoveHistoryResultUseCase(fakeRepository),
         )
     }
 

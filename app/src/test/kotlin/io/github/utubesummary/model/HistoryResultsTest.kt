@@ -2,6 +2,7 @@ package io.github.utubesummary.model
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -122,5 +123,63 @@ class HistoryResultsTest {
 
         assertEquals(" quick_brief default ", summary.variantKeys())
         assertEquals("", HistorySummary(title = "t", type = SummaryType.ARTICLE).variantKeys())
+    }
+
+    private fun item(
+        current: Map<SummaryLength, HistoryLengthResult>,
+        alternatives: List<HistoryLengthResult> = emptyList(),
+        length: SummaryLength = current.keys.first(),
+    ) = HistorySummary(
+        title = "t",
+        type = SummaryType.ARTICLE,
+        length = length,
+        lengthResults = current,
+        alternatives = alternatives,
+    )
+
+    @Test
+    fun `removing an alternative keeps the current results`() {
+        val current = result("current", createdOn = 300L)
+        val alternative = result("alt", profileId = "a", createdOn = 100L)
+
+        val updated = item(mapOf(SummaryLength.MEDIUM to current), listOf(alternative)).withoutResult(alternative)!!
+
+        assertEquals(mapOf(SummaryLength.MEDIUM to current), updated.lengthResults)
+        assertTrue(updated.alternatives.isEmpty())
+    }
+
+    @Test
+    fun `removing the current result promotes the newest alternative of that length`() {
+        val current = result("current", createdOn = 300L)
+        val older = result("older", profileId = "a", createdOn = 100L)
+        val newer = result("newer", profileId = "b", createdOn = 200L)
+
+        val updated = item(mapOf(SummaryLength.MEDIUM to current), listOf(older, newer)).withoutResult(current)!!
+
+        assertEquals("newer", updated.lengthResults.getValue(SummaryLength.MEDIUM).summary)
+        assertEquals(listOf(older), updated.alternatives)
+    }
+
+    @Test
+    fun `removing the last result of a length moves the entry to another length`() {
+        val short = result("short", SummaryLength.SHORT, createdOn = 100L)
+        val long = result("long", SummaryLength.LONG, createdOn = 200L)
+
+        val updated = item(
+            mapOf(SummaryLength.SHORT to short, SummaryLength.LONG to long),
+            length = SummaryLength.LONG,
+        ).withoutResult(long)!!
+
+        assertEquals(SummaryLength.SHORT, updated.length)
+        assertEquals(setOf(SummaryLength.SHORT), updated.lengthResults.keys)
+    }
+
+    @Test
+    fun `removing the only result leaves nothing and an unknown result changes nothing`() {
+        val only = result("only")
+        val summary = item(mapOf(SummaryLength.MEDIUM to only))
+
+        assertNull(summary.withoutResult(only))
+        assertEquals(summary, summary.withoutResult(result("not stored")))
     }
 }

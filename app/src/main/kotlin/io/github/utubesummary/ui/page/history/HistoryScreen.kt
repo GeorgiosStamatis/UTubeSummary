@@ -96,6 +96,7 @@ fun HistoryScreen(
     val deletedMessage = stringResource(id = R.string.deleted)
     val undoMessage = stringResource(id = R.string.undo)
     val pinnedTitle = stringResource(id = R.string.history_pinned)
+    val removedSummaryMessage = stringResource(id = R.string.history_summary_removed)
 
     LaunchedEffect(searchState.query, searchState.selectedFilter, searchState.selectedProfileId, searchState.pinnedOnly) {
         lazyListState.scrollToItem(0)
@@ -131,6 +132,25 @@ fun HistoryScreen(
                 scope.launch { snackbarHostState.showSnackbar(message) }
             },
             // Open the source on Home, where profile, language and length can be changed.
+            onRemoveResult = { result ->
+                selectedSummary?.let { original ->
+                    viewModel.removeResult(original, result) { updated ->
+                        // Show what is left; the sheet closes when the entry is gone.
+                        selectedSummary = updated
+                    }
+                    scope.launch {
+                        val outcome = snackbarHostState.showSnackbar(
+                            message = removedSummaryMessage,
+                            actionLabel = undoMessage,
+                            duration = SnackbarDuration.Long
+                        )
+                        if (outcome == SnackbarResult.ActionPerformed) {
+                            viewModel.undoRemoveResult(original)
+                            selectedSummary = original
+                        }
+                    }
+                }
+            },
             onPinnedChange = { pinned ->
                 selectedSummary?.let { viewModel.setPinned(it.id, pinned) }
             },

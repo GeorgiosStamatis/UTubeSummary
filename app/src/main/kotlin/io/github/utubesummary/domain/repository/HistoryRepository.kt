@@ -12,6 +12,9 @@ interface HistoryRepository {
     suspend fun setPinned(id: String, pinned: Boolean)
     suspend fun addSummary(summary: HistorySummary)
 
+    /** Writes [summary] as it is, replacing the stored entry with the same id (or adding it). */
+    suspend fun replaceSummary(summary: HistorySummary)
+
     /** Saves all [summaries] at once, as they are (no merging with existing entries). */
     suspend fun addSummaries(summaries: List<HistorySummary>)
 

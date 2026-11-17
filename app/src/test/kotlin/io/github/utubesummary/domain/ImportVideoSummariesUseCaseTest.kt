@@ -30,6 +30,10 @@ class ImportVideoSummariesUseCaseTest {
 
         override suspend fun setPinned(id: String, pinned: Boolean) {}
 
+        override suspend fun replaceSummary(summary: HistorySummary) {
+            items += summary
+        }
+
         override suspend fun addSummary(summary: HistorySummary) {
             items += summary
         }

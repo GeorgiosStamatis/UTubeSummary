@@ -31,3 +31,28 @@ fun HistorySummary.variantKeys(): String {
     val ids = (lengthResults.values + alternatives).map { it.variantProfile() }.distinct()
     return if (ids.isEmpty()) "" else ids.joinToString(separator = " ", prefix = " ", postfix = " ")
 }
+
+/**
+ * This item without [target], or null when no result is left (the item should then be deleted).
+ * If the removed result was the current one for its length, the newest remaining result of that
+ * length takes its place; the entry's own length follows if its length no longer has a result.
+ */
+fun HistorySummary.withoutResult(target: HistoryLengthResult): HistorySummary? {
+    val all = lengthResults.values + alternatives
+    val index = all.indexOf(target)
+    if (index < 0) return this
+    val remaining = all.toMutableList().apply { removeAt(index) }
+    if (remaining.isEmpty()) return null
+
+    val current = linkedMapOf<SummaryLength, HistoryLengthResult>()
+    remaining.groupBy { it.length }.forEach { (length, results) ->
+        val kept = lengthResults[length]?.takeIf { it in results }
+        current[length] = kept ?: results.maxByOrNull { it.createdOn } ?: results.last()
+    }
+    val newLength = if (current.containsKey(length)) length else remaining.maxByOrNull { it.createdOn }!!.length
+    return copy(
+        length = newLength,
+        lengthResults = current,
+        alternatives = remaining.filterNot { it in current.values },
+    )
+}

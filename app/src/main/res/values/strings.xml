@@ -245,4 +245,8 @@
     <string name="history_pin">Pin</string>
     <string name="history_unpin">Unpin</string>
     <string name="history_all_profiles">All profiles</string>
+
+    <!-- Removing one summary of a History entry -->
+    <string name="history_remove_summary">Remove this summary</string>
+    <string name="history_summary_removed">Summary removed</string>
 </resources>

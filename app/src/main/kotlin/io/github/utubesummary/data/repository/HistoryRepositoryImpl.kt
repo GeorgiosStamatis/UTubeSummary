@@ -110,6 +110,10 @@ class HistoryRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun replaceSummary(summary: HistorySummary) {
+        historyDao.insert(summary.toEntity())
+    }
+
     override suspend fun setPinned(id: String, pinned: Boolean) {
         historyDao.setPinned(id, pinned)
     }

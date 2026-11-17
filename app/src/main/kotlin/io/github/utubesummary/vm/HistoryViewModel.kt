@@ -17,9 +17,11 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import io.github.utubesummary.domain.usecase.DeleteHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.GetHistorySummariesUseCase
+import io.github.utubesummary.domain.usecase.RemoveHistoryResultUseCase
 import io.github.utubesummary.domain.usecase.RestoreHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.SetHistoryPinnedUseCase
 import io.github.utubesummary.model.HistoryFilter
+import io.github.utubesummary.model.HistoryLengthResult
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryType
 import javax.inject.Inject
@@ -33,6 +35,7 @@ class HistoryViewModel @Inject constructor(
     private val deleteHistorySummaryUseCase: DeleteHistorySummaryUseCase,
     private val restoreHistorySummaryUseCase: RestoreHistorySummaryUseCase,
     private val setHistoryPinnedUseCase: SetHistoryPinnedUseCase,
+    private val removeHistoryResultUseCase: RemoveHistoryResultUseCase,
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -79,6 +82,23 @@ class HistoryViewModel @Inject constructor(
     fun setPinned(id: String, pinned: Boolean) {
         viewModelScope.launch {
             setHistoryPinnedUseCase(id, pinned)
+        }
+    }
+
+    /** Removes one summary of [summary]; [onDone] gets the entry as it is now (null if deleted). */
+    fun removeResult(
+        summary: HistorySummary,
+        result: HistoryLengthResult,
+        onDone: (HistorySummary?) -> Unit = {},
+    ) {
+        viewModelScope.launch {
+            onDone(removeHistoryResultUseCase(summary, result))
+        }
+    }
+
+    fun undoRemoveResult(original: HistorySummary) {
+        viewModelScope.launch {
+            removeHistoryResultUseCase.undo(original)
         }
     }
 
