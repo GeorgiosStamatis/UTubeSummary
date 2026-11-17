@@ -111,11 +111,23 @@ than #17 (signed with a different key).
 
 - **Instant summarize via share sheet or text selection toolbar**: Convenient to trigger summarization, show result in overlay
 
+- **Summarization profiles**: choose *how* a summary is written, right next to the Short / Middle /
+  Long length selector on Home. Each profile is its own base prompt: **Default**, **Technical Deep
+  Dive**, **Critical Analysis**, **Learning Mode**, **Technical Content Quality Evaluator** and
+  **Quick Brief**. Edit or reset any preset, or create and delete your own profiles; "Append Custom
+  Prompt" is applied on top of any profile.
+
+- **Ask questions about a summary**: follow up on a summarized video or document. The extracted text
+  is only kept in memory (never saved) and is sent to your configured LLM together with your question.
+
+- **Import video summaries** from another app's JSON backup (Settings), skipping videos that are
+  already in your history.
+
 - **Configurable LLM settings**: Custom API keys, base URLs, prompt customization, and summary lengths
 
 - **Text to speech for the summaries with multilingual and speed adjustment support**
 
-- **History search**
+- **History search**, with small, cached video thumbnails (can be switched off in Settings)
 
 - **Private by design**: no analytics or tracking; your keys stay encrypted on your device. Content is
   only sent to the LLM provider you configure (and, if a site blocks direct access, the article URL
@@ -125,27 +137,44 @@ than #17 (signed with a different key).
 
 **New**
 
+- **Summarization profiles**: pick a base prompt per summary (Default, Technical Deep Dive, Critical
+  Analysis, Learning Mode, Technical Content Quality Evaluator, Quick Brief) or create your own
+- **Ask questions** about a summarized video or document, answered from the in-memory transcript
+- **Import video summaries** from another app's JSON backup
+- **Video thumbnails in History**: small, cached on disk, and optional
 - **LM Studio** and **Custom Provider** (any OpenAI-compatible server) with a URL and an optional token
 - **Test** button in the AI provider dialog: checks that the URL is reachable and the API key is valid
 - Model list is **filled in automatically** from the provider when you press Test or OK
+- The official URL is **prefilled** for built-in providers (still editable)
 - Local and LAN addresses typed without a scheme (e.g. `192.168.1.10:1234`) default to `http://`
+- Error banners have a **Show details** option (provider, model, URL and the raw cause)
 
 **Fixes**
 
+- Crash after onboarding on updated installs: settings fields were renumbered by mistake, so older
+  settings files were read wrongly. Field numbers are now fixed and an unreadable settings file
+  resets to defaults instead of crashing
 - PDF text extraction crashed on Android 13/14 for scanned pages
 - Providers without an API key (e.g. Ollama) failed with "you have to provide an API key"
+- OpenRouter **Test** returned 404, and pasting a URL that already ended in `/api/v1` produced a
+  doubled version path (the same is handled for OpenAI, Anthropic and Gemini)
+- OK/Test buttons in the provider dialog now behave correctly after a successful Test
 - Custom prompt fields lost typed text and the cursor got stuck
 
 **Security & privacy**
 
 - Exported entry points no longer read the clipboard or auto-summarize it on behalf of other apps
+- The BiliBili cookie is now stored encrypted, like API keys; an unreadable key or cookie gives a
+  clear message instead of a crash
+- Shares reuse the running app instead of opening duplicate instances
 - Privacy policy rewritten to match what the app actually does
 
 **Project**
 
-- Renamed to UTubeSummary with a new app id (`io.github.utubesummary`): it installs next to the
-  original app and does not share its data
-- CI uploads installable debug APKs on every build
+- Renamed to UTubeSummary with a new app id (`io.github.utubesummary`) and a new app icon: it
+  installs next to the original app and does not share its data
+- CI uploads installable debug APKs on every build; each one has an increasing version number and
+  the same signing key, so it updates in place (see [Installing test builds](#installing-test-builds))
 
 ## 🏗️ Architecture
 
@@ -155,6 +184,10 @@ The app follows Google's [official Android Architecture Recommendations](https:/
   - **UI Layer (`ui/`, `vm/`)**: Built with Jetpack Compose and Material 3 Expressive, powered by ViewModels exposing reactive `StateFlow` and following Unidirectional Data Flow (UDF).
   - **Domain Layer (`domain/`, `model/`, `exception/`)**: Pure Kotlin business operations (`domain/usecase/`), data contracts (`domain/repository/`), system providers (`domain/provider/`), pure domain models (`model/`), and centralized exceptions (`exception/`).
   - **Data Layer (`data/`)**: Repository implementations acting as Single Source of Truth (SSOT), encapsulating Room database with dedicated entities and mappers, ProtoBuf DataStore, and Ktor network client.
+- **Summarization profiles**: built-in prompts live in `llm/BuiltInProfiles.kt`; the domain layer
+  (`resolveProfiles()`, `UpdateSummaryProfilesUseCase`) merges them with the user's edits and custom
+  profiles stored in the ProtoBuf DataStore, and the chosen profile's base prompt is passed to the
+  LLM handler for each summary.
 - **Dependency Injection**: Powered by Dagger Hilt with `@Binds` for domain repository contracts.
 - **Asynchronous Operations**: Kotlin Coroutines + Flow for reactive, main-safe async streams.
 
