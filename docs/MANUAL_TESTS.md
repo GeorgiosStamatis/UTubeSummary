@@ -95,6 +95,7 @@ but only a device shows wiring mistakes. Run these once (they are mostly `P0`/`P
 | Width constants (`ContentMaxWidth` etc. replace repeated dp values) | 2.4, 13.8, 15.8, 15.9 (nothing should look different) |
 | Self-hosted server path (`openAiCompatibleEndpoint`) | 3.7, 3.8 with LM Studio / Custom Provider (bare host and host with `/v1`) |
 | BiliBili link helpers (moved out of the tool class) | 4.5 with a `bilibili.com/video/BV…` link and a `b23.tv` short link |
+| Summary card action buttons (copy, share, save, speak) moved to `SummaryActionButtons.kt` | 9.1–9.4 and the buttons in the History detail (11.3) and the instant dialog (13.1) |
 | Profile ids moved to the model layer | 5.1, 5.5, 5.6, 11.9, 11.14 |
 
 ---
