@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -46,6 +48,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import io.github.utubesummary.BuildConfig
@@ -325,7 +328,14 @@ private fun SettingsContent(
         }
     }
 
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+    // Centred and capped so the list does not stretch across a tablet.
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .wrapContentWidth(Alignment.CenterHorizontally)
+            .widthIn(max = 840.dp)
+            .padding(horizontal = 16.dp)
+    ) {
         LazyColumn(
             state = lazyListState,
             modifier = Modifier.fillMaxSize(),
