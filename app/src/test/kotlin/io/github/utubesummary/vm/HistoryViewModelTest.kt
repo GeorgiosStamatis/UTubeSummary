@@ -29,55 +29,12 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import io.github.utubesummary.testutil.FakeHistoryRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HistoryViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
-
-    private class FakeHistoryRepository : HistoryRepository {
-        val items = mutableListOf<HistorySummary>()
-
-        var lastFilter: HistoryFilter? = null
-        val pinned = mutableMapOf<String, Boolean>()
-
-        override fun getSummaries(
-            query: String,
-            filter: HistoryFilter,
-        ): Flow<PagingData<HistorySummary>> {
-            lastFilter = filter
-            return emptyFlow()
-        }
-
-        override suspend fun setPinned(id: String, pinned: Boolean) {
-            this.pinned[id] = pinned
-        }
-
-        override suspend fun getAllSummaries(): List<HistorySummary> = items.toList()
-
-        override suspend fun getSummariesByIds(ids: List<String>): List<HistorySummary> =
-            items.filter { it.id in ids }
-
-        override suspend fun replaceSummary(summary: HistorySummary) {
-            items.removeAll { it.id == summary.id }
-            items.add(summary)
-        }
-
-        override suspend fun addSummary(summary: HistorySummary) {
-            items.removeAll { it.id == summary.id }
-            items.add(summary)
-        }
-
-        override suspend fun addSummaries(summaries: List<HistorySummary>) {
-            items.addAll(summaries)
-        }
-
-        override suspend fun getAllSourceLinks(): List<String> = items.mapNotNull { it.sourceLink }
-
-        override suspend fun deleteSummary(id: String) {
-            items.removeAll { it.id == id }
-        }
-    }
 
     private lateinit var fakeRepository: FakeHistoryRepository
     private lateinit var viewModel: HistoryViewModel

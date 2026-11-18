@@ -13,20 +13,10 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
+import io.github.utubesummary.testutil.FakeHistoryRepository
+import org.junit.jupiter.api.Assertions.assertTrue
 
 class RemoveHistoryResultUseCaseTest {
-
-    private class FakeRepository(var stored: HistorySummary?) : HistoryRepository {
-        override fun getSummaries(query: String, filter: HistoryFilter): Flow<PagingData<HistorySummary>> = emptyFlow()
-        override suspend fun setPinned(id: String, pinned: Boolean) {}
-        override suspend fun addSummary(summary: HistorySummary) {}
-        override suspend fun getAllSummaries(): List<HistorySummary> = listOfNotNull(stored)
-        override suspend fun getSummariesByIds(ids: List<String>): List<HistorySummary> = emptyList()
-        override suspend fun replaceSummary(summary: HistorySummary) { stored = summary }
-        override suspend fun addSummaries(summaries: List<HistorySummary>) {}
-        override suspend fun getAllSourceLinks(): List<String> = emptyList()
-        override suspend fun deleteSummary(id: String) { stored = null }
-    }
 
     private val first = HistoryLengthResult(SummaryLength.MEDIUM, "first", profileId = "a", createdOn = 100L)
     private val second = HistoryLengthResult(SummaryLength.MEDIUM, "second", createdOn = 200L)
@@ -40,24 +30,24 @@ class RemoveHistoryResultUseCaseTest {
 
     @Test
     fun `removing one summary updates the entry and undo restores it`() = runTest {
-        val repository = FakeRepository(entry)
+        val repository = FakeHistoryRepository().apply { items += entry }
         val useCase = RemoveHistoryResultUseCase(repository)
 
         val updated = useCase(entry, first)
 
         assertEquals(entry.copy(alternatives = emptyList()), updated)
-        assertEquals(updated, repository.stored)
+        assertEquals(updated, repository.items.single())
 
         useCase.undo(entry)
-        assertEquals(entry, repository.stored)
+        assertEquals(entry, repository.items.single())
     }
 
     @Test
     fun `removing the last summary deletes the entry`() = runTest {
         val single = entry.copy(alternatives = emptyList())
-        val repository = FakeRepository(single)
+        val repository = FakeHistoryRepository().apply { items += single }
 
         assertNull(RemoveHistoryResultUseCase(repository)(single, second))
-        assertNull(repository.stored)
+        assertTrue(repository.items.isEmpty())
     }
 }

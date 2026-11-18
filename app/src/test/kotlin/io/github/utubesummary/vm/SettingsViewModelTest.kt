@@ -42,127 +42,16 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import io.github.utubesummary.testutil.FakeProviderConfigRepository
+import io.github.utubesummary.testutil.FakeUserPreferencesRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
 
-    private class FakeAIProviderConfigRepository : AIProviderConfigRepository {
-        val configs = MutableStateFlow<Map<String, ProviderConfig>>(emptyMap())
-
-        override val providerConfigsFlow: Flow<Map<String, ProviderConfig>> = configs
-
-        override fun getConfigFlow(provider: String): Flow<ProviderConfig?> =
-            configs.map { it[provider] }
-
-        override suspend fun getConfig(provider: String): ProviderConfig? =
-            configs.value[provider]
-
-        var failSave = false
-
-        override suspend fun saveConfig(provider: String, config: ProviderConfig) {
-            if (failSave) throw SecureStorageException("Encryption failed")
-            configs.value += (provider to config)
-        }
-
-        override suspend fun updateApiKey(provider: String, apiKey: String) {
-            val current = getConfig(provider) ?: ProviderConfig()
-            saveConfig(provider, current.copy(apiKey = apiKey))
-        }
-
-        override suspend fun updateBaseUrl(provider: String, baseUrl: String) {
-            val current = getConfig(provider) ?: ProviderConfig()
-            saveConfig(provider, current.copy(baseUrl = baseUrl))
-        }
-
-        override suspend fun updateModel(provider: String, model: String) {
-            val current = getConfig(provider) ?: ProviderConfig()
-            saveConfig(provider, current.copy(activeModel = model))
-        }
-    }
-
-    private class FakeUserPreferencesRepository : UserPreferencesRepository {
-        val prefs = MutableStateFlow(UserPreferences())
-
-        override val preferencesFlow: Flow<UserPreferences> = prefs
-
-        override suspend fun setUseOriginalLanguage(value: Boolean) {
-            prefs.value = prefs.value.copy(useOriginalLanguage = value)
-        }
-
-        override suspend fun setDynamicColor(value: Boolean) {
-            prefs.value = prefs.value.copy(dynamicColor = value)
-        }
-
-        override suspend fun setShowThumbnails(value: Boolean) {
-            prefs.value = prefs.value.copy(showThumbnails = value)
-        }
-
-        override suspend fun setTheme(value: Int) {
-            prefs.value = prefs.value.copy(theme = value)
-        }
-
-        override suspend fun setActiveProvider(value: String?) {
-            prefs.value = prefs.value.copy(activeProvider = value)
-        }
-
-        override suspend fun setProviderOrder(value: List<String>) {
-            prefs.value = prefs.value.copy(providerOrder = value)
-        }
-
-        override suspend fun setIsOnboarded(value: Boolean) {
-            prefs.value = prefs.value.copy(isOnboarded = value)
-        }
-
-        override suspend fun setShowLength(value: Boolean) {
-            prefs.value = prefs.value.copy(showLength = value)
-        }
-
-        override suspend fun setSummaryLength(value: String) {
-            prefs.value = prefs.value.copy(summaryLength = value)
-        }
-
-        override suspend fun setAutoExtractUrl(value: Boolean) {
-            prefs.value = prefs.value.copy(autoExtractUrl = value)
-        }
-
-        override suspend fun setBilibiliSessData(data: String, expires: Long) {
-            prefs.value =
-                prefs.value.copy(bilibiliSessData = data, bilibiliSessDataExpires = expires)
-        }
-
-        override suspend fun clearBilibiliSessData() {
-            prefs.value = prefs.value.copy(bilibiliSessData = "", bilibiliSessDataExpires = 0L)
-        }
-
-        override suspend fun setIsAppendMode(value: Boolean) {
-            prefs.value = prefs.value.copy(isAppendMode = value)
-        }
-
-        override suspend fun setCustomBasePrompt(value: String) {
-            prefs.value = prefs.value.copy(customBasePrompt = value)
-        }
-
-        override suspend fun setAdditionalSystemPrompt(value: String) {
-            prefs.value = prefs.value.copy(additionalSystemPrompt = value)
-        }
-
-        override suspend fun setSummaryLanguage(value: String) {
-            prefs.value = prefs.value.copy(summaryLanguage = value)
-        }
-
-        override suspend fun setProfileEntries(value: List<ProfileEntry>) {
-            prefs.value = prefs.value.copy(profileEntries = value)
-        }
-
-        override suspend fun setSelectedProfileId(value: String) {
-            prefs.value = prefs.value.copy(selectedProfileId = value)
-        }
-    }
-
     private lateinit var fakePrefsRepo: FakeUserPreferencesRepository
-    private lateinit var fakeConfigRepo: FakeAIProviderConfigRepository
+    private lateinit var fakeConfigRepo: FakeProviderConfigRepository
     private lateinit var getUserSettingsUseCase: GetUserSettingsUseCase
     private lateinit var updateUserPreferencesUseCase: UpdateUserPreferencesUseCase
     private lateinit var updateConfigUseCase: UpdateProviderConfigUseCase
@@ -171,7 +60,7 @@ class SettingsViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         fakePrefsRepo = FakeUserPreferencesRepository()
-        fakeConfigRepo = FakeAIProviderConfigRepository()
+        fakeConfigRepo = FakeProviderConfigRepository()
         getUserSettingsUseCase = GetUserSettingsUseCase(fakePrefsRepo, fakeConfigRepo)
         updateUserPreferencesUseCase = UpdateUserPreferencesUseCase(fakePrefsRepo)
         updateConfigUseCase = UpdateProviderConfigUseCase(fakeConfigRepo, fakePrefsRepo)

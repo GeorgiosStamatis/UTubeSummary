@@ -23,39 +23,12 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import io.github.utubesummary.testutil.FakeUserPreferencesRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AppViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
-
-    private class FakeUserPreferencesRepository : UserPreferencesRepository {
-        val prefs = MutableStateFlow(UserPreferences())
-
-        override val preferencesFlow: Flow<UserPreferences> = prefs
-
-        override suspend fun setUseOriginalLanguage(value: Boolean) {}
-        override suspend fun setDynamicColor(value: Boolean) {}
-        override suspend fun setShowThumbnails(value: Boolean) {}
-        override suspend fun setTheme(value: Int) {}
-        override suspend fun setActiveProvider(value: String?) {}
-        override suspend fun setProviderOrder(value: List<String>) {}
-        override suspend fun setIsOnboarded(value: Boolean) {
-            prefs.value = prefs.value.copy(isOnboarded = value)
-        }
-
-        override suspend fun setShowLength(value: Boolean) {}
-        override suspend fun setSummaryLength(value: String) {}
-        override suspend fun setAutoExtractUrl(value: Boolean) {}
-        override suspend fun setBilibiliSessData(data: String, expires: Long) {}
-        override suspend fun clearBilibiliSessData() {}
-        override suspend fun setIsAppendMode(value: Boolean) {}
-        override suspend fun setCustomBasePrompt(value: String) {}
-        override suspend fun setAdditionalSystemPrompt(value: String) {}
-        override suspend fun setSummaryLanguage(value: String) {}
-        override suspend fun setProfileEntries(value: List<ProfileEntry>) {}
-        override suspend fun setSelectedProfileId(value: String) {}
-    }
 
     private lateinit var fakePrefsRepo: FakeUserPreferencesRepository
     private lateinit var getOnboardingStatusUseCase: GetOnboardingStatusUseCase
