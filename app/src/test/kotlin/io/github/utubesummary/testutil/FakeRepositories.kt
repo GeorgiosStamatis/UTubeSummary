@@ -42,13 +42,28 @@ class FakeProviderConfigRepository(initial: Map<String, ProviderConfig> = emptyM
 class FakeHistoryRepository : HistoryRepository {
     val added = mutableListOf<HistorySummary>()
 
-    override fun getSummaries(query: String, filter: HistoryFilter): Flow<PagingData<HistorySummary>> = emptyFlow()
-    override suspend fun setPinned(id: String, pinned: Boolean) {}
+    /** Ids passed to [deleteSummary], in call order. */
+    val deleted = mutableListOf<String>()
+
+    /** Calls of [setPinned], in call order. */
+    val pinCalls = mutableListOf<Pair<String, Boolean>>()
+
+    /** The arguments of the last [getSummaries] call. */
+    var lastQuery: String? = null
+    var lastFilter: HistoryFilter? = null
+
+    override fun getSummaries(query: String, filter: HistoryFilter): Flow<PagingData<HistorySummary>> {
+        lastQuery = query
+        lastFilter = filter
+        return emptyFlow()
+    }
+
+    override suspend fun setPinned(id: String, pinned: Boolean) { pinCalls += id to pinned }
     override suspend fun addSummary(summary: HistorySummary) { added += summary }
     override suspend fun replaceSummary(summary: HistorySummary) {}
     override suspend fun addSummaries(summaries: List<HistorySummary>) { added += summaries }
     override suspend fun getAllSourceLinks(): List<String> = added.mapNotNull { it.sourceLink }
     override suspend fun getAllSummaries(): List<HistorySummary> = added.toList()
     override suspend fun getSummariesByIds(ids: List<String>): List<HistorySummary> = added.filter { it.id in ids }
-    override suspend fun deleteSummary(id: String) {}
+    override suspend fun deleteSummary(id: String) { deleted += id }
 }
