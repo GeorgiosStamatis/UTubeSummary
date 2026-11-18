@@ -13,6 +13,7 @@ import io.github.utubesummary.domain.repository.HistoryRepository
 import io.github.utubesummary.domain.usecase.DeleteHistorySummariesUseCase
 import io.github.utubesummary.domain.usecase.DeleteHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.GetHistorySummariesUseCase
+import io.github.utubesummary.domain.usecase.GetHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.RemoveHistoryResultUseCase
 import io.github.utubesummary.domain.usecase.RestoreHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.SetHistoryPinnedUseCase
@@ -92,6 +93,7 @@ class HistoryViewModelTest {
             setHistoryPinnedUseCase = SetHistoryPinnedUseCase(fakeRepository),
             removeHistoryResultUseCase = RemoveHistoryResultUseCase(fakeRepository),
             deleteHistorySummariesUseCase = DeleteHistorySummariesUseCase(fakeRepository),
+            getHistorySummaryUseCase = GetHistorySummaryUseCase(fakeRepository),
         )
     }
 
@@ -228,5 +230,18 @@ class HistoryViewModelTest {
         viewModel.onSortChanged(HistorySort.TITLE)
 
         assertEquals(HistorySort.TITLE, viewModel.sort.value)
+    }
+
+    @Test
+    fun `an entry can be loaded again by its id and a deleted one gives null`() = runTest(testDispatcher) {
+        fakeRepository.items.addAll(listOf(entry("a"), entry("b")))
+        var loaded: HistorySummary? = entry("unset")
+        var missing: HistorySummary? = entry("unset")
+
+        viewModel.loadSummary("b") { loaded = it }
+        viewModel.loadSummary("gone") { missing = it }
+
+        assertEquals("b", loaded?.id)
+        assertNull(missing)
     }
 }

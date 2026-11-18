@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import io.github.utubesummary.domain.usecase.DeleteHistorySummariesUseCase
 import io.github.utubesummary.domain.usecase.DeleteHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.GetHistorySummariesUseCase
+import io.github.utubesummary.domain.usecase.GetHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.RemoveHistoryResultUseCase
 import io.github.utubesummary.domain.usecase.RestoreHistorySummaryUseCase
 import io.github.utubesummary.domain.usecase.SetHistoryPinnedUseCase
@@ -39,6 +40,7 @@ class HistoryViewModel @Inject constructor(
     private val setHistoryPinnedUseCase: SetHistoryPinnedUseCase,
     private val removeHistoryResultUseCase: RemoveHistoryResultUseCase,
     private val deleteHistorySummariesUseCase: DeleteHistorySummariesUseCase,
+    private val getHistorySummaryUseCase: GetHistorySummaryUseCase,
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -97,6 +99,13 @@ class HistoryViewModel @Inject constructor(
     fun setPinned(id: String, pinned: Boolean) {
         viewModelScope.launch {
             setHistoryPinnedUseCase(id, pinned)
+        }
+    }
+
+    /** Loads the entry with [id], for example to show it again after the screen was recreated. */
+    fun loadSummary(id: String, onLoaded: (HistorySummary?) -> Unit) {
+        viewModelScope.launch {
+            onLoaded(getHistorySummaryUseCase(id))
         }
     }
 

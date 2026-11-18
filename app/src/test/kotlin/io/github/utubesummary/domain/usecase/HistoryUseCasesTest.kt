@@ -52,6 +52,15 @@ class HistoryUseCasesTest {
     }
 
     @Test
+    fun `one entry can be loaded by id`() = runTest {
+        history.added += listOf(entry("a"), entry("b"))
+        val load = GetHistorySummaryUseCase(history)
+
+        assertEquals("b", load("b")?.id)
+        assertEquals(null, load("missing"))
+    }
+
+    @Test
     fun `pinning applies to one entry or to many`() = runTest {
         val setPinned = SetHistoryPinnedUseCase(history)
 

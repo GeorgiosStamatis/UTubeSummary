@@ -50,6 +50,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -105,7 +106,20 @@ fun HistoryScreen(
     val scope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
 
+    // Only the id is saved, so the open entry survives rotation without a large saved state.
+    var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedSummary by remember { mutableStateOf<HistorySummary?>(null) }
+    fun select(summary: HistorySummary?) {
+        selectedSummary = summary
+        selectedId = summary?.id
+    }
+    LaunchedEffect(selectedId) {
+        val id = selectedId
+        if (id != null && selectedSummary?.id != id) {
+            // Entry deleted in the meantime: nothing stays selected.
+            viewModel.loadSummary(id) { select(it) }
+        }
+    }
 
     val deletedMessage = stringResource(id = R.string.deleted)
     val undoMessage = stringResource(id = R.string.undo)
@@ -128,7 +142,7 @@ fun HistoryScreen(
         selectedSummary?.let { original ->
             viewModel.removeResult(original, result) { updated ->
                 // Show what is left; the detail closes when the entry is gone.
-                selectedSummary = updated
+                select(updated)
             }
             scope.launch {
                 val outcome = snackbarHostState.showSnackbar(
@@ -138,7 +152,7 @@ fun HistoryScreen(
                 )
                 if (outcome == SnackbarResult.ActionPerformed) {
                     viewModel.undoRemoveResult(original)
-                    selectedSummary = original
+                    select(original)
                 }
             }
         }
@@ -151,7 +165,7 @@ fun HistoryScreen(
         ?.takeIf { it.isNotBlank() }
         ?.let { source ->
             {
-                selectedSummary = null
+                select(null)
                 onSummarizeAgain(source)
             }
         }
@@ -220,7 +234,7 @@ fun HistoryScreen(
         if (!wide) {
             HistoryDetailSheet(
                 summary = selectedSummary,
-                onDismissRequest = { selectedSummary = null },
+                onDismissRequest = { select(null) },
                 onShowSnackbar = showSnackbar,
                 onRemoveResult = onRemoveResult,
                 onPinnedChange = onPinnedChange,
@@ -358,7 +372,7 @@ fun HistoryScreen(
                                     showThumbnails = showThumbnails,
                                     selected = summary.id in selectedIds,
                                     onClick = {
-                                        if (selecting) viewModel.toggleSelection(summary.id) else selectedSummary = summary
+                                        if (selecting) viewModel.toggleSelection(summary.id) else select(summary)
                                     },
                                     onLongClick = {
                                         haptics.performHapticFeedback(HapticFeedbackType.LongPress)

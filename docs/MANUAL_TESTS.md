@@ -481,8 +481,10 @@ still works (tapping items while selecting toggles selection and does not open t
 **15.3 `P1` Remove last summary in two-pane.** Remove the only section of the selected entry. *Expected:* the
 entry disappears and the right pane returns to the hint; Undo restores and re-selects it.
 
-**15.4 `P2` Rotate while an entry is selected.** *Known limitation:* the selection is not kept across
-rotation (pane shows the hint). Record whether this annoys you.
+**15.4 `P1` Rotate while an entry is selected.** Open an entry (sheet on a phone, right pane on a wide
+screen), rotate. *Expected:* the same entry is shown again after the rotation (also when the rotation
+switches between sheet and pane); if the entry was deleted in the meantime nothing is selected and no
+error appears. Closing the sheet or pane and rotating keeps it closed.
 
 **15.5 `P1` Switch layouts.** Phone: open an entry (sheet), rotate to wide layout: sheet is replaced by the
 pane. Rotate back: the sheet appears again for the selected entry. *Expected:* no crash.
