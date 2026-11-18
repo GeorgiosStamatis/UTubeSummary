@@ -56,7 +56,7 @@ import io.github.utubesummary.ui.component.SummaryCard
 /**
  * Bottom sheet to view complete summary details, playback TTS, and share
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryDetailSheet(
     summary: HistorySummary?,
@@ -73,10 +73,46 @@ fun HistoryDetailSheet(
 ) {
     if (summary == null) return
 
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        sheetState = sheetState,
+        modifier = modifier
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            HistoryDetailContent(
+                summary = summary,
+                onShowSnackbar = onShowSnackbar,
+                onPinnedChange = onPinnedChange,
+                onRemoveResult = onRemoveResult,
+                onSummarizeAgain = onSummarizeAgain
+            )
+        }
+    }
+}
+
+/**
+ * The sections of one History entry with pin, remove and "Summarize again". Shown in the bottom
+ * sheet on phones and in the right pane on wide screens.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun HistoryDetailContent(
+    summary: HistorySummary,
+    onShowSnackbar: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    onPinnedChange: (Boolean) -> Unit = {},
+    onRemoveResult: ((HistoryLengthResult) -> Unit)? = null,
+    onSummarizeAgain: (() -> Unit)? = null,
+) {
     // Every result of the item, oldest first: a new summary is appended after the last one.
     val results = remember(summary) { summary.allResultsOldestFirst() }
 
-    // The sheet shows a snapshot of the item, so the pin state is tracked here while it is open.
+    // The view shows a snapshot of the item, so the pin state is tracked here while it is open.
     var pinned by remember(summary.id) { mutableStateOf(summary.pinned) }
 
     // Only one section is read aloud at a time.
@@ -92,108 +128,97 @@ fun HistoryDetailSheet(
         }
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismissRequest,
-        sheetState = sheetState,
-        modifier = modifier
-    ) {
-        Box(
+    Box(modifier = modifier.fillMaxWidth()) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .verticalScroll(scrollState)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(scrollState)
+            TextButton(
+                onClick = {
+                    pinned = !pinned
+                    onPinnedChange(pinned)
+                },
+                modifier = Modifier.align(Alignment.End)
             ) {
-                TextButton(
-                    onClick = {
-                        pinned = !pinned
-                        onPinnedChange(pinned)
-                    },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Icon(
-                        imageVector = if (pinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(if (pinned) R.string.history_unpin else R.string.history_pin))
-                }
+                Icon(
+                    imageVector = if (pinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(if (pinned) R.string.history_unpin else R.string.history_pin))
+            }
 
-                results.forEachIndexed { index, result ->
-                    val isNewest = index == results.lastIndex
-                    val header = historyResultHeader(result)
-                    key(index) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 12.dp)
-                                .then(if (isNewest) Modifier.bringIntoViewRequester(newestSection) else Modifier)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = header,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                if (onRemoveResult != null) {
-                                    IconButton(onClick = { onRemoveResult(result) }) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Delete,
-                                            contentDescription = stringResource(R.string.history_remove_summary),
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
-                                }
-                            }
-                            SummaryCard(
-                                modifier = Modifier.fillMaxWidth(),
-                                summary = SummaryOutput(
-                                    title = summary.title,
-                                    summary = result.summary,
-                                    author = summary.author,
-                                    sourceLink = summary.sourceLink,
-                                    isYoutubeLink = summary.isYoutubeLink,
-                                    isBiliBiliLink = summary.isBiliBiliLink,
-                                    length = result.length,
-                                    provider = result.provider ?: summary.provider,
-                                    model = result.model ?: summary.model,
-                                    overview = result.overview,
-                                    keyPoints = result.keyPoints,
-                                    tags = result.tags,
-                                ),
-                                cardColors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainer
-                                ),
-                                // Older sections start collapsed so a long history stays readable.
-                                isExpandedByDefault = isNewest,
-                                isPlaying = playingIndex == index,
-                                onPlayRequest = {
-                                    playingIndex = if (playingIndex == index) null else index
-                                },
-                                onShowSnackbar = onShowSnackbar
-                            )
-                        }
-                    }
-                }
-
-                if (onSummarizeAgain != null) {
-                    FilledTonalButton(
-                        onClick = onSummarizeAgain,
+            results.forEachIndexed { index, result ->
+                val isNewest = index == results.lastIndex
+                val header = historyResultHeader(result)
+                key(index) {
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 12.dp)
+                            .padding(bottom = 12.dp)
+                            .then(if (isNewest) Modifier.bringIntoViewRequester(newestSection) else Modifier)
                     ) {
-                        Text(stringResource(R.string.summarize_again))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = header,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.weight(1f)
+                            )
+                            if (onRemoveResult != null) {
+                                IconButton(onClick = { onRemoveResult(result) }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Delete,
+                                        contentDescription = stringResource(R.string.history_remove_summary),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                        SummaryCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            summary = SummaryOutput(
+                                title = summary.title,
+                                summary = result.summary,
+                                author = summary.author,
+                                sourceLink = summary.sourceLink,
+                                isYoutubeLink = summary.isYoutubeLink,
+                                isBiliBiliLink = summary.isBiliBiliLink,
+                                length = result.length,
+                                provider = result.provider ?: summary.provider,
+                                model = result.model ?: summary.model,
+                                overview = result.overview,
+                                keyPoints = result.keyPoints,
+                                tags = result.tags,
+                            ),
+                            cardColors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                            ),
+                            // Older sections start collapsed so a long history stays readable.
+                            isExpandedByDefault = isNewest,
+                            isPlaying = playingIndex == index,
+                            onPlayRequest = {
+                                playingIndex = if (playingIndex == index) null else index
+                            },
+                            onShowSnackbar = onShowSnackbar
+                        )
                     }
+                }
+            }
+
+            if (onSummarizeAgain != null) {
+                FilledTonalButton(
+                    onClick = onSummarizeAgain,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp)
+                ) {
+                    Text(stringResource(R.string.summarize_again))
                 }
             }
         }

@@ -249,4 +249,5 @@
     <string name="release_to_switch">Loslassen zum Wechseln</string>
     <string name="open_in_app">In der App öffnen</string>
     <string name="fileUnavailable">Die Datei konnte nicht geöffnet werden. Wähle sie erneut aus oder prüfe, ob sie gültig ist.</string>
+    <string name="history_select_hint">Wähle eine Zusammenfassung, um sie hier zu lesen</string>
 </resources>

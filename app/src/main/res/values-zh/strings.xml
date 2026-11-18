@@ -207,4 +207,5 @@
     <string name="history_export_done">历史记录已导出</string>
     <string name="history_export_none">没有可导出的 YouTube 视频摘要。</string>
     <string name="history_export_failed">无法导出历史记录。</string>
+    <string name="history_select_hint">选择一条摘要即可在此阅读</string>
 </resources>

@@ -275,4 +275,5 @@
     <string name="stillLoading">Il documento è ancora in elaborazione…</string>
     <string name="useLengthOptions">Usa le opzioni di lunghezza</string>
     <string name="useLengthOptionsDescription">Usa le opzioni di lunghezza per il riassunto</string>
+    <string name="history_select_hint">Seleziona un riassunto per leggerlo qui</string>
 </resources>

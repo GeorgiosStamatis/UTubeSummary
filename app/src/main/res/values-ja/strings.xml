@@ -169,4 +169,5 @@
     <string name="history_export_done">履歴をエクスポートしました</string>
     <string name="history_export_none">エクスポートできるYouTube動画の要約がありません。</string>
     <string name="history_export_failed">履歴をエクスポートできませんでした。</string>
+    <string name="history_select_hint">ここに表示する要約を選択してください</string>
 </resources>

@@ -12,6 +12,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,12 +33,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
@@ -60,8 +64,10 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import kotlinx.coroutines.launch
 import io.github.utubesummary.R
+import io.github.utubesummary.model.HistoryLengthResult
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryProfile
+import io.github.utubesummary.ui.component.rememberIsWideLayout
 import io.github.utubesummary.ui.page.history.search.HistoryEmptySearchResults
 import io.github.utubesummary.ui.page.history.search.HistoryFilterChips
 import io.github.utubesummary.ui.page.history.search.HistorySearchBar
@@ -70,6 +76,7 @@ import io.github.utubesummary.ui.page.history.section.GroupPosition
 import io.github.utubesummary.ui.page.history.section.HistoryItemRow
 import io.github.utubesummary.ui.page.history.section.HistorySectionHeader
 import io.github.utubesummary.ui.page.history.section.getDateSectionTitle
+import io.github.utubesummary.ui.page.history.sheet.HistoryDetailContent
 import io.github.utubesummary.ui.page.history.sheet.HistoryDetailSheet
 import io.github.utubesummary.vm.HistoryViewModel
 
@@ -112,6 +119,42 @@ fun HistoryScreen(
     LaunchedEffect(searchState.query, searchState.selectedFilter, searchState.selectedProfileId, searchState.pinnedOnly, searchState.sort) {
         lazyListState.scrollToItem(0)
     }
+
+    val wide = rememberIsWideLayout()
+    val showSnackbar: (String) -> Unit = { message ->
+        scope.launch { snackbarHostState.showSnackbar(message) }
+    }
+    val onRemoveResult: (HistoryLengthResult) -> Unit = { result ->
+        selectedSummary?.let { original ->
+            viewModel.removeResult(original, result) { updated ->
+                // Show what is left; the detail closes when the entry is gone.
+                selectedSummary = updated
+            }
+            scope.launch {
+                val outcome = snackbarHostState.showSnackbar(
+                    message = removedSummaryMessage,
+                    actionLabel = undoMessage,
+                    duration = SnackbarDuration.Long
+                )
+                if (outcome == SnackbarResult.ActionPerformed) {
+                    viewModel.undoRemoveResult(original)
+                    selectedSummary = original
+                }
+            }
+        }
+    }
+    val onPinnedChange: (Boolean) -> Unit = { pinned ->
+        selectedSummary?.let { viewModel.setPinned(it.id, pinned) }
+    }
+    // Open the source on Home, where profile, language and length can be changed.
+    val onSummarizeAgainAction: (() -> Unit)? = (selectedSummary?.sourceLink ?: selectedSummary?.sourceText)
+        ?.takeIf { it.isNotBlank() }
+        ?.let { source ->
+            {
+                selectedSummary = null
+                onSummarizeAgain(source)
+            }
+        }
 
     Scaffold(
         modifier = Modifier
@@ -173,228 +216,239 @@ fun HistoryScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
-        HistoryDetailSheet(
-            summary = selectedSummary,
-            onDismissRequest = { selectedSummary = null },
-            onShowSnackbar = { message ->
-                scope.launch { snackbarHostState.showSnackbar(message) }
-            },
-            // Open the source on Home, where profile, language and length can be changed.
-            onRemoveResult = { result ->
-                selectedSummary?.let { original ->
-                    viewModel.removeResult(original, result) { updated ->
-                        // Show what is left; the sheet closes when the entry is gone.
-                        selectedSummary = updated
-                    }
-                    scope.launch {
-                        val outcome = snackbarHostState.showSnackbar(
-                            message = removedSummaryMessage,
-                            actionLabel = undoMessage,
-                            duration = SnackbarDuration.Long
-                        )
-                        if (outcome == SnackbarResult.ActionPerformed) {
-                            viewModel.undoRemoveResult(original)
-                            selectedSummary = original
-                        }
-                    }
-                }
-            },
-            onPinnedChange = { pinned ->
-                selectedSummary?.let { viewModel.setPinned(it.id, pinned) }
-            },
-            onSummarizeAgain = (selectedSummary?.sourceLink ?: selectedSummary?.sourceText)
-                ?.takeIf { it.isNotBlank() }
-                ?.let { source ->
-                    {
-                        selectedSummary = null
-                        onSummarizeAgain(source)
-                    }
-                }
-        )
+        // Phones show the entry in a bottom sheet; wide screens show it in the right pane.
+        if (!wide) {
+            HistoryDetailSheet(
+                summary = selectedSummary,
+                onDismissRequest = { selectedSummary = null },
+                onShowSnackbar = showSnackbar,
+                onRemoveResult = onRemoveResult,
+                onPinnedChange = onPinnedChange,
+                onSummarizeAgain = onSummarizeAgainAction
+            )
+        }
 
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxSize()
-                .consumeWindowInsets(innerPadding),
-            contentAlignment = Alignment.TopCenter
+                .consumeWindowInsets(innerPadding)
         ) {
-            LazyColumn(
-                state = lazyListState,
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .widthIn(max = 840.dp)
-                    .padding(horizontal = 16.dp),
-                contentPadding = innerPadding,
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                    .weight(if (wide) 0.4f else 1f)
+                    .fillMaxHeight(),
+                contentAlignment = Alignment.TopCenter
             ) {
-                // Search Bar
-                item(key = "search_bar") {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp)
-                    ) {
-                        HistorySearchBar(
-                            query = searchState.query,
-                            onQueryChange = searchState.onQueryChange,
-                            onClear = searchState.onClear
-                        )
-
-                        HistoryFilterChips(
-                            selectedFilter = searchState.selectedFilter,
-                            onFilterChanged = searchState.onFilterChanged,
-                            pinnedOnly = searchState.pinnedOnly,
-                            onPinnedOnlyChanged = searchState.onPinnedOnlyChanged,
-                            profiles = profiles,
-                            selectedProfileId = searchState.selectedProfileId,
-                            onProfileFilterChanged = searchState.onProfileFilterChanged,
-                            sort = searchState.sort,
-                            onSortChanged = searchState.onSortChanged,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 8.dp)
-                        )
-                    }
-                }
-
-                // Initial loading state
-                if (historySummaries.loadState.refresh is LoadState.Loading) {
-                    item(key = "loading_initial") {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 48.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(modifier = Modifier.size(56.dp))
-                        }
-                    }
-                }
-
-                // Empty state
-                if (historySummaries.loadState.refresh is LoadState.NotLoading && historySummaries.itemCount == 0) {
-                    item(key = "empty_state") {
-                        HistoryEmptySearchResults(
-                            query = searchState.query,
-                            isSearching = searchState.isSearching
-                        )
-                    }
-                }
-
-                // Grouped History Items with connected shapes
-                items(
-                    count = historySummaries.itemCount,
-                    key = historySummaries.itemKey { it.id }
-                ) { index ->
-                    val summary = historySummaries[index]
-                    if (summary != null) {
-                        // Pinned items form their own section at the top.
-                        // Sorted by title there are no date headers.
-                        val byTitle = searchState.sort == HistorySort.TITLE
-                        val currentSection = when {
-                            summary.pinned -> pinnedTitle
-                            byTitle -> ""
-                            else -> getDateSectionTitle(summary.createdOn)
-                        }
-                        val prevSection = if (index > 0) {
-                            historySummaries.peek(index - 1)
-                                ?.let { if (it.pinned) pinnedTitle else if (byTitle) "" else getDateSectionTitle(it.createdOn) }
-                        } else null
-                        val nextSection = if (index < historySummaries.itemCount - 1) {
-                            historySummaries.peek(index + 1)
-                                ?.let { if (it.pinned) pinnedTitle else if (byTitle) "" else getDateSectionTitle(it.createdOn) }
-                        } else null
-
-                        val isFirstInSection = prevSection != currentSection
-                        val isLastInSection = nextSection != currentSection
-
-                        val position = when {
-                            isFirstInSection && isLastInSection -> GroupPosition.SINGLE
-                            isFirstInSection -> GroupPosition.TOP
-                            isLastInSection -> GroupPosition.BOTTOM
-                            else -> GroupPosition.MIDDLE
-                        }
-
+                LazyColumn(
+                    state = lazyListState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(if (wide) Modifier else Modifier.widthIn(max = 840.dp))
+                        .padding(horizontal = 16.dp),
+                    contentPadding = innerPadding,
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    // Search Bar
+                    item(key = "search_bar") {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .animateItem(
-                                    fadeInSpec = spring(
-                                        dampingRatio = Spring.DampingRatioNoBouncy,
-                                        stiffness = Spring.StiffnessMedium
-                                    ),
-                                    placementSpec = spring(
-                                        dampingRatio = Spring.DampingRatioLowBouncy,
-                                        stiffness = Spring.StiffnessMediumLow
-                                    ),
-                                    fadeOutSpec = spring(
-                                        dampingRatio = Spring.DampingRatioNoBouncy,
-                                        stiffness = Spring.StiffnessMedium
-                                    )
-                                )
+                                .padding(bottom = 8.dp)
                         ) {
-                            if (isFirstInSection && currentSection.isNotBlank()) {
-                                HistorySectionHeader(
-                                    title = currentSection,
-                                    modifier = Modifier.padding(
-                                        top = if (index > 0) 14.dp else 4.dp,
-                                        bottom = 6.dp
-                                    )
-                                )
-                            }
+                            HistorySearchBar(
+                                query = searchState.query,
+                                onQueryChange = searchState.onQueryChange,
+                                onClear = searchState.onClear
+                            )
 
-                            HistoryItemRow(
-                                summary = summary,
-                                position = position,
-                                showThumbnails = showThumbnails,
-                                selected = summary.id in selectedIds,
-                                onClick = {
-                                    if (selecting) viewModel.toggleSelection(summary.id) else selectedSummary = summary
-                                },
-                                onLongClick = {
-                                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    viewModel.toggleSelection(summary.id)
-                                },
-                                onDismiss = {
-                                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    viewModel.deleteSummary(summary.id)
-
-                                    scope.launch {
-                                        val result = snackbarHostState.showSnackbar(
-                                            message = deletedMessage,
-                                            actionLabel = undoMessage,
-                                            duration = SnackbarDuration.Long
-                                        )
-                                        when (result) {
-                                            SnackbarResult.ActionPerformed -> {
-                                                viewModel.restoreSummary(summary)
-                                                snackbarHostState.currentSnackbarData?.dismiss()
-                                            }
-
-                                            SnackbarResult.Dismissed -> {}
-                                        }
-                                    }
-                                }
+                            HistoryFilterChips(
+                                selectedFilter = searchState.selectedFilter,
+                                onFilterChanged = searchState.onFilterChanged,
+                                pinnedOnly = searchState.pinnedOnly,
+                                onPinnedOnlyChanged = searchState.onPinnedOnlyChanged,
+                                profiles = profiles,
+                                selectedProfileId = searchState.selectedProfileId,
+                                onProfileFilterChanged = searchState.onProfileFilterChanged,
+                                sort = searchState.sort,
+                                onSortChanged = searchState.onSortChanged,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp)
                             )
                         }
                     }
-                }
 
-                // Pagination append loading
-                if (historySummaries.loadState.append is LoadState.Loading) {
-                    item(key = "loading_append") {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            LinearWavyProgressIndicator(
+                    // Initial loading state
+                    if (historySummaries.loadState.refresh is LoadState.Loading) {
+                        item(key = "loading_initial") {
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 4.dp)
+                                    .padding(vertical = 48.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(56.dp))
+                            }
+                        }
+                    }
+
+                    // Empty state
+                    if (historySummaries.loadState.refresh is LoadState.NotLoading && historySummaries.itemCount == 0) {
+                        item(key = "empty_state") {
+                            HistoryEmptySearchResults(
+                                query = searchState.query,
+                                isSearching = searchState.isSearching
                             )
                         }
+                    }
+
+                    // Grouped History Items with connected shapes
+                    items(
+                        count = historySummaries.itemCount,
+                        key = historySummaries.itemKey { it.id }
+                    ) { index ->
+                        val summary = historySummaries[index]
+                        if (summary != null) {
+                            // Pinned items form their own section at the top.
+                            // Sorted by title there are no date headers.
+                            val byTitle = searchState.sort == HistorySort.TITLE
+                            val currentSection = when {
+                                summary.pinned -> pinnedTitle
+                                byTitle -> ""
+                                else -> getDateSectionTitle(summary.createdOn)
+                            }
+                            val prevSection = if (index > 0) {
+                                historySummaries.peek(index - 1)
+                                    ?.let { if (it.pinned) pinnedTitle else if (byTitle) "" else getDateSectionTitle(it.createdOn) }
+                            } else null
+                            val nextSection = if (index < historySummaries.itemCount - 1) {
+                                historySummaries.peek(index + 1)
+                                    ?.let { if (it.pinned) pinnedTitle else if (byTitle) "" else getDateSectionTitle(it.createdOn) }
+                            } else null
+
+                            val isFirstInSection = prevSection != currentSection
+                            val isLastInSection = nextSection != currentSection
+
+                            val position = when {
+                                isFirstInSection && isLastInSection -> GroupPosition.SINGLE
+                                isFirstInSection -> GroupPosition.TOP
+                                isLastInSection -> GroupPosition.BOTTOM
+                                else -> GroupPosition.MIDDLE
+                            }
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .animateItem(
+                                        fadeInSpec = spring(
+                                            dampingRatio = Spring.DampingRatioNoBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        ),
+                                        placementSpec = spring(
+                                            dampingRatio = Spring.DampingRatioLowBouncy,
+                                            stiffness = Spring.StiffnessMediumLow
+                                        ),
+                                        fadeOutSpec = spring(
+                                            dampingRatio = Spring.DampingRatioNoBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        )
+                                    )
+                            ) {
+                                if (isFirstInSection && currentSection.isNotBlank()) {
+                                    HistorySectionHeader(
+                                        title = currentSection,
+                                        modifier = Modifier.padding(
+                                            top = if (index > 0) 14.dp else 4.dp,
+                                            bottom = 6.dp
+                                        )
+                                    )
+                                }
+
+                                HistoryItemRow(
+                                    summary = summary,
+                                    position = position,
+                                    showThumbnails = showThumbnails,
+                                    selected = summary.id in selectedIds,
+                                    onClick = {
+                                        if (selecting) viewModel.toggleSelection(summary.id) else selectedSummary = summary
+                                    },
+                                    onLongClick = {
+                                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        viewModel.toggleSelection(summary.id)
+                                    },
+                                    onDismiss = {
+                                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        viewModel.deleteSummary(summary.id)
+
+                                        scope.launch {
+                                            val result = snackbarHostState.showSnackbar(
+                                                message = deletedMessage,
+                                                actionLabel = undoMessage,
+                                                duration = SnackbarDuration.Long
+                                            )
+                                            when (result) {
+                                                SnackbarResult.ActionPerformed -> {
+                                                    viewModel.restoreSummary(summary)
+                                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                                }
+
+                                                SnackbarResult.Dismissed -> {}
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    // Pagination append loading
+                    if (historySummaries.loadState.append is LoadState.Loading) {
+                        item(key = "loading_append") {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                LinearWavyProgressIndicator(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 4.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (wide) {
+                VerticalDivider(modifier = Modifier.padding(top = innerPadding.calculateTopPadding()))
+                Box(
+                    modifier = Modifier
+                        .weight(0.6f)
+                        .fillMaxHeight()
+                        .padding(innerPadding)
+                        .padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    val selected = selectedSummary
+                    if (selected == null) {
+                        Text(
+                            text = stringResource(R.string.history_select_hint),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(32.dp)
+                        )
+                    } else {
+                        HistoryDetailContent(
+                            summary = selected,
+                            onShowSnackbar = showSnackbar,
+                            onPinnedChange = onPinnedChange,
+                            onRemoveResult = onRemoveResult,
+                            onSummarizeAgain = onSummarizeAgainAction
+                        )
                     }
                 }
             }

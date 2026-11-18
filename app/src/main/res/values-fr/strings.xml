@@ -278,4 +278,5 @@
     <string name="stillLoading">Le document est encore en cours de traitement…</string>
     <string name="useLengthOptions">Utiliser les options de longueur</string>
     <string name="useLengthOptionsDescription">Utiliser les options de longueur pour le résumé</string>
+    <string name="history_select_hint">Sélectionnez un résumé pour le lire ici</string>
 </resources>

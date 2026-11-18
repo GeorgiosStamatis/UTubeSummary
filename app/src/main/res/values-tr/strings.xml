@@ -161,4 +161,5 @@
     <string name="history_export_done">Geçmiş dışa aktarıldı</string>
     <string name="history_export_none">Dışa aktarılacak YouTube video özeti yok.</string>
     <string name="history_export_failed">Geçmiş dışa aktarılamadı.</string>
+    <string name="history_select_hint">Burada okumak için bir özet seçin</string>
 </resources>

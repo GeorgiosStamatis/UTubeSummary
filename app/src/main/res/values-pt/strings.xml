@@ -280,4 +280,5 @@
     <string name="stillLoading">O documento ainda está a ser processado…</string>
     <string name="useLengthOptions">Usar opções de comprimento</string>
     <string name="useLengthOptionsDescription">Usar as opções de comprimento para o resumo</string>
+    <string name="history_select_hint">Selecione um resumo para lê-lo aqui</string>
 </resources>

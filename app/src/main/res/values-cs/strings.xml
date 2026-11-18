@@ -143,5 +143,6 @@
     <string name="history_export_done">Historie exportována</string>
     <string name="history_export_none">Nejsou žádná shrnutí videí z YouTube k exportu.</string>
     <string name="history_export_failed">Historii se nepodařilo exportovat.</string>
+    <string name="history_select_hint">Vyberte shrnutí, které se zde zobrazí</string>
 </resources>
 

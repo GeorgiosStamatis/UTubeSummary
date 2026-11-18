@@ -273,4 +273,5 @@
 
     <!-- File access -->
     <string name="fileUnavailable">The file could not be opened. Pick it again, or check that it is a valid file.</string>
+    <string name="history_select_hint">Select a summary to read it here</string>
 </resources>

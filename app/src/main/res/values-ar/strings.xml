@@ -146,4 +146,5 @@
     <string name="history_export_done">تم تصدير السجل</string>
     <string name="history_export_none">لا توجد ملخصات فيديوهات YouTube للتصدير.</string>
     <string name="history_export_failed">تعذّر تصدير السجل.</string>
+    <string name="history_select_hint">اختر ملخصًا لقراءته هنا</string>
 </resources>
