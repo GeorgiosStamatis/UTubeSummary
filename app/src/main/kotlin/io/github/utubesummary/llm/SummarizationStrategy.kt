@@ -19,10 +19,6 @@ import io.github.utubesummary.llm.tools.File
 import io.github.utubesummary.llm.tools.FileExtractorTool
 import io.github.utubesummary.llm.tools.YouTubeTranscript
 import io.github.utubesummary.llm.tools.YouTubeTranscriptTool
-import io.github.utubesummary.llm.tools.extractAuthorFromUrl
-import io.github.utubesummary.llm.tools.extractTitleFromUrl
-import io.github.utubesummary.llm.tools.isUnknownAuthor
-import io.github.utubesummary.llm.tools.isValidTitle
 import io.github.utubesummary.model.ExtractedContent
 import io.github.utubesummary.model.LlmSummaryResponse
 import io.github.utubesummary.model.SummarizationPhase
@@ -169,27 +165,13 @@ fun createSummarizationStrategy(
             }
 
             val structuredResult = result.structured
-            val finalTitle = structuredResult?.title?.takeIf { isValidTitle(it) }
-                ?: payload.content.title.takeIf {
-                    isValidTitle(it) && !it.equals(
-                        "Text Input",
-                        ignoreCase = true
-                    )
-                }
-                ?: payload.sourceLink?.let { extractTitleFromUrl(it) }?.takeIf { isValidTitle(it) }
-                ?: payload.content.title.takeIf {
-                    it.isNotBlank() && !it.equals(
-                        "Text Input",
-                        ignoreCase = true
-                    )
-                }
-                ?: ""
-
-            val rawAuthor = structuredResult?.author?.takeIf { !isUnknownAuthor(it) }
-                ?: payload.content.author.takeIf { !isUnknownAuthor(it) }
-                ?: payload.sourceLink?.let { extractAuthorFromUrl(it) }
-                    ?.takeIf { !isUnknownAuthor(it) }
-            val finalAuthor = if (isUnknownAuthor(rawAuthor)) "" else rawAuthor?.trim().orEmpty()
+            val (finalTitle, finalAuthor) = resolveTitleAndAuthor(
+                structuredTitle = structuredResult?.title,
+                structuredAuthor = structuredResult?.author,
+                extractedTitle = payload.content.title,
+                extractedAuthor = payload.content.author,
+                sourceLink = payload.sourceLink,
+            )
 
             val output = SummaryOutput(
                 title = finalTitle,
