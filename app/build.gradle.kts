@@ -136,12 +136,6 @@ kotlin {
     }
 }
 
-// Room writes the database schema (one JSON file per version) here. Commit the files: they document
-// every version and are the input of migration tests.
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-}
-
 dependencies {
     // Core & Lifecycle
     implementation(libs.androidx.core.ktx)

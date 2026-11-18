@@ -7,7 +7,7 @@ import io.github.utubesummary.data.local.database.entity.HistoryEntity
 @Database(
     entities = [HistoryEntity::class, AIProviderConfigEntity::class],
     version = 3,
-    exportSchema = true
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun historyDao(): HistoryDao
