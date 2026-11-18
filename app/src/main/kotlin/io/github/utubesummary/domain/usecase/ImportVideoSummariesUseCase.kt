@@ -1,5 +1,7 @@
 package io.github.utubesummary.domain.usecase
 
+import io.github.utubesummary.domain.provider.IoDispatcher
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import io.github.utubesummary.domain.importer.VideoSummaryBackupParser
@@ -28,9 +30,10 @@ interface ImportVideoSummariesUseCase {
 class ImportVideoSummariesUseCaseImpl @Inject constructor(
     private val historyRepository: HistoryRepository,
     private val textFileReader: TextFileReader,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ImportVideoSummariesUseCase {
 
-    override suspend fun invoke(uri: String): Result<ImportResult> = withContext(Dispatchers.IO) {
+    override suspend fun invoke(uri: String): Result<ImportResult> = withContext(ioDispatcher) {
         runCatching {
             val text = textFileReader.readText(uri, MAX_BACKUP_BYTES)
             val parsed = VideoSummaryBackupParser.parse(text)

@@ -97,6 +97,7 @@ but only a device shows wiring mistakes. Run these once (they are mostly `P0`/`P
 | BiliBili link helpers (moved out of the tool class) | 4.5 with a `bilibili.com/video/BV…` link and a `b23.tv` short link |
 | Summary card action buttons (copy, share, save, speak) moved to `SummaryActionButtons.kt` | 9.1–9.4 and the buttons in the History detail (11.3) and the instant dialog (13.1) |
 | Time and id sources (`Clock`, `IdGenerator`) injected into the summarize use case, History merge and profile creation | 5.6 (create a custom profile), 11.1, 11.2 (date of the merged entry is the newest summary), 11.12 |
+| Injected IO dispatcher in the summarize, ask and import use cases | 4.1 (one summary end to end), 7.2 (cancel), 10.1 (ask), 12.1 (import) |
 | Profile ids moved to the model layer | 5.1, 5.5, 5.6, 11.9, 11.14 |
 
 ---
@@ -606,7 +607,7 @@ Run: `./gradlew testGmsDebugUnitTest` (CI does it on every push).
 
 | Area | Test classes |
 |------|--------------|
-| Summarize use case (also: result stamped with the injected clock): provider choice, profile prompt, structured vs free-form, language, length, no secret in errors, cancellation, phase | `SummarizeContentUseCaseImplTest`, `SummarizeContentUseCaseTest`, `ActiveProviderTest`, `PromptsTest`, `SummaryLanguageTest`, `SummarizationProgressTest` |
+| Summarize use case (also: result stamped with the injected clock, slow and cancelled requests in virtual time): provider choice, profile prompt, structured vs free-form, language, length, no secret in errors, cancellation, phase | `SummarizeContentUseCaseImplTest`, `SummarizeContentUseCaseTest`, `ActiveProviderTest`, `PromptsTest`, `SummaryLanguageTest`, `SummarizationProgressTest` |
 | Summary view model: cancel, replace, stale results, caching, length switch, chat | `SummaryViewModelTest`, `AskAboutContentUseCaseImplTest`, `QuestionPromptTest` |
 | Profiles: built-ins, editing/resetting, custom, sharing/import | `BuiltInProfilesTest`, `ResolveProfilesTest`, `UpdateSummaryProfilesUseCaseTest` (also generated ids), `ProfileShareTest` |
 | History model and storage: merge by variant, alternatives, remove, pin, escape search, undo restore | `HistoryResultsTest`, `HistoryRepositoryImplTest` (also merge timestamp), `HistoryMapperTest`, `HistoryLengthResultsConverterTest`, `RemoveHistoryResultUseCaseTest`, `HistoryUseCasesTest`, `HistoryFilterTest` |

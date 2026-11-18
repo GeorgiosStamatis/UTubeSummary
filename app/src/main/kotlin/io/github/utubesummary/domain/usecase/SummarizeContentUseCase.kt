@@ -1,6 +1,8 @@
 package io.github.utubesummary.domain.usecase
 
 import kotlinx.coroutines.CancellationException
+import io.github.utubesummary.domain.provider.IoDispatcher
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -49,13 +51,14 @@ class SummarizeContentUseCaseImpl @Inject constructor(
     private val sourceTextStore: SourceTextStore,
     private val progress: SummarizationProgress,
     private val clock: Clock = SystemClock,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : SummarizeContentUseCase {
     override suspend operator fun invoke(
         text: String,
         overrideLength: SummaryLength?,
         profileId: String?,
         language: String?,
-    ): Result<SummaryOutput> = withContext(Dispatchers.IO) {
+    ): Result<SummaryOutput> = withContext(ioDispatcher) {
         var requestContext = ""
         runCatching {
             val prefs = userPreferencesRepository.preferencesFlow.first()

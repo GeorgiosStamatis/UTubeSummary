@@ -31,6 +31,14 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import java.util.Locale
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.currentTime
 
 class SummarizeContentUseCaseImplTest {
 
@@ -41,11 +49,15 @@ class SummarizeContentUseCaseImplTest {
         var phaseDuringCall: SummarizationPhase? = null
         var calls = 0
 
+        /** Virtual time the call takes, so tests can run a slow request instantly. */
+        var delayMillis = 0L
+
         override suspend fun summarize(request: SummarizationRequest, source: SummarySource): SummarizationOutcome {
             calls++
             lastRequest = request
             lastSource = source
             phaseDuringCall = progress.phase.value
+            if (delayMillis > 0) delay(delayMillis)
             return result()
         }
 
@@ -82,7 +94,7 @@ class SummarizeContentUseCaseImplTest {
 
     private val clock = FixedClock(1_700_000_000_000L)
 
-    private val useCase = SummarizeContentUseCaseImpl(
+    private fun newUseCase(dispatcher: CoroutineDispatcher = Dispatchers.IO) = SummarizeContentUseCaseImpl(
         userPreferencesRepository = prefs,
         aiProviderConfigRepository = configs,
         historyRepository = history,
@@ -96,7 +108,10 @@ class SummarizeContentUseCaseImplTest {
         sourceTextStore = store,
         progress = progress,
         clock = clock,
+        ioDispatcher = dispatcher,
     )
+
+    private val useCase = newUseCase()
 
     private fun outcome(text: String = "The summary") = SummarizationOutcome(
         summary = SummaryOutput(
@@ -112,6 +127,33 @@ class SummarizeContentUseCaseImplTest {
 
     private fun selectOpenAi() {
         prefs.prefs.value = UserPreferences(activeProvider = AIProvider.OPENAI.name)
+    }
+
+    @Test
+    fun `a slow request takes virtual time on the injected dispatcher`() = runTest {
+        selectOpenAi()
+        gateway.delayMillis = 3_600_000L
+        gateway.result = { outcome() }
+
+        val result = newUseCase(StandardTestDispatcher(testScheduler))("https://example.com/slow")
+
+        assertTrue(result.isSuccess)
+        assertEquals(3_600_000L, currentTime)
+    }
+
+    @Test
+    fun `cancelling a slow request saves nothing`() = runTest {
+        selectOpenAi()
+        gateway.delayMillis = 3_600_000L
+        gateway.result = { outcome() }
+        val job = launch { newUseCase(StandardTestDispatcher(testScheduler))("https://example.com/slow") }
+
+        advanceTimeBy(1_000L)
+        job.cancel()
+        advanceUntilIdle()
+
+        assertTrue(job.isCancelled)
+        assertTrue(history.added.isEmpty())
     }
 
     @Test

@@ -29,10 +29,17 @@ import io.github.utubesummary.domain.provider.Clock
 import io.github.utubesummary.domain.provider.IdGenerator
 import io.github.utubesummary.domain.provider.RandomIdGenerator
 import io.github.utubesummary.domain.provider.SystemClock
+import io.github.utubesummary.domain.provider.IoDispatcher
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    @Provides
+    @IoDispatcher
+    fun provideIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
     @Provides
     @Singleton

@@ -1,5 +1,7 @@
 package io.github.utubesummary.domain.usecase
 
+import io.github.utubesummary.domain.provider.IoDispatcher
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -31,6 +33,7 @@ class AskAboutContentUseCaseImpl @Inject constructor(
     private val llmGateway: LlmGateway,
     private val appLocaleProvider: AppLocaleProvider,
     private val sourceTextStore: SourceTextStore,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : AskAboutContentUseCase {
 
     override fun isAvailable(input: String): Boolean = sourceTextStore.get(input) != null
@@ -39,7 +42,7 @@ class AskAboutContentUseCaseImpl @Inject constructor(
         input: String,
         history: List<ChatExchange>,
         question: String,
-    ): Result<String> = withContext(Dispatchers.IO) {
+    ): Result<String> = withContext(ioDispatcher) {
         var requestContext = ""
         runCatching {
             val sourceText = sourceTextStore.get(input) ?: throw SummaryException.NoContentException()
