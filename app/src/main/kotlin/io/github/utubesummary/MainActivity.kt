@@ -72,8 +72,8 @@ class MainActivity : ComponentActivity() {
         when (intent.action) {
             Intent.ACTION_SEND -> {
                 val type = intent.type
-                val autoTrigger = intent.getBooleanExtra("auto_trigger", false)
-                val handoffId = intent.getStringExtra("handoff_id")
+                val autoTrigger = intent.getBooleanExtra(EXTRA_AUTO_TRIGGER, false)
+                val handoffId = intent.getStringExtra(EXTRA_HANDOFF_ID)
                 val handoff = handoffId?.let { SummaryHandoff.take(it) }
                 val initialSummary = handoff?.summary
                 val lengthResults = handoff?.lengthResults ?: emptyMap()

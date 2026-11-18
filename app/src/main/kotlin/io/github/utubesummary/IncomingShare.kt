@@ -1,5 +1,9 @@
 package io.github.utubesummary
 
+/** Extras the instant dialog adds when it hands a summary (or a request to summarize) to the app. */
+const val EXTRA_AUTO_TRIGGER = "auto_trigger"
+const val EXTRA_HANDOFF_ID = "handoff_id"
+
 /** Share types whose content is a file (`EXTRA_STREAM`) instead of text (`EXTRA_TEXT`). */
 fun isFileShare(mimeType: String?): Boolean {
     val type = mimeType.orEmpty()

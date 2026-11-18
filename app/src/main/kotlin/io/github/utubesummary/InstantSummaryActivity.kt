@@ -136,7 +136,7 @@ class InstantSummaryActivity : ComponentActivity() {
             }
 
             if (summaryResult != null) {
-                putExtra("auto_trigger", false)
+                putExtra(EXTRA_AUTO_TRIGGER, false)
                 val effectiveLengthResults = if (lengthResults.isNotEmpty()) {
                     lengthResults + (summaryResult.length to summaryResult)
                 } else {
@@ -144,11 +144,11 @@ class InstantSummaryActivity : ComponentActivity() {
                 }
                 // Only an id travels in the intent; the summaries stay in memory (see SummaryHandoff).
                 putExtra(
-                    "handoff_id",
+                    EXTRA_HANDOFF_ID,
                     SummaryHandoff.put(SummaryHandoff.Entry(summaryResult, effectiveLengthResults))
                 )
             } else {
-                putExtra("auto_trigger", true)
+                putExtra(EXTRA_AUTO_TRIGGER, true)
             }
         }
         startActivity(targetIntent)
