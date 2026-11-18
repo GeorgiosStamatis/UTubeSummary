@@ -72,10 +72,10 @@ import io.github.utubesummary.ui.page.history.search.HistoryEmptySearchResults
 import io.github.utubesummary.ui.page.history.search.HistoryFilterChips
 import io.github.utubesummary.ui.page.history.search.HistorySearchBar
 import io.github.utubesummary.ui.page.history.search.rememberHistorySearchState
-import io.github.utubesummary.ui.page.history.section.GroupPosition
 import io.github.utubesummary.ui.page.history.section.HistoryItemRow
 import io.github.utubesummary.ui.page.history.section.HistorySectionHeader
-import io.github.utubesummary.ui.page.history.section.getDateSectionTitle
+import io.github.utubesummary.ui.page.history.section.groupPositionOf
+import io.github.utubesummary.ui.page.history.section.historySectionKey
 import io.github.utubesummary.ui.page.history.sheet.HistoryDetailContent
 import io.github.utubesummary.ui.page.history.sheet.HistoryDetailSheet
 import io.github.utubesummary.vm.HistoryViewModel
@@ -312,29 +312,17 @@ fun HistoryScreen(
                             // Pinned items form their own section at the top.
                             // Sorted by title there are no date headers.
                             val byTitle = searchState.sort == HistorySort.TITLE
-                            val currentSection = when {
-                                summary.pinned -> pinnedTitle
-                                byTitle -> ""
-                                else -> getDateSectionTitle(summary.createdOn)
+                            val sectionOf = { item: HistorySummary ->
+                                historySectionKey(item.pinned, item.createdOn, byTitle, pinnedTitle)
                             }
-                            val prevSection = if (index > 0) {
-                                historySummaries.peek(index - 1)
-                                    ?.let { if (it.pinned) pinnedTitle else if (byTitle) "" else getDateSectionTitle(it.createdOn) }
-                            } else null
+                            val currentSection = sectionOf(summary)
+                            val prevSection = if (index > 0) historySummaries.peek(index - 1)?.let(sectionOf) else null
                             val nextSection = if (index < historySummaries.itemCount - 1) {
-                                historySummaries.peek(index + 1)
-                                    ?.let { if (it.pinned) pinnedTitle else if (byTitle) "" else getDateSectionTitle(it.createdOn) }
+                                historySummaries.peek(index + 1)?.let(sectionOf)
                             } else null
 
                             val isFirstInSection = prevSection != currentSection
-                            val isLastInSection = nextSection != currentSection
-
-                            val position = when {
-                                isFirstInSection && isLastInSection -> GroupPosition.SINGLE
-                                isFirstInSection -> GroupPosition.TOP
-                                isLastInSection -> GroupPosition.BOTTOM
-                                else -> GroupPosition.MIDDLE
-                            }
+                            val position = groupPositionOf(prevSection, currentSection, nextSection)
 
                             Column(
                                 modifier = Modifier
