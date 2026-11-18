@@ -151,11 +151,11 @@ crash and not “no internet”.
 “endpoint not found” hint. With airplane mode on: “unreachable” message.
 
 **3.6 `P1` Pasted version path.** For OpenRouter paste `https://openrouter.ai/api/v1`; for OpenAI paste
-`https://api.openai.com/v1`. *Expected:* test and summaries work (no HTTP 404 “Not Found”). *Unit-tested:* how the server address maps to the called path (`OpenAiCompatibleEndpointTest`); the device check is the real connection.
+`https://api.openai.com/v1`. *Expected:* test and summaries work (no HTTP 404 “Not Found”).
 
 **3.7 `P2` URL without a scheme.** For LM Studio/Ollama/Custom type `192.168.1.10:1234`, then
 `mypc.local:11434`, then `api.example.com`. *Expected:* the first two are treated as `http://…`, the
-third as `https://…`. *Unit-tested:* the url rules (`ProviderConfigUseCaseTest`); only the real server connection needs a device.
+third as `https://…`. *Unit-tested:* the url rules (`ProviderConfigUseCaseTest`); only the real server connection needs a device. *Unit-tested:* how the server address maps to the called path (`OpenAiCompatibleEndpointTest`); the device check is the real connection.
 
 **3.8 `P1` Local server without key (K4).** Ollama: leave the key empty, test, summarize. *Expected:* works;
 no “you have to provide an API key” error. LM Studio / Custom Provider: optional token is accepted
