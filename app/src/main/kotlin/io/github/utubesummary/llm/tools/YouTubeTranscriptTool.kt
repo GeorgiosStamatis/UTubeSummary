@@ -119,7 +119,8 @@ internal fun selectCaptionTrack(
  */
 internal fun defaultCaptionTrackIndex(playerResponse: JsonObject): Int? {
     val renderer = playerResponse["captions"]?.jsonObject?.get("playerCaptionsTracklistRenderer")?.jsonObject
-    val audioTracks = renderer?.get("audioTracks") as? JsonArray ?: return null
+        ?: return null
+    val audioTracks = renderer["audioTracks"] as? JsonArray ?: return null
     val audioIndex = renderer["defaultAudioTrackIndex"]?.jsonPrimitive?.intOrNull ?: 0
     val audioTrack = (audioTracks.getOrNull(audioIndex) ?: audioTracks.firstOrNull()) as? JsonObject
     return audioTrack?.get("defaultCaptionTrackIndex")?.jsonPrimitive?.intOrNull?.takeIf { it >= 0 }
