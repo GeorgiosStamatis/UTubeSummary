@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.res.stringResource
@@ -64,6 +65,7 @@ import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.model.SummarizationPhase
 import io.github.utubesummary.ui.component.LanguageSelector
 import io.github.utubesummary.ui.component.LlmIndicator
+import io.github.utubesummary.ui.component.instantDialogHeightFraction
 import io.github.utubesummary.ui.component.ProfileSelector
 import io.github.utubesummary.ui.component.resolveUserErrorMessage
 import io.github.utubesummary.ui.component.summaryShareText
@@ -233,7 +235,13 @@ fun InstantSummaryDialog(
     val clipboard = LocalClipboard.current
     val density = LocalDensity.current
     val containerSize = LocalWindowInfo.current.containerSize
-    val maxHeight = with(density) { (containerSize.height * 0.55f).toDp() }
+    val configuration = LocalConfiguration.current
+    // A landscape window is short, so the dialog may use more of it.
+    val heightFraction = instantDialogHeightFraction(
+        widthDp = configuration.screenWidthDp,
+        heightDp = configuration.screenHeightDp
+    )
+    val maxHeight = with(density) { (containerSize.height * heightFraction).toDp() }
     val scope = rememberCoroutineScope()
 
     val effectiveProvider = summaryResult?.provider?.let { p ->
