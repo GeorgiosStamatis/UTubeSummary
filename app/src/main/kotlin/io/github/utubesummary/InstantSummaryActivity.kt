@@ -93,16 +93,13 @@ class InstantSummaryActivity : ComponentActivity() {
             Intent.ACTION_PROCESS_TEXT ->
                 intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString()
 
-            Intent.ACTION_SEND -> {
-                val type = intent.type ?: ""
-                if (type.startsWith("application/") || type.startsWith("image/")) {
-                    val contentUri: Uri? =
-                        intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
-                    contentUri?.toString()
-                } else {
-                    intent.getStringExtra(Intent.EXTRA_TEXT)
-                }
-            }
+            Intent.ACTION_SEND -> sharedContentOf(
+                mimeType = intent.type,
+                text = { intent.getStringExtra(Intent.EXTRA_TEXT) },
+                streamUri = {
+                    intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)?.toString()
+                },
+            )
 
             // Never read the clipboard here: this activity is exported and must not
             // summarize clipboard contents on behalf of other apps.

@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
     private fun handleIntent(intent: Intent) {
         when (intent.action) {
             Intent.ACTION_SEND -> {
-                val type = intent.type ?: ""
+                val type = intent.type
                 val autoTrigger = intent.getBooleanExtra("auto_trigger", false)
                 val handoffId = intent.getStringExtra("handoff_id")
                 val handoff = handoffId?.let { SummaryHandoff.take(it) }
@@ -79,27 +79,21 @@ class MainActivity : ComponentActivity() {
                 val lengthResults = handoff?.lengthResults ?: emptyMap()
 
                 // If the summary is gone (the app process was restarted in between), summarize again.
-                val shouldAutoTrigger = initialSummary == null && (autoTrigger || handoffId != null)
+                val startsSummary = shouldAutoTrigger(initialSummary != null, autoTrigger, handoffId)
 
-                if (type.startsWith("application/") || type.startsWith("image/")) {
-                    val contentUri: Uri? =
-                        intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
-                    contentUri?.let {
-                        appViewModel.onEvent(
-                            AppStartAction(
-                                content = it.toString(),
-                                autoTrigger = shouldAutoTrigger,
-                                initialSummary = initialSummary,
-                                lengthResults = lengthResults,
-                            )
-                        )
-                    }
-                } else {
-                    val content = intent.getStringExtra(Intent.EXTRA_TEXT)
+                val content = sharedContentOf(
+                    mimeType = type,
+                    text = { intent.getStringExtra(Intent.EXTRA_TEXT) },
+                    streamUri = {
+                        intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)?.toString()
+                    },
+                )
+                // A file share without a file link has nothing to summarize.
+                if (content != null || !isFileShare(type)) {
                     appViewModel.onEvent(
                         AppStartAction(
                             content = content,
-                            autoTrigger = shouldAutoTrigger,
+                            autoTrigger = startsSummary,
                             initialSummary = initialSummary,
                             lengthResults = lengthResults,
                         )
