@@ -21,6 +21,8 @@ import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.mergeHistoryResult
 import javax.inject.Inject
 import javax.inject.Singleton
+import io.github.utubesummary.domain.provider.Clock
+import io.github.utubesummary.domain.provider.SystemClock
 
 private const val PAGE_SIZE = 20
 
@@ -31,6 +33,7 @@ internal fun escapeLikePattern(text: String): String =
 @Singleton
 class HistoryRepositoryImpl @Inject constructor(
     private val historyDao: HistoryDao,
+    private val clock: Clock = SystemClock,
 ) : HistoryRepository {
     @Volatile
     private var isDeduplicated = false
@@ -94,7 +97,7 @@ class HistoryRepositoryImpl @Inject constructor(
                 title = summary.title.ifBlank { primary.title },
                 author = summary.author.ifBlank { primary.author },
                 length = summary.length,
-                createdOn = System.currentTimeMillis(),
+                createdOn = clock.nowMillis(),
                 lengthResults = currentResults,
                 alternatives = alternatives,
                 pinned = existingRecords.any { it.pinned },

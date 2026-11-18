@@ -15,6 +15,7 @@ import kotlinx.coroutines.yield
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import io.github.utubesummary.domain.provider.Clock
 
 class HistoryRepositoryImplTest {
 
@@ -79,6 +80,21 @@ class HistoryRepositoryImplTest {
             length to HistoryLengthResult(length = length, summary = text, profileId = profileId)
         ),
     )
+
+    @Test
+    fun `a merged entry is stamped with the time of the clock`() = runTest {
+        val dao = FakeHistoryDao()
+        var now = 1_000L
+        val repository = HistoryRepositoryImpl(dao, clock = object : Clock {
+            override fun nowMillis(): Long = now
+        })
+
+        repository.addSummary(summary(SummaryLength.SHORT, "short"))
+        now = 2_000L
+        repository.addSummary(summary(SummaryLength.LONG, "long"))
+
+        assertEquals(2_000L, dao.rows.values.single().createdOn)
+    }
 
     @Test
     fun `summaries of the same link are merged by length`() = runTest {

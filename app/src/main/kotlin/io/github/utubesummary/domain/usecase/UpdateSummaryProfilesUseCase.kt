@@ -1,15 +1,17 @@
 package io.github.utubesummary.domain.usecase
 
+import io.github.utubesummary.domain.provider.IdGenerator
+import io.github.utubesummary.domain.provider.RandomIdGenerator
 import io.github.utubesummary.domain.repository.UserPreferencesRepository
 import io.github.utubesummary.llm.builtInProfilePrompts
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import io.github.utubesummary.model.ProfileEntry
 import kotlinx.coroutines.flow.first
-import java.util.UUID
 import javax.inject.Inject
 
 class UpdateSummaryProfilesUseCase @Inject constructor(
     private val repository: UserPreferencesRepository,
+    private val ids: IdGenerator = RandomIdGenerator,
 ) {
     suspend fun select(profileId: String) {
         repository.setSelectedProfileId(profileId)
@@ -17,7 +19,7 @@ class UpdateSummaryProfilesUseCase @Inject constructor(
 
     /** Creates a profile when [id] is null, otherwise updates (or overrides, for built-ins) [id]. */
     suspend fun save(id: String?, name: String, basePrompt: String, structuredOutput: Boolean): String {
-        val profileId = id ?: UUID.randomUUID().toString()
+        val profileId = id ?: ids.newId()
         require(profileId != DEFAULT_PROFILE_ID) { "The Default profile is edited in advanced setup" }
         val entries = repository.preferencesFlow.first().profileEntries
         // The prompt is stored as typed: trimming it would fight the editor while the user types.

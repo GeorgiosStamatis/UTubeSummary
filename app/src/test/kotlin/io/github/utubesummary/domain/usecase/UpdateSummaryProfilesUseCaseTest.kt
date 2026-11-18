@@ -1,5 +1,6 @@
 package io.github.utubesummary.domain.usecase
 
+import io.github.utubesummary.domain.provider.IdGenerator
 import io.github.utubesummary.model.CRITICAL_ANALYST_PROFILE_ID
 import io.github.utubesummary.llm.criticalAnalystPrompt
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID
@@ -19,6 +20,18 @@ class UpdateSummaryProfilesUseCaseTest {
     private val useCase = UpdateSummaryProfilesUseCase(repository)
 
     private fun profiles() = resolveProfiles(repository.prefs.value)
+
+    @Test
+    fun `a new profile gets the next generated id`() = runTest {
+        val generated = ArrayDeque(listOf("id-1", "id-2"))
+        val fixedIds = UpdateSummaryProfilesUseCase(repository, object : IdGenerator {
+            override fun newId(): String = generated.removeFirst()
+        })
+
+        assertEquals("id-1", fixedIds.save(null, "First", "prompt one", structuredOutput = false))
+        assertEquals("id-2", fixedIds.save(null, "Second", "prompt two", structuredOutput = false))
+        assertEquals(listOf("id-1", "id-2"), profiles().filter { !it.isBuiltIn }.map { it.id })
+    }
 
     @Test
     fun `a new profile gets an id and shows up after the built-ins`() = runTest {

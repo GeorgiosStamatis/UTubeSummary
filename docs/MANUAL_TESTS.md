@@ -96,6 +96,7 @@ but only a device shows wiring mistakes. Run these once (they are mostly `P0`/`P
 | Self-hosted server path (`openAiCompatibleEndpoint`) | 3.7, 3.8 with LM Studio / Custom Provider (bare host and host with `/v1`) |
 | BiliBili link helpers (moved out of the tool class) | 4.5 with a `bilibili.com/video/BV…` link and a `b23.tv` short link |
 | Summary card action buttons (copy, share, save, speak) moved to `SummaryActionButtons.kt` | 9.1–9.4 and the buttons in the History detail (11.3) and the instant dialog (13.1) |
+| Time and id sources (`Clock`, `IdGenerator`) injected into the summarize use case, History merge and profile creation | 5.6 (create a custom profile), 11.1, 11.2 (date of the merged entry is the newest summary), 11.12 |
 | Profile ids moved to the model layer | 5.1, 5.5, 5.6, 11.9, 11.14 |
 
 ---
@@ -605,10 +606,10 @@ Run: `./gradlew testGmsDebugUnitTest` (CI does it on every push).
 
 | Area | Test classes |
 |------|--------------|
-| Summarize use case: provider choice, profile prompt, structured vs free-form, language, length, no secret in errors, cancellation, phase | `SummarizeContentUseCaseImplTest`, `SummarizeContentUseCaseTest`, `ActiveProviderTest`, `PromptsTest`, `SummaryLanguageTest`, `SummarizationProgressTest` |
+| Summarize use case (also: result stamped with the injected clock): provider choice, profile prompt, structured vs free-form, language, length, no secret in errors, cancellation, phase | `SummarizeContentUseCaseImplTest`, `SummarizeContentUseCaseTest`, `ActiveProviderTest`, `PromptsTest`, `SummaryLanguageTest`, `SummarizationProgressTest` |
 | Summary view model: cancel, replace, stale results, caching, length switch, chat | `SummaryViewModelTest`, `AskAboutContentUseCaseImplTest`, `QuestionPromptTest` |
-| Profiles: built-ins, editing/resetting, custom, sharing/import | `BuiltInProfilesTest`, `ResolveProfilesTest`, `UpdateSummaryProfilesUseCaseTest`, `ProfileShareTest` |
-| History model and storage: merge by variant, alternatives, remove, pin, escape search, undo restore | `HistoryResultsTest`, `HistoryRepositoryImplTest`, `HistoryMapperTest`, `HistoryLengthResultsConverterTest`, `RemoveHistoryResultUseCaseTest`, `HistoryUseCasesTest`, `HistoryFilterTest` |
+| Profiles: built-ins, editing/resetting, custom, sharing/import | `BuiltInProfilesTest`, `ResolveProfilesTest`, `UpdateSummaryProfilesUseCaseTest` (also generated ids), `ProfileShareTest` |
+| History model and storage: merge by variant, alternatives, remove, pin, escape search, undo restore | `HistoryResultsTest`, `HistoryRepositoryImplTest` (also merge timestamp), `HistoryMapperTest`, `HistoryLengthResultsConverterTest`, `RemoveHistoryResultUseCaseTest`, `HistoryUseCasesTest`, `HistoryFilterTest` |
 | History view model: search, filters, sort, selection, bulk delete/pin, reopening an entry by id | `HistoryViewModelTest` |
 | Import/export | `VideoSummaryBackupParserTest`, `VideoSummaryBackupWriterTest`, `ImportVideoSummariesUseCaseTest`, `HistoryUseCasesTest` (export) |
 | Providers: URL normalization, called path of self-hosted servers, config use case, connection test requests, model parsing | `ProviderConfigUseCaseTest`, `OpenAiCompatibleEndpointTest`, `ProviderConfigTest`, `ProviderConnectionRequestTest`, `ProviderDialogButtonsTest`, `SettingsViewModelTest` |

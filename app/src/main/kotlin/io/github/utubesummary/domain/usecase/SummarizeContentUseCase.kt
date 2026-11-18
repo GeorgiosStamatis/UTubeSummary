@@ -5,6 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import io.github.utubesummary.domain.provider.AppLocaleProvider
+import io.github.utubesummary.domain.provider.Clock
+import io.github.utubesummary.domain.provider.SystemClock
 import io.github.utubesummary.domain.provider.DocumentMetadataProvider
 import io.github.utubesummary.domain.provider.SourceTextStore
 import io.github.utubesummary.domain.repository.AIProviderConfigRepository
@@ -46,6 +48,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
     private val appLocaleProvider: AppLocaleProvider,
     private val sourceTextStore: SourceTextStore,
     private val progress: SummarizationProgress,
+    private val clock: Clock = SystemClock,
 ) : SummarizeContentUseCase {
     override suspend operator fun invoke(
         text: String,
@@ -181,7 +184,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             profileId = profile.id,
             profileName = profile.name,
             language = language,
-            createdOn = System.currentTimeMillis(),
+            createdOn = clock.nowMillis(),
         )
 
         val summary = HistorySummary(

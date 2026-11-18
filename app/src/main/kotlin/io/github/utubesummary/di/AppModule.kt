@@ -25,10 +25,22 @@ import io.github.utubesummary.llm.LLMHandler
 import io.github.utubesummary.llm.LlmGateway
 import io.github.utubesummary.llm.SummarizationProgress
 import javax.inject.Singleton
+import io.github.utubesummary.domain.provider.Clock
+import io.github.utubesummary.domain.provider.IdGenerator
+import io.github.utubesummary.domain.provider.RandomIdGenerator
+import io.github.utubesummary.domain.provider.SystemClock
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    @Provides
+    @Singleton
+    fun provideClock(): Clock = SystemClock
+
+    @Provides
+    @Singleton
+    fun provideIdGenerator(): IdGenerator = RandomIdGenerator
 
     @Provides
     @Singleton

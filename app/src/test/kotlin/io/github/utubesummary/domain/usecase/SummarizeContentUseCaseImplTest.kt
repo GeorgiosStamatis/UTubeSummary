@@ -1,6 +1,7 @@
 package io.github.utubesummary.domain.usecase
 
 import io.github.utubesummary.domain.provider.AppLocaleProvider
+import io.github.utubesummary.domain.provider.Clock
 import io.github.utubesummary.domain.provider.DocumentMetadataProvider
 import io.github.utubesummary.domain.provider.SourceTextStore
 import io.github.utubesummary.exception.SummaryException
@@ -75,6 +76,12 @@ class SummarizeContentUseCaseImplTest {
         mapOf(AIProvider.OPENAI.name to ProviderConfig(apiKey = "sk-secret", activeModel = "gpt-test"))
     )
 
+    private class FixedClock(var now: Long) : Clock {
+        override fun nowMillis(): Long = now
+    }
+
+    private val clock = FixedClock(1_700_000_000_000L)
+
     private val useCase = SummarizeContentUseCaseImpl(
         userPreferencesRepository = prefs,
         aiProviderConfigRepository = configs,
@@ -88,6 +95,7 @@ class SummarizeContentUseCaseImplTest {
         },
         sourceTextStore = store,
         progress = progress,
+        clock = clock,
     )
 
     private fun outcome(text: String = "The summary") = SummarizationOutcome(
@@ -104,6 +112,21 @@ class SummarizeContentUseCaseImplTest {
 
     private fun selectOpenAi() {
         prefs.prefs.value = UserPreferences(activeProvider = AIProvider.OPENAI.name)
+    }
+
+    @Test
+    fun `the saved result is stamped with the time of the clock`() = runTest {
+        selectOpenAi()
+        gateway.result = { outcome() }
+
+        useCase("https://example.com/first")
+        clock.now = 1_800_000_000_000L
+        useCase("https://example.com/second")
+
+        assertEquals(
+            listOf(1_700_000_000_000L, 1_800_000_000_000L),
+            history.added.map { it.activeResult!!.createdOn }
+        )
     }
 
     @Test
