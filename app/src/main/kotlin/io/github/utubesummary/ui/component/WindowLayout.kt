@@ -2,6 +2,19 @@ package io.github.utubesummary.ui.component
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.dp
+
+/** Widest a single column of content gets, so lists and forms do not stretch across a tablet. */
+val ContentMaxWidth = 840.dp
+
+/** Widest the two-pane Home layout gets. */
+val TwoPaneMaxWidth = 1200.dp
+
+/** Widest the instant summary dialog gets. */
+val DialogMaxWidth = 600.dp
+
+/** Widest the tutorial content gets. */
+val OnboardingMaxWidth = 560.dp
 
 private const val WIDE_MIN_WIDTH_DP = 840
 private const val LANDSCAPE_WIDE_MIN_WIDTH_DP = 600

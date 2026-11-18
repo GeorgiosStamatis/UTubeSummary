@@ -22,6 +22,7 @@ import io.github.utubesummary.ui.page.onboarding.section.ONBOARDING_PAGE_COUNT
 import io.github.utubesummary.ui.page.onboarding.section.OnboardingBottomBar
 import io.github.utubesummary.ui.page.onboarding.section.OnboardingStepPage
 import io.github.utubesummary.ui.theme.UTubeSummaryTheme
+import io.github.utubesummary.ui.component.OnboardingMaxWidth
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -55,7 +56,7 @@ fun OnboardingScreen(
                 ) {
                     OnboardingStepPage(
                         page = page,
-                        modifier = Modifier.widthIn(max = 560.dp)
+                        modifier = Modifier.widthIn(max = OnboardingMaxWidth)
                     )
                 }
             }

@@ -69,6 +69,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
 import java.util.Locale
+import io.github.utubesummary.ui.component.ContentMaxWidth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -125,7 +126,7 @@ fun AdvancedSummarySetupScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .widthIn(max = 840.dp),
+                    .widthIn(max = ContentMaxWidth),
                 contentPadding = innerPadding
             ) {
                 item {

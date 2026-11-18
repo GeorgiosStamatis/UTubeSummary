@@ -40,6 +40,8 @@ import io.github.utubesummary.ui.theme.UTubeSummaryTheme
 import io.github.utubesummary.vm.ChatState
 import io.github.utubesummary.vm.SettingsUiState
 import io.github.utubesummary.vm.SummarizationState
+import io.github.utubesummary.ui.component.ContentMaxWidth
+import io.github.utubesummary.ui.component.TwoPaneMaxWidth
 
 @Composable
 internal fun HomeContent(
@@ -68,7 +70,7 @@ internal fun HomeContent(
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .widthIn(max = 1200.dp)
+                    .widthIn(max = TwoPaneMaxWidth)
                     .padding(innerPadding)
             ) {
                 Column(
@@ -110,7 +112,7 @@ internal fun HomeContent(
                 state = listState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .widthIn(max = 840.dp),
+                    .widthIn(max = ContentMaxWidth),
                 contentPadding = innerPadding
             ) {
                 item {

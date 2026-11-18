@@ -72,6 +72,7 @@ import io.github.utubesummary.ui.page.settings.section.SettingsGroup
 import io.github.utubesummary.ui.theme.UTubeSummaryTheme
 import io.github.utubesummary.vm.SettingsUiState
 import io.github.utubesummary.vm.SettingsViewModel
+import io.github.utubesummary.ui.component.ContentMaxWidth
 
 private sealed interface DialogState {
     data object None : DialogState
@@ -333,7 +334,7 @@ private fun SettingsContent(
         modifier = Modifier
             .fillMaxSize()
             .wrapContentWidth(Alignment.CenterHorizontally)
-            .widthIn(max = 840.dp)
+            .widthIn(max = ContentMaxWidth)
             .padding(horizontal = 16.dp)
     ) {
         LazyColumn(

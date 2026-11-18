@@ -66,6 +66,7 @@ import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import io.github.utubesummary.model.SummaryProfile
 import io.github.utubesummary.ui.component.displayName
 import io.github.utubesummary.vm.SettingsViewModel
+import io.github.utubesummary.ui.component.ContentMaxWidth
 
 /** Marker for "creating a new profile" while editing. */
 private const val NEW_PROFILE = "<new>"
@@ -175,7 +176,7 @@ fun SummaryProfilesScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .widthIn(max = 840.dp),
+                    .widthIn(max = ContentMaxWidth),
                 contentPadding = innerPadding
             ) {
                 items(state.profiles, key = { it.id }) { profile ->

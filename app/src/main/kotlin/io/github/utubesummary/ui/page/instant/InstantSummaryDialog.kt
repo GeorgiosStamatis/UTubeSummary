@@ -61,6 +61,7 @@ import io.github.utubesummary.ui.component.summaryShareText
 import io.github.utubesummary.vm.SettingsUiState
 import io.github.utubesummary.vm.SummaryViewModel
 import kotlinx.coroutines.launch
+import io.github.utubesummary.ui.component.DialogMaxWidth
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -113,7 +114,7 @@ fun InstantSummaryDialog(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .widthIn(max = 600.dp)
+                    .widthIn(max = DialogMaxWidth)
                     .padding(horizontal = 16.dp)
                     .heightIn(max = maxHeight),
                 shape = MaterialTheme.shapes.extraLarge,

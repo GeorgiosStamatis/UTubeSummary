@@ -92,6 +92,7 @@ but only a device shows wiring mistakes. Run these once (they are mostly `P0`/`P
 | History grouping (`HistorySections.kt`), open entry kept on rotation | 11.3, 11.6, 11.8, 11.12, 15.2, 15.4, 15.5 |
 | Text to speech chunking | 9.1 (very long summary, MOCK_LONG) |
 | Text file decoding | 4.12 (file with BOM, file with Windows line endings), 12.1, 12.2 |
+| Width constants (`ContentMaxWidth` etc. replace repeated dp values) | 2.4, 13.8, 15.8, 15.9 (nothing should look different) |
 | Profile ids moved to the model layer | 5.1, 5.5, 5.6, 11.9, 11.14 |
 
 ---

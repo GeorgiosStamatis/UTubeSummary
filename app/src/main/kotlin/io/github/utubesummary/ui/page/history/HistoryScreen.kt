@@ -80,6 +80,7 @@ import io.github.utubesummary.ui.page.history.section.historySectionKey
 import io.github.utubesummary.ui.page.history.sheet.HistoryDetailContent
 import io.github.utubesummary.ui.page.history.sheet.HistoryDetailSheet
 import io.github.utubesummary.vm.HistoryViewModel
+import io.github.utubesummary.ui.component.ContentMaxWidth
 
 /**
  * Material 3 Expressive History Screen with Android 16 search bar, connected shapes, and tonal badges
@@ -257,7 +258,7 @@ fun HistoryScreen(
                     state = lazyListState,
                     modifier = Modifier
                         .fillMaxSize()
-                        .then(if (wide) Modifier else Modifier.widthIn(max = 840.dp))
+                        .then(if (wide) Modifier else Modifier.widthIn(max = ContentMaxWidth))
                         .padding(horizontal = 16.dp),
                     contentPadding = innerPadding,
                     verticalArrangement = Arrangement.spacedBy(2.dp)
