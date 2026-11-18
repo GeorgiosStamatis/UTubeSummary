@@ -55,9 +55,10 @@ failure with the case id, what you did and what you saw; for crashes add the Log
 | C10 | A photo/screenshot of English text (jpg/png/webp) |
 | C11 | A paragraph of plain text (about 500 words) |
 | C12 | A video-summaries JSON backup of the original app (for import) |
+| C13 | A YouTube video whose manual subtitles exist in several languages but not in English (and has no auto-generated captions) |
 
 **Priority tags.** Every case carries a tag: `P0` smoke (27 cases, about 45 minutes, run on every
-build), `P1` normal (62, run before a release), `P2` rare or cosmetic (37, run when the area
+build), `P1` normal (63, run before a release), `P2` rare or cosmetic (37, run when the area
 changed). See the [smoke run](#smoke-run-p0-only) below.
 
 **Mock AI server (no API key needed).** On a computer in the same Wi-Fi run
@@ -99,6 +100,7 @@ but only a device shows wiring mistakes. Run these once (they are mostly `P0`/`P
 | Time and id sources (`Clock`, `IdGenerator`) injected into the summarize use case, History merge and profile creation | 5.6 (create a custom profile), 11.1, 11.2 (date of the merged entry is the newest summary), 11.12 |
 | Injected IO dispatcher in the summarize, ask and import use cases | 4.1 (one summary end to end), 7.2 (cancel), 10.1 (ask), 12.1 (import) |
 | YouTube client profile and error handling (`YouTubeClient.kt`) | 4.1, 4.3, 4.4 (private/removed still say unavailable), 8.4 (airplane mode says no internet), 4.17 |
+| Subtitle ranking, wanted subtitle language from the summary language, transcript language in `ExtractedContent` | 4.1, 4.3, 4.18, 6.3 |
 | Profile ids moved to the model layer | 5.1, 5.5, 5.6, 11.9, 11.14 |
 
 ---
@@ -243,6 +245,15 @@ video. YouTube may have changed something…”, and **Show details** names the 
 YouTube really says so (a real private or removed video: 4.4 shows the unavailable text), and without
 internet it must say “no internet” (8.4). *Unit-tested:* `YouTubeClientTest`. Check the translated texts in
 17.1. In Logcat (tag `YouTubeExtractor`) every run logs the client, the caption tracks found and the one chosen.
+
+**4.18 `P1` Subtitle choice with several tracks.** Use a video that has manual subtitles in several languages
+but no English track and no auto-generated one (typical for a company channel; C13 below), and one normal
+video with auto-generated captions. With **Video language**: *Expected:* the summary is in the language of the
+subtitles that were read; in Logcat (`YouTubeExtractor`) the line “Caption tracks for …; chosen …” names
+the track (YouTube's own default track is used when nothing else fits). Then choose **German** (or another
+language you see in the track list) as summary language: *Expected:* a manual subtitle track in that language
+is read when one exists. *Unit-tested:* the whole ranking (`YouTubeTrackChoiceTest`, `YouTubeTranscriptToolTest`);
+the device check is that real YouTube answers contain the fields the code reads.
 
 ---
 
@@ -624,7 +635,7 @@ Run: `./gradlew testGmsDebugUnitTest` (CI does it on every push).
 | Import/export | `VideoSummaryBackupParserTest`, `VideoSummaryBackupWriterTest`, `ImportVideoSummariesUseCaseTest`, `HistoryUseCasesTest` (export) |
 | Providers: URL normalization, called path of self-hosted servers, config use case, connection test requests, model parsing | `ProviderConfigUseCaseTest`, `OpenAiCompatibleEndpointTest`, `ProviderConfigTest`, `ProviderConnectionRequestTest`, `ProviderDialogButtonsTest`, `SettingsViewModelTest` |
 | Errors | `LlmErrorParserTest`, `SummaryExceptionTest`, `BiliBiliHttpFailureTest` |
-| Content tools | `YouTubeTranscriptToolTest`, `YouTubeClientTest`, `BiliBiliLinkTest`, `ArticleExtractorToolTest`, `DocxTextBuilderTest`, `FileKindTest`, `YouTubeVideoIdTest`, `YouTubeThumbnailTest` |
+| Content tools | `YouTubeTranscriptToolTest`, `YouTubeTrackChoiceTest`, `YouTubeClientTest`, `BiliBiliLinkTest`, `ArticleExtractorToolTest`, `DocxTextBuilderTest`, `FileKindTest`, `YouTubeVideoIdTest`, `YouTubeThumbnailTest` |
 | Sharing, Markdown, handoff | `ShareTextTest`, `MarkdownTextTest`, `SummaryHandoffTest`, `InMemorySourceTextStoreTest` |
 | Settings storage / security | `UserPreferencesCompatibilityTest`, `SecureValueCodecTest`, `StringListConverterTest` |
 | Caches, executor | `BoundedLruCacheTest`, `GeminiRequestTest` |
@@ -644,6 +655,9 @@ the share sheet and the file/photo pickers.
 
 ## Known limitations (not defects of this test plan)
 
+- The language of the chosen subtitles is carried inside the app (`ExtractedContent.languageCode`) but not yet shown
+  to the user and not yet given to the model; a wrong-language summary for “Video language” can still
+  happen with a model that ignores the language rule (parked on purpose).
 - The active row of the History list is not highlighted in the two-pane layout (the row style is the
   multi-select check mark).
 - Room schema files are not exported, so there is no automated migration test; case 1.2 is the check.
