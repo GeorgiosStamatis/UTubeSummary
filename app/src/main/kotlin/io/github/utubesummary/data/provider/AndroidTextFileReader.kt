@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import io.github.utubesummary.domain.provider.FileTooLargeException
 import io.github.utubesummary.domain.provider.TextFileReader
+import io.github.utubesummary.util.decodeTextBytes
 import java.io.FileNotFoundException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,7 +24,7 @@ class AndroidTextFileReader @Inject constructor(
                 // Read one byte more than allowed to detect an oversized file.
                 val bytes = it.readNBytes((maxBytes + 1).toInt())
                 if (bytes.size > maxBytes) throw FileTooLargeException(maxBytes)
-                String(bytes, Charsets.UTF_8)
+                decodeTextBytes(bytes)
             }
         }
 }

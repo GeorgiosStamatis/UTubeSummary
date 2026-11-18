@@ -20,6 +20,7 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import io.github.utubesummary.model.ExtractedContent
+import io.github.utubesummary.util.decodeTextBytes
 import org.xmlpull.v1.XmlPullParser
 import java.io.FileNotFoundException
 import java.io.InputStream
@@ -143,7 +144,7 @@ private object PlainTextExtractor : TextExtractor {
         withContext(Dispatchers.IO) {
             val stream = context.contentResolver.openInputStream(uri)
                 ?: throw FileNotFoundException("Can't open InputStream for the URI: $uri")
-            stream.use { String(it.readBytes(), Charsets.UTF_8) }
+            stream.use { decodeTextBytes(it.readBytes(), normalizeLineEndings = true) }
         }
 }
 
