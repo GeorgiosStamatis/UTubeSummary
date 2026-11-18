@@ -5,6 +5,7 @@ import ai.koog.agents.core.tools.ToolRegistry
 import android.content.Context
 import io.ktor.client.HttpClient
 import io.github.utubesummary.domain.repository.UserPreferencesRepository
+import io.github.utubesummary.llm.tools.preferredTranscriptLanguage
 import io.github.utubesummary.llm.tools.ArticleExtractorTool
 import io.github.utubesummary.llm.tools.BiliBiliSubtitleTool
 import io.github.utubesummary.llm.tools.FileExtractorTool
@@ -104,6 +105,9 @@ class LLMHandler(
                     bilibiliSubtitleTool = bilibiliSubtitleTool,
                     fileExtractorTool = fileExtractorTool,
                     structuredOutput = structuredOutput,
+                    preferredTranscriptLanguage = preferredTranscriptLanguage(
+                        useContentLanguage, summaryLanguage, appLanguage
+                    ),
                     onPhase = progress::report,
                 ),
                 agentConfig = agentConfig,

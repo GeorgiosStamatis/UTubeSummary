@@ -53,6 +53,7 @@ fun createSummarizationStrategy(
     bilibiliSubtitleTool: BiliBiliSubtitleTool,
     fileExtractorTool: FileExtractorTool,
     structuredOutput: Boolean = true,
+    preferredTranscriptLanguage: String? = null,
     onPhase: (SummarizationPhase) -> Unit = {},
 ): AIAgentGraphStrategy<SummarySource, SummarizationOutcome> =
     strategy("summarization_router_strategy") {
@@ -70,7 +71,7 @@ fun createSummarizationStrategy(
 
             val nodeExtractYoutube by node<SummarySource.Video, ExtractedPayload>("extract_youtube") { source ->
                 val content = try {
-                    youTubeTranscriptTool.execute(YouTubeTranscript(source.url))
+                    youTubeTranscriptTool.execute(YouTubeTranscript(source.url, preferredTranscriptLanguage))
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Throwable) {
