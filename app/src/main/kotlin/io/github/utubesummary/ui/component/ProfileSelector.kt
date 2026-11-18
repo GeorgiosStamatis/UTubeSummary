@@ -23,11 +23,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.utubesummary.R
-import io.github.utubesummary.llm.CRITICAL_ANALYST_PROFILE_ID
-import io.github.utubesummary.llm.CURIOUS_LEARNER_PROFILE_ID
-import io.github.utubesummary.llm.QUICK_BRIEF_PROFILE_ID
-import io.github.utubesummary.llm.TECHNICAL_CONTENT_EVALUATOR_PROFILE_ID
-import io.github.utubesummary.llm.TECHNICAL_ANALYSIS_PROFILE_ID
+import io.github.utubesummary.model.CRITICAL_ANALYST_PROFILE_ID
+import io.github.utubesummary.model.CURIOUS_LEARNER_PROFILE_ID
+import io.github.utubesummary.model.QUICK_BRIEF_PROFILE_ID
+import io.github.utubesummary.model.TECHNICAL_CONTENT_EVALUATOR_PROFILE_ID
+import io.github.utubesummary.model.TECHNICAL_ANALYSIS_PROFILE_ID
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID
 import io.github.utubesummary.model.SummaryProfile
 

@@ -1,6 +1,11 @@
 package io.github.utubesummary.llm
 
+import io.github.utubesummary.model.CRITICAL_ANALYST_PROFILE_ID
+import io.github.utubesummary.model.CURIOUS_LEARNER_PROFILE_ID
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID
+import io.github.utubesummary.model.QUICK_BRIEF_PROFILE_ID
+import io.github.utubesummary.model.TECHNICAL_ANALYSIS_PROFILE_ID
+import io.github.utubesummary.model.TECHNICAL_CONTENT_EVALUATOR_PROFILE_ID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

@@ -21,3 +21,10 @@ data class SummaryProfile(
 )
 
 const val DEFAULT_PROFILE_ID = "default"
+
+// Ids of the profiles that ship with the app (their prompts are in llm/BuiltInProfiles.kt).
+const val TECHNICAL_ANALYSIS_PROFILE_ID = "technical_analysis"
+const val CRITICAL_ANALYST_PROFILE_ID = "critical_analyst"
+const val CURIOUS_LEARNER_PROFILE_ID = "curious_learner"
+const val TECHNICAL_CONTENT_EVALUATOR_PROFILE_ID = "technical_content_evaluator"
+const val QUICK_BRIEF_PROFILE_ID = "quick_brief"

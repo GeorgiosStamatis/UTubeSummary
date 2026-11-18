@@ -1,6 +1,6 @@
 package io.github.utubesummary.domain.usecase
 
-import io.github.utubesummary.llm.CRITICAL_ANALYST_PROFILE_ID
+import io.github.utubesummary.model.CRITICAL_ANALYST_PROFILE_ID
 import io.github.utubesummary.llm.criticalAnalystPrompt
 import io.github.utubesummary.llm.defaultSystemPromptPlaceholder
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID

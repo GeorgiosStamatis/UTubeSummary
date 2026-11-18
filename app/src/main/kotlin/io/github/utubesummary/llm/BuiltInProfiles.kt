@@ -1,10 +1,11 @@
 package io.github.utubesummary.llm
 
-const val TECHNICAL_ANALYSIS_PROFILE_ID = "technical_analysis"
-const val CRITICAL_ANALYST_PROFILE_ID = "critical_analyst"
-const val CURIOUS_LEARNER_PROFILE_ID = "curious_learner"
-const val TECHNICAL_CONTENT_EVALUATOR_PROFILE_ID = "technical_content_evaluator"
-const val QUICK_BRIEF_PROFILE_ID = "quick_brief"
+import io.github.utubesummary.model.CRITICAL_ANALYST_PROFILE_ID
+import io.github.utubesummary.model.CURIOUS_LEARNER_PROFILE_ID
+import io.github.utubesummary.model.QUICK_BRIEF_PROFILE_ID
+import io.github.utubesummary.model.TECHNICAL_ANALYSIS_PROFILE_ID
+import io.github.utubesummary.model.TECHNICAL_CONTENT_EVALUATOR_PROFILE_ID
+
 
 // Built-in profile prompts. None uses the [Language instructions] / [Length instructions] tokens,
 // so generateFinalPromptString appends the language rule and the length sentence automatically.

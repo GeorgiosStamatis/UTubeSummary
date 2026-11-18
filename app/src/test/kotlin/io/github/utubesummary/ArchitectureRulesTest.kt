@@ -97,12 +97,6 @@ class ArchitectureRulesTest {
             "defaultSystemPromptPlaceholder",
             "generateFinalPromptString",
             "tools.getFileName",
-            // Moves to the model layer in the same batch; remove these five when it has.
-            "CRITICAL_ANALYST_PROFILE_ID",
-            "CURIOUS_LEARNER_PROFILE_ID",
-            "QUICK_BRIEF_PROFILE_ID",
-            "TECHNICAL_ANALYSIS_PROFILE_ID",
-            "TECHNICAL_CONTENT_EVALUATOR_PROFILE_ID",
         ).map { "$base.llm.$it" }.toSet()
 
         val found = violations(
