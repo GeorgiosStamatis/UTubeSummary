@@ -101,7 +101,7 @@ but only a device shows wiring mistakes. Run these once (they are mostly `P0`/`P
 | Summary card action buttons (copy, share, save, speak) moved to `SummaryActionButtons.kt` | 9.1–9.4 and the buttons in the History detail (11.3) and the instant dialog (13.1) |
 | Time and id sources (`Clock`, `IdGenerator`) injected into the summarize use case, History merge and profile creation | 5.6 (create a custom profile), 11.1, 11.2 (date of the merged entry is the newest summary), 11.12 |
 | Injected IO dispatcher in the summarize, ask and import use cases | 4.1 (one summary end to end), 7.2 (cancel), 10.1 (ask), 12.1 (import) |
-| YouTube client profile and error handling (`YouTubeClient.kt`) | 4.1, 4.3, 4.4 (private/removed still say unavailable), 8.4 (airplane mode says no internet), 4.17 |
+| YouTube client profiles, fallback chain and error handling (`YouTubeClient.kt`, `YouTubeFallback.kt`) | 4.1, 4.3, 4.4 (private/removed/no subtitles keep their texts), 8.4 (airplane mode says no internet), 4.17, 4.18 |
 | Subtitle ranking, wanted subtitle language from the summary language, transcript language in `ExtractedContent` | 4.1, 4.3, 4.18, 6.3 |
 | Profile ids moved to the model layer | 5.1, 5.5, 5.6, 11.9, 11.14 |
 
@@ -240,13 +240,17 @@ tap Summarize.
 **4.16 `P1` Unreadable file.** Pick a file, remove or lose access to it (move it/revoke permission), then
 Summarize. *Expected:* “pick it again” message.
 
-**4.17 `P2` YouTube extraction failure message.** Cannot be forced on demand (it appears only when
-YouTube changes or refuses the app's request). *Expected when it happens:* “Could not read this YouTube
-video. YouTube may have changed something…”, and **Show details** names the client and step, for example
-`ANDROID 20.10.38 · player API: HTTP 400`. It must **not** say “private / age-restricted / removed” unless
-YouTube really says so (a real private or removed video: 4.4 shows the unavailable text), and without
-internet it must say “no internet” (8.4). *Unit-tested:* `YouTubeClientTest`. Check the translated texts in
-17.1. In Logcat (tag `YouTubeExtractor`) every run logs the client, the caption tracks found and the one chosen.
+**4.17 `P2` YouTube extraction failure and fallback.** The app asks YouTube as the Android client first (exactly
+as before), then as the full Android client without the API key, then as the iOS client; the first that works
+wins. You cannot force a failure on demand, but every run logs it: in Logcat (tag `YouTubeExtractor`) a normal
+video shows `Attempt ANDROID 20.10.38 +key for …: Success`. *Expected when YouTube refuses all of them:* “Could
+not read this YouTube video. YouTube may have changed something…”, and **Show details** lists every attempt, for
+example `ANDROID 20.10.38 +key · player API: HTTP 400 | ANDROID 20.10.38 no key · … | IOS 20.10.4 no key · …`. It
+must **not** say “private / age-restricted / removed” unless YouTube really says so (a real private or removed
+video: 4.4), a video without any subtitles still says “no transcript” (4.4), and without internet it says “no
+internet” (8.4). *Unit-tested:* the whole policy (`YouTubeFallbackTest`, `YouTubeClientTest`); the device check is
+that the first attempt succeeds for a normal video. If a YouTube case starts failing, run the probe
+(`docs/YOUTUBE_PROBE.md`) and send the result.
 
 **4.18 `P1` Subtitle choice with many auto-generated tracks.** Summarize `https://youtu.be/9UMpD5QMU-c`
 (English video with automatic dubbing: 20 auto-generated subtitle tracks in other languages and one manual
@@ -637,7 +641,7 @@ Run: `./gradlew testGmsDebugUnitTest` (CI does it on every push).
 | Import/export | `VideoSummaryBackupParserTest`, `VideoSummaryBackupWriterTest`, `ImportVideoSummariesUseCaseTest`, `HistoryUseCasesTest` (export) |
 | Providers: URL normalization, called path of self-hosted servers, config use case, connection test requests, model parsing | `ProviderConfigUseCaseTest`, `OpenAiCompatibleEndpointTest`, `ProviderConfigTest`, `ProviderConnectionRequestTest`, `ProviderDialogButtonsTest`, `SettingsViewModelTest` |
 | Errors | `LlmErrorParserTest`, `SummaryExceptionTest`, `BiliBiliHttpFailureTest` |
-| Content tools | `YouTubeTranscriptToolTest`, `YouTubeTrackChoiceTest`, `YouTubeClientTest`, `BiliBiliLinkTest`, `ArticleExtractorToolTest`, `DocxTextBuilderTest`, `FileKindTest`, `YouTubeVideoIdTest`, `YouTubeThumbnailTest` |
+| Content tools | `YouTubeTranscriptToolTest`, `YouTubeTrackChoiceTest`, `YouTubeClientTest`, `YouTubeFallbackTest`, `BiliBiliLinkTest`, `ArticleExtractorToolTest`, `DocxTextBuilderTest`, `FileKindTest`, `YouTubeVideoIdTest`, `YouTubeThumbnailTest` |
 | Sharing, Markdown, handoff | `ShareTextTest`, `MarkdownTextTest`, `SummaryHandoffTest`, `InMemorySourceTextStoreTest` |
 | Settings storage / security | `UserPreferencesCompatibilityTest`, `SecureValueCodecTest`, `StringListConverterTest` |
 | Caches, executor | `BoundedLruCacheTest`, `GeminiRequestTest` |

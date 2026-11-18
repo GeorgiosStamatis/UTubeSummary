@@ -46,8 +46,37 @@ class YouTubeClientTest {
 
             val outcome = classifyPlayerResponse(restricted)
 
-            assertEquals(PlayerOutcome.Restricted("Because $status"), outcome)
+            assertEquals(PlayerOutcome.Restricted("Because $status", retryable = status == "LOGIN_REQUIRED"), outcome)
         }
+    }
+
+    @Test
+    fun `a sign in answer can be retried with another client, the others cannot`() {
+        val signIn = classifyPlayerResponse(response("""{"playabilityStatus":{"status":"LOGIN_REQUIRED","reason":"Sign in"}}"""))
+        val removed = classifyPlayerResponse(response("""{"playabilityStatus":{"status":"ERROR","reason":"Gone"}}"""))
+
+        assertEquals(true, (signIn as PlayerOutcome.Restricted).retryable)
+        assertEquals(false, (removed as PlayerOutcome.Restricted).retryable)
+    }
+
+    @Test
+    fun `failure details name the step`() {
+        assertEquals("player API: HTTP 429", PlayerOutcome.HttpError("player API", 429).failureDetail())
+        assertEquals("Private video", PlayerOutcome.Restricted("Private video").failureDetail())
+    }
+
+    @Test
+    fun `the iOS profile identifies itself as the iOS app`() {
+        assertEquals("IOS 20.10.4", IOS.label)
+        assertEquals("5", requestHeaders(IOS)["X-YouTube-Client-Name"])
+        assertTrue(requestHeaders(IOS)["User-Agent"]!!.startsWith("com.google.ios.youtube/20.10.4"))
+    }
+
+    @Test
+    fun `the first attempt is what the app has always sent and the others need no key`() {
+        assertEquals(ClientAttempt(ANDROID_LEGACY, useApiKey = true), YOUTUBE_ATTEMPTS.first())
+        assertEquals(listOf("ANDROID 20.10.38 +key", "ANDROID 20.10.38 no key", "IOS 20.10.4 no key"), YOUTUBE_ATTEMPTS.map { it.label })
+        assertTrue(YOUTUBE_ATTEMPTS.drop(1).none { it.useApiKey })
     }
 
     @Test
@@ -123,7 +152,7 @@ class YouTubeClientTest {
 
     @Test
     fun `no profile contains a key or token`() {
-        listOf(ANDROID_LEGACY, ANDROID_FULL).forEach { client ->
+        listOf(ANDROID_LEGACY, ANDROID_FULL, IOS).forEach { client ->
             val text = client.toString() + requestHeaders(client) + playerRequestBody(client, "abc")
             assertTrue(!text.contains("AIza"), "$client looks like it holds an API key")
         }

@@ -52,7 +52,7 @@ If you only want the best value for the effort: **18 (selective)**, **16 (just b
 |------|------|------|
 | Merge `isKnownAuthor` and `isUnknownAuthor` | M | Changes which authors are shown |
 | Limit clear-text HTTP to local addresses | M–H | Breaks VPN / hostname setups; needs an app-level check |
-| YouTube extraction without the hard-coded client version | M–H | Live behaviour, cannot be tested offline |
+| ~~YouTube extraction without the hard-coded client version~~ | done | The version is now one named constant per client with a fallback chain (Android → Android without key → iOS), chosen from a probe run on 2026-11-18; the versions themselves still have to be updated by hand if YouTube stops accepting them (`docs/YOUTUBE_PROBE.md`) |
 | PDF text layer first, API < 35 handling | M | Device-only |
 | Highlight the active History row | L | Adds one manual check |
 

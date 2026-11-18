@@ -51,6 +51,43 @@ internal val ANDROID_FULL = InnertubeClient(
     ),
 )
 
+/**
+ * The YouTube iOS app. A different client family: if YouTube changes what it accepts from Android
+ * clients, this one may still work. Verified working in the probe of November 2026.
+ */
+internal val IOS = InnertubeClient(
+    name = "IOS",
+    version = "20.10.4",
+    userAgent = "com.google.ios.youtube/20.10.4 (iPhone16,2; U; CPU iOS 18_3_2 like Mac OS X;)",
+    clientNameId = 5,
+    extraContext = mapOf(
+        "deviceMake" to JsonPrimitive("Apple"),
+        "deviceModel" to JsonPrimitive("iPhone16,2"),
+        "osName" to JsonPrimitive("iPhone"),
+        "osVersion" to JsonPrimitive("18.3.2.22D82"),
+        "hl" to JsonPrimitive("en"),
+        "gl" to JsonPrimitive("US"),
+    ),
+)
+
+/** One way of asking YouTube: as [client], with or without the public API key from the watch page. */
+internal data class ClientAttempt(val client: InnertubeClient, val useApiKey: Boolean) {
+    /** Text for logs and error details, e.g. "ANDROID 20.10.38 +key". */
+    val label: String get() = "${client.label} ${if (useApiKey) "+key" else "no key"}"
+}
+
+/**
+ * The order in which YouTube is asked. The first is exactly what the app has always sent; the
+ * others only run when it fails. The probe of November 2026 showed that the Android and iOS clients
+ * work with and without the key, and that the TV and web clients do not work as specified, so those
+ * are not listed.
+ */
+internal val YOUTUBE_ATTEMPTS = listOf(
+    ClientAttempt(ANDROID_LEGACY, useApiKey = true),
+    ClientAttempt(ANDROID_FULL, useApiKey = false),
+    ClientAttempt(IOS, useApiKey = false),
+)
+
 /** The HTTP headers that go with a request (player API or subtitle download) made as [client]. */
 internal fun requestHeaders(client: InnertubeClient): Map<String, String> = buildMap {
     client.userAgent?.let { put("User-Agent", it) }
@@ -75,8 +112,11 @@ internal sealed interface PlayerOutcome {
     /** The video can be played; [response] holds its details and caption tracks. */
     data class Playable(val response: JsonObject) : PlayerOutcome
 
-    /** YouTube refuses the video itself: private, age or login restricted, removed. */
-    data class Restricted(val reason: String) : PlayerOutcome
+    /**
+     * YouTube refuses the video: private, age or login restricted, removed. [retryable] is true for a
+     * "sign in" answer, which another client may not get.
+     */
+    data class Restricted(val reason: String, val retryable: Boolean = false) : PlayerOutcome
 
     /** YouTube answered a request with an HTTP error. */
     data class HttpError(val step: String, val status: Int) : PlayerOutcome
@@ -90,15 +130,23 @@ internal sealed interface PlayerOutcome {
 
 /** [Restricted] when the answer says the video cannot be played, otherwise [PlayerOutcome.Playable]. */
 internal fun classifyPlayerResponse(response: JsonObject): PlayerOutcome =
-    playabilityProblem(response)?.let { PlayerOutcome.Restricted(it) } ?: PlayerOutcome.Playable(response)
+    playabilityProblem(response)?.let { reason ->
+        PlayerOutcome.Restricted(reason, retryable = playabilityStatus(response) == "LOGIN_REQUIRED")
+    } ?: PlayerOutcome.Playable(response)
+
+/** What went wrong with an outcome that is not playable, for logs and error details. */
+internal fun PlayerOutcome.failureDetail(): String = when (this) {
+    is PlayerOutcome.Restricted -> reason
+    is PlayerOutcome.HttpError -> "$step: HTTP $status"
+    is PlayerOutcome.NoApiKey -> "$step: no API key found"
+    is PlayerOutcome.BadBody -> "$step: unexpected answer"
+    is PlayerOutcome.Playable -> "unexpected playable outcome"
+}
 
 /** The error to show for a [PlayerOutcome] that is not playable; only a real restriction says "unavailable". */
 internal fun PlayerOutcome.toFailure(client: InnertubeClient): SummaryException = when (this) {
     is PlayerOutcome.Restricted -> SummaryException.VideoUnavailableException(reason)
-    is PlayerOutcome.HttpError -> extractionFailed(client, "$step: HTTP $status")
-    is PlayerOutcome.NoApiKey -> extractionFailed(client, "$step: no API key found")
-    is PlayerOutcome.BadBody -> extractionFailed(client, "$step: unexpected answer")
-    is PlayerOutcome.Playable -> extractionFailed(client, "unexpected playable outcome")
+    else -> extractionFailed(client, failureDetail())
 }
 
 /** "YouTube changed something" error; [detail] and the client are shown behind "Show details". */
