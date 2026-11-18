@@ -24,12 +24,22 @@ UTubeSummary is an AI/LLM summarizer FOSS Android app that summarizes YouTube/Bi
 ```
 
 ### Testing
+Unit tests live in `app/src/test/kotlin/` (JUnit 5, `kotlinx-coroutines-test`, no mocking library):
+shared fakes are in `testutil/` (`FakeHistoryRepository`, `FakeUserPreferencesRepository`,
+`FakeProviderConfigRepository`), time, ids and the IO dispatcher are injected (`Clock`, `IdGenerator`,
+`@IoDispatcher`) so use cases can be tested deterministically, and `ArchitectureRulesTest` fails when a
+layer imports one it must not know (`model`/`domain` → ui/vm/data/di, `vm`/`ui` → data/repositories).
+Manual test cases are in `docs/MANUAL_TESTS.md`; `tools/mock_llm_server.py` is an OpenAI-compatible mock
+server for testing without an API key. Remaining refactoring ideas: `docs/REFACTORING_BACKLOG.md`.
 ```bash
 # Run unit tests
 ./gradlew clean test
 
 # Run a specific unit test class
 ./gradlew testDebugUnitTest --tests="io.github.utubesummary.ExampleUnitTest"
+
+# Without a JDK/Gradle at hand, the CI build runs compileGmsDebugKotlin, compileStandaloneDebugKotlin
+# and testGmsDebugUnitTest on every push.
 
 # Run instrumented tests on connected device/emulator
 ./gradlew connectedAndroidTest
@@ -136,7 +146,9 @@ The app defines two product flavors under the `distribution` dimension (`app/bui
 #### Core Application (`app/src/main/kotlin/io/github/utubesummary/`)
 - **`App.kt`**: Application entry point with `@HiltAndroidApp`
 - **`MainActivity.kt`**: Main activity handling deep links, share intents, and navigation
-- **`InstantSummaryActivity.kt`**: Overlay activity for instant summarization via share sheet or text selection
+- **`InstantSummaryActivity.kt`**: Overlay activity for instant summarization via share sheet or text selection (its dialog is `ui/page/instant/InstantSummaryDialog.kt`)
+- **`IncomingShare.kt`**: Pure rules for what a share intent asks to summarize and when the app starts by itself (used by both activities)
+- **`SummaryHandoff.kt`**: Passes a finished summary from the instant dialog to the main activity in memory
 
 #### Dependency Injection (`di/`)
 - **`AppModule.kt`**: Provides Room database, DAOs, LLM handler, and Ktor HTTP client
@@ -160,6 +172,8 @@ The app defines two product flavors under the `distribution` dimension (`app/bui
 - **`domain/provider/`**: System capability abstractions
   - `DocumentMetadataProvider.kt`: File name resolution
   - `AppLocaleProvider.kt`: Locale resolution
+  - `Clock.kt`: `Clock` and `IdGenerator` (time and ids are injected, with system defaults)
+  - `IoDispatcher.kt`: qualifier for the IO dispatcher that use cases receive
 - **`model/`**: Pure domain models without framework annotations
   - `ExtractedContent.kt`, `HistorySummary.kt`, `LlmSummaryResponse.kt`, `ProviderConfig.kt`, `SummaryData.kt`, `SummaryLength.kt`, `SummaryOutput.kt`, `SummarySource.kt`, `SummaryType.kt`, `UserPreferences.kt`, `UserSettings.kt`, `VideoSubtype.kt`
 - **`exception/`**: Custom exceptions hierarchy (`SummaryException.kt`) and error parsing (`LlmErrorParser.kt`)
@@ -203,13 +217,13 @@ The app defines two product flavors under the `distribution` dimension (`app/bui
 - **`AppNavigation.kt`**: Navigation graph setup
 - **`Nav.kt`**: Route definitions
 - **`page/`**: Screen composables & page-specific subcomponents (`home/`, `history/`, `settings/`, `onboarding/`)
-  - `HomeScreen.kt`: Main summary screen
-  - `HistoryScreen.kt`: History browser with paging
+  - `HomeScreen.kt`: Main summary screen (state and launchers); `HomeContent.kt` lays out the input and result (one column, or two on wide screens); `HomeActions.kt` holds the action bundle and picker types; `ResultStaleness.kt` decides when a result is out of date
+  - `HistoryScreen.kt`: History browser with paging (list and detail side by side on wide screens); `section/HistorySections.kt` holds the grouping rules; `sheet/HistoryDetailSheet.kt` the bottom sheet and the shared `HistoryDetailContent`
   - `SettingsScreen.kt`: App configuration
   - `AdvancedSetupScreen.kt`: Advanced prompt setup
   - `OnboardingScreen.kt`: First-run setup
   - `BilibiliLoginScreen.kt`: BiliBili authentication sheet
-- **`component/`**: Global reusable UI components (`SummaryCard`, `ContentBadge`, `ErrorMessage`, `LlmSwitcher`, `LlmIndicator`, `LogoIcon`, `ClickablePasteIcon`)
+- **`component/`**: Global reusable UI components (`SummaryCard`, `SummaryActionButtons`, `SummaryCardRules`, `WindowLayout` (wide-layout rule and width constants), `SpeechChunks`, `ContentBadge`, `ErrorMessage`, `LlmSwitcher`, `LlmIndicator`, `LogoIcon`, `ClickablePasteIcon`)
 - **`theme/`**: Material 3 theming (colors, typography, theme)
 
 ---
