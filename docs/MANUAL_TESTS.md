@@ -49,7 +49,7 @@ failure with the case id, what you did and what you saw; for crashes add the Log
 | C12 | A video-summaries JSON backup of the original app (for import) |
 
 **Priority tags.** Every case carries a tag: `P0` smoke (27 cases, about 45 minutes, run on every
-build), `P1` normal (61, run before a release), `P2` rare or cosmetic (37, run when the area
+build), `P1` normal (62, run before a release), `P2` rare or cosmetic (36, run when the area
 changed). See the [smoke run](#smoke-run-p0-only) below.
 
 **Mock AI server (no API key needed).** On a computer in the same Wi-Fi run
