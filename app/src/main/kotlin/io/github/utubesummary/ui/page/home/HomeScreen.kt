@@ -11,16 +11,20 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -68,6 +72,7 @@ import io.github.utubesummary.ui.Nav
 import io.github.utubesummary.ui.component.LanguageSelector
 import io.github.utubesummary.ui.component.LengthSelector
 import io.github.utubesummary.ui.component.ProfileSelector
+import io.github.utubesummary.ui.component.rememberIsWideLayout
 import io.github.utubesummary.ui.page.home.action.HomeFloatingActionButtons
 import io.github.utubesummary.ui.page.home.appbar.HomeTopAppBar
 import io.github.utubesummary.ui.page.home.input.InputSection
@@ -274,9 +279,11 @@ fun HomeScreen(
         }
     }
 
-    val fabVisible by remember {
+    // On wide screens both columns scroll on their own, so the button stays visible.
+    val isWide = rememberIsWideLayout()
+    val fabVisible by remember(isWide) {
         derivedStateOf {
-            !isScrollingDown || !listState.canScrollBackward
+            isWide || !isScrollingDown || !listState.canScrollBackward
         }
     }
 
@@ -428,11 +435,7 @@ private fun HomeContent(
     modifier: Modifier = Modifier,
     chatState: ChatState = ChatState(),
 ) {
-    val lengthOptions = listOf(
-        stringResource(id = R.string.short_length),
-        stringResource(id = R.string.middle_length),
-        stringResource(id = R.string.long_length)
-    )
+    val wide = rememberIsWideLayout()
 
     Box(
         modifier = modifier
@@ -440,78 +443,162 @@ private fun HomeContent(
             .consumeWindowInsets(innerPadding),
         contentAlignment = Alignment.TopCenter
     ) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .widthIn(max = 840.dp),
-            contentPadding = innerPadding
-        ) {
-            item {
+        if (wide) {
+            // Input and options on the left, the result on the right; each side scrolls on its own.
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .widthIn(max = 1200.dp)
+                    .padding(innerPadding)
+            ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .weight(0.4f)
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState())
                         .padding(horizontal = 20.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    InputSection(
+                    HomeInputControls(
                         urlOrText = urlOrText,
-                        onUrlChange = actions.onUrlChange,
-                        onSummarize = actions.onSummarize,
                         documentFilename = documentFilename,
-                        error = summarizationState.error,
-                        apiKey = settings.apiKey,
-                        onClear = actions.onClearInput,
                         focusRequester = focusRequester,
-                        isLoading = summarizationState.isLoading,
+                        settings = settings,
+                        summarizationState = summarizationState,
+                        actions = actions,
                     )
-
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        if (settings.profiles.size > 1) {
-                            ProfileSelector(
-                                profiles = settings.profiles,
-                                selectedProfileId = settings.selectedProfileId,
-                                onProfileSelect = actions.onProfileSelect,
-                                enabled = !summarizationState.isLoading,
-                            )
-                        }
-                        LanguageSelector(
-                            selectedLanguage = settings.summaryLanguage,
-                            onLanguageSelect = actions.onLanguageSelect,
-                            enabled = !summarizationState.isLoading,
-                        )
-                    }
-
-                    if (settings.showLength) {
-                        LengthSelector(
-                            selectedIndex = SummaryLength.userSelectable.indexOf(settings.summaryLength)
-                                .coerceAtLeast(0),
-                            onSelectedIndexChange = { actions.onLengthSelect(SummaryLength.userSelectable[it]) },
-                            options = lengthOptions,
-                            enabled = !summarizationState.isLoading,
-                        )
-                    }
-
-                    SummaryResultSection(
+                }
+                Column(
+                    modifier = Modifier
+                        .weight(0.6f)
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    HomeResult(
                         summarizationState = summarizationState,
                         isPlaying = isPlaying,
-                        onCopySummary = actions.onCopySummary,
-                        onShowSnackBar = actions.onShowSnackBar,
-                        onPlaySummary = actions.onPlaySummary,
+                        actions = actions,
                         chatState = chatState,
-                        onAskQuestion = actions.onAskQuestion,
-                        onCopyAnswer = actions.onCopySummary,
-                        onCancel = actions.onCancelSummarize,
                     )
-
                     Spacer(modifier = Modifier.height(88.dp))
+                }
+            }
+        } else {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .widthIn(max = 840.dp),
+                contentPadding = innerPadding
+            ) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        HomeInputControls(
+                            urlOrText = urlOrText,
+                            documentFilename = documentFilename,
+                            focusRequester = focusRequester,
+                            settings = settings,
+                            summarizationState = summarizationState,
+                            actions = actions,
+                        )
+                        HomeResult(
+                            summarizationState = summarizationState,
+                            isPlaying = isPlaying,
+                            actions = actions,
+                            chatState = chatState,
+                        )
+                        Spacer(modifier = Modifier.height(88.dp))
+                    }
                 }
             }
         }
     }
+}
+
+/** Input field with the profile, language and length selectors. */
+@Composable
+private fun HomeInputControls(
+    urlOrText: String,
+    documentFilename: String?,
+    focusRequester: FocusRequester,
+    settings: SettingsUiState,
+    summarizationState: SummarizationState,
+    actions: HomeActions,
+) {
+    val lengthOptions = listOf(
+        stringResource(id = R.string.short_length),
+        stringResource(id = R.string.middle_length),
+        stringResource(id = R.string.long_length)
+    )
+
+    InputSection(
+        urlOrText = urlOrText,
+        onUrlChange = actions.onUrlChange,
+        onSummarize = actions.onSummarize,
+        documentFilename = documentFilename,
+        error = summarizationState.error,
+        apiKey = settings.apiKey,
+        onClear = actions.onClearInput,
+        focusRequester = focusRequester,
+        isLoading = summarizationState.isLoading,
+    )
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        if (settings.profiles.size > 1) {
+            ProfileSelector(
+                profiles = settings.profiles,
+                selectedProfileId = settings.selectedProfileId,
+                onProfileSelect = actions.onProfileSelect,
+                enabled = !summarizationState.isLoading,
+            )
+        }
+        LanguageSelector(
+            selectedLanguage = settings.summaryLanguage,
+            onLanguageSelect = actions.onLanguageSelect,
+            enabled = !summarizationState.isLoading,
+        )
+    }
+
+    if (settings.showLength) {
+        LengthSelector(
+            selectedIndex = SummaryLength.userSelectable.indexOf(settings.summaryLength)
+                .coerceAtLeast(0),
+            onSelectedIndexChange = { actions.onLengthSelect(SummaryLength.userSelectable[it]) },
+            options = lengthOptions,
+            enabled = !summarizationState.isLoading,
+        )
+    }
+}
+
+/** The summary, its progress or error, and the question box. */
+@Composable
+private fun HomeResult(
+    summarizationState: SummarizationState,
+    isPlaying: Boolean,
+    actions: HomeActions,
+    chatState: ChatState,
+) {
+    SummaryResultSection(
+        summarizationState = summarizationState,
+        isPlaying = isPlaying,
+        onCopySummary = actions.onCopySummary,
+        onShowSnackBar = actions.onShowSnackBar,
+        onPlaySummary = actions.onPlaySummary,
+        chatState = chatState,
+        onAskQuestion = actions.onAskQuestion,
+        onCopyAnswer = actions.onCopySummary,
+        onCancel = actions.onCancelSummarize,
+    )
 }
 
 @Preview
