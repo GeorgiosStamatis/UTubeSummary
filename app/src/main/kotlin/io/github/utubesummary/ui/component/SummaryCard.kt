@@ -538,20 +538,13 @@ private fun SummaryActionButtons(
         engine.setSpeechRate(rate)
         utteranceOffsets.clear()
         val maxLength = TextToSpeech.getMaxSpeechInputLength().coerceAtLeast(500)
-        var start = offset.coerceIn(0, summaryText.length)
         var queueMode = TextToSpeech.QUEUE_FLUSH
-        while (start < summaryText.length) {
-            var end = minOf(start + maxLength, summaryText.length)
-            if (end < summaryText.length) {
-                val breakAt = summaryText.lastIndexOf(' ', end)
-                if (breakAt > start) end = breakAt + 1
-            }
+        for (chunk in speechChunks(summaryText, offset, maxLength)) {
             val id = UUID.randomUUID().toString()
-            utteranceOffsets[id] = start
+            utteranceOffsets[id] = chunk.start
             lastUtteranceId.set(id)
-            engine.speak(summaryText.substring(start, end), queueMode, null, id)
+            engine.speak(chunk.text, queueMode, null, id)
             queueMode = TextToSpeech.QUEUE_ADD
-            start = end
         }
     }
 
