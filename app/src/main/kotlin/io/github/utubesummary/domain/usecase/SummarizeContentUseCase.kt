@@ -12,7 +12,6 @@ import io.github.utubesummary.domain.repository.HistoryRepository
 import io.github.utubesummary.domain.repository.UserPreferencesRepository
 import io.github.utubesummary.exception.SummaryException
 import io.github.utubesummary.exception.toSummaryException
-import io.github.utubesummary.llm.AIProvider
 import io.github.utubesummary.llm.LlmGateway
 import io.github.utubesummary.llm.SummarizationRequest
 import io.github.utubesummary.llm.SummarizationProgress
