@@ -1,6 +1,6 @@
 # UTubeSummary 2.2.0 — manual test cases
 
-> **Status (branch `ccr-cad0612b-nqwuv3`, after batch 7 phases A–C):** CI compiles both flavors and the
+> **Status (branch `ccr-cad0612b-nqwuv3`, after batch 7 and the follow-up cleanups):** CI compiles both flavors and the
 > unit tests pass. Since the first version of this document the app gained: the tablet/landscape layouts
 > (section 15), the open History entry surviving rotation (15.4), a text-to-speech chunk fix (9.1), text
 > files with a byte order mark or Windows line endings (4.12, 12.2), and code moves that touched the
