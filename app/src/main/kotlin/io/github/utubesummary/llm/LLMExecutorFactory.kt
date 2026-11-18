@@ -264,18 +264,34 @@ class LLMExecutorFactory(
         apiKey: String,
         baseUrl: String?,
     ): PromptExecutor {
-        val url = baseUrl?.trim()?.trimEnd('/')?.takeIf { it.isNotBlank() }
+        val endpoint = openAiCompatibleEndpoint(baseUrl)
             ?: throw IllegalArgumentException("Base URL is required for ${provider.id.display}")
-        val hasPath = runCatching { URI(url).path }.getOrNull().isNullOrEmpty().not()
 
         val client = OpenAILLMClient(
             apiKey.ifBlank { "not-needed" },
             settings = OpenAIClientSettings(
-                baseUrl = url,
-                chatCompletionsPath = if (hasPath) "chat/completions" else "v1/chat/completions",
+                baseUrl = endpoint.baseUrl,
+                chatCompletionsPath = endpoint.chatCompletionsPath,
             ),
             httpClientFactory = koogHttpClientFactory
         )
         return MultiLLMPromptExecutor(provider.id to client)
     }
+}
+
+/** Where a self-hosted OpenAI-compatible server is called. */
+internal data class OpenAiCompatibleEndpoint(val baseUrl: String, val chatCompletionsPath: String)
+
+/**
+ * The server address as typed by the user: a bare host (`http://pc:1234`) is called at
+ * `v1/chat/completions`, a URL that already has a path (`http://pc:1234/v1`) at
+ * `<path>/chat/completions`. A trailing slash is ignored. Returns null for a blank address.
+ */
+internal fun openAiCompatibleEndpoint(baseUrl: String?): OpenAiCompatibleEndpoint? {
+    val url = baseUrl?.trim()?.trimEnd('/')?.takeIf { it.isNotBlank() } ?: return null
+    val hasPath = runCatching { URI(url).path }.getOrNull().isNullOrEmpty().not()
+    return OpenAiCompatibleEndpoint(
+        baseUrl = url,
+        chatCompletionsPath = if (hasPath) "chat/completions" else "v1/chat/completions",
+    )
 }

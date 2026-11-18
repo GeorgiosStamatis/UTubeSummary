@@ -93,6 +93,7 @@ but only a device shows wiring mistakes. Run these once (they are mostly `P0`/`P
 | Text to speech chunking | 9.1 (very long summary, MOCK_LONG) |
 | Text file decoding | 4.12 (file with BOM, file with Windows line endings), 12.1, 12.2 |
 | Width constants (`ContentMaxWidth` etc. replace repeated dp values) | 2.4, 13.8, 15.8, 15.9 (nothing should look different) |
+| Self-hosted server path (`openAiCompatibleEndpoint`) | 3.7, 3.8 with LM Studio / Custom Provider (bare host and host with `/v1`) |
 | Profile ids moved to the model layer | 5.1, 5.5, 5.6, 11.9, 11.14 |
 
 ---
@@ -150,7 +151,7 @@ crash and not “no internet”.
 “endpoint not found” hint. With airplane mode on: “unreachable” message.
 
 **3.6 `P1` Pasted version path.** For OpenRouter paste `https://openrouter.ai/api/v1`; for OpenAI paste
-`https://api.openai.com/v1`. *Expected:* test and summaries work (no HTTP 404 “Not Found”).
+`https://api.openai.com/v1`. *Expected:* test and summaries work (no HTTP 404 “Not Found”). *Unit-tested:* how the server address maps to the called path (`OpenAiCompatibleEndpointTest`); the device check is the real connection.
 
 **3.7 `P2` URL without a scheme.** For LM Studio/Ollama/Custom type `192.168.1.10:1234`, then
 `mypc.local:11434`, then `api.example.com`. *Expected:* the first two are treated as `http://…`, the
@@ -158,7 +159,7 @@ third as `https://…`. *Unit-tested:* the url rules (`ProviderConfigUseCaseTest
 
 **3.8 `P1` Local server without key (K4).** Ollama: leave the key empty, test, summarize. *Expected:* works;
 no “you have to provide an API key” error. LM Studio / Custom Provider: optional token is accepted
-and not sent when blank.
+and not sent when blank. *Unit-tested:* how the server address maps to the called path (`OpenAiCompatibleEndpointTest`); the device check is the real connection.
 
 **3.9 `P2` Models: add, edit, delete, reorder.** In the model dialog add a custom model id, rename it,
 delete another, drag to reorder, then use **Reset to default**. *Expected:* each change is shown
@@ -608,7 +609,7 @@ Run: `./gradlew testGmsDebugUnitTest` (CI does it on every push).
 | History model and storage: merge by variant, alternatives, remove, pin, escape search, undo restore | `HistoryResultsTest`, `HistoryRepositoryImplTest`, `HistoryMapperTest`, `HistoryLengthResultsConverterTest`, `RemoveHistoryResultUseCaseTest`, `HistoryUseCasesTest`, `HistoryFilterTest` |
 | History view model: search, filters, sort, selection, bulk delete/pin, reopening an entry by id | `HistoryViewModelTest` |
 | Import/export | `VideoSummaryBackupParserTest`, `VideoSummaryBackupWriterTest`, `ImportVideoSummariesUseCaseTest`, `HistoryUseCasesTest` (export) |
-| Providers: URL normalization, config use case, connection test requests, model parsing | `ProviderConfigUseCaseTest`, `ProviderConfigTest`, `ProviderConnectionRequestTest`, `ProviderDialogButtonsTest`, `SettingsViewModelTest` |
+| Providers: URL normalization, called path of self-hosted servers, config use case, connection test requests, model parsing | `ProviderConfigUseCaseTest`, `OpenAiCompatibleEndpointTest`, `ProviderConfigTest`, `ProviderConnectionRequestTest`, `ProviderDialogButtonsTest`, `SettingsViewModelTest` |
 | Errors | `LlmErrorParserTest`, `SummaryExceptionTest`, `BiliBiliHttpFailureTest` |
 | Content tools | `YouTubeTranscriptToolTest`, `ArticleExtractorToolTest`, `DocxTextBuilderTest`, `FileKindTest`, `YouTubeVideoIdTest`, `YouTubeThumbnailTest` |
 | Sharing, Markdown, handoff | `ShareTextTest`, `MarkdownTextTest`, `SummaryHandoffTest`, `InMemorySourceTextStoreTest` |
