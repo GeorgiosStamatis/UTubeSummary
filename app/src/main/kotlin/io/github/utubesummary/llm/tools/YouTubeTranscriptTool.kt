@@ -17,16 +17,15 @@ import io.ktor.http.isSuccess
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.put
 import io.github.utubesummary.exception.SummaryException
 import io.github.utubesummary.model.ExtractedContent
 import io.github.utubesummary.model.VideoSubtype
@@ -48,13 +47,8 @@ class YouTubeTranscriptTool(client: HttpClient) : Tool<YouTubeTranscript, Extrac
     override suspend fun execute(args: YouTubeTranscript): ExtractedContent {
         val videoId = YouTubeExtractor.extractVideoId(args.url)
             ?: throw Exception("Could not extract video ID from URL: ${args.url}")
-        val detailsResult = youtubeExtractor.getVideoDetails(videoId)
-            ?: throw SummaryException.VideoUnavailableException()
-        val details = detailsResult.first
-        val playerResponse = detailsResult.second
-        val transcriptResult = youtubeExtractor.getTranscript(videoId, playerResponse)
-            ?: throw Exception("Could not get transcript.")
-        val transcript = transcriptResult.first
+        val (details, playerResponse) = youtubeExtractor.getVideoDetails(videoId)
+        val (transcript, _) = youtubeExtractor.getTranscript(videoId, playerResponse)
         return ExtractedContent(details.title, details.author, transcript)
     }
 
@@ -113,8 +107,6 @@ private class YouTubeExtractor(private val client: HttpClient) {
 
     companion object {
         private const val TAG = "YouTubeExtractor"
-        private const val INNERTUBE_CONTEXT_JSON =
-            """{"client": {"clientName": "ANDROID", "clientVersion": "20.10.38"}}"""
 
         private fun ensureScheme(url: String): String {
             return if (!url.matches(Regex("^https?://.*"))) {
@@ -165,185 +157,133 @@ private class YouTubeExtractor(private val client: HttpClient) {
         }
     }
 
-    private suspend fun getWatchPageHtml(videoId: String): String? = withContext(Dispatchers.IO) {
-        val watchUrl = "https://www.youtube.com/watch?v=$videoId"
-        try {
-            val watchPageResponse = client.get(watchUrl) {
+    /**
+     * Asks YouTube for the player data of [videoId] as [profile]: the watch page (for the public API
+     * key), then the player API. Network exceptions are not caught: they say "no internet" later.
+     */
+    private suspend fun getPlayerOutcome(videoId: String, profile: InnertubeClient): PlayerOutcome =
+        withContext(Dispatchers.IO) {
+            val pageResponse = client.get("https://www.youtube.com/watch?v=$videoId") {
                 headers {
                     append("Accept-Language", "en-US,en;q=0.9")
                 }
             }
-            if (watchPageResponse.status.isSuccess()) {
-                return@withContext watchPageResponse.bodyAsText()
-            } else {
-                Log.e(TAG, "Failed to fetch watch page: ${watchPageResponse.status}")
-                return@withContext null
+            if (!pageResponse.status.isSuccess()) {
+                Log.e(TAG, "Failed to fetch watch page: ${pageResponse.status}")
+                return@withContext PlayerOutcome.HttpError("watch page", pageResponse.status.value)
             }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.e(TAG, "Exception in getWatchPageHtml for video $videoId", e)
-            return@withContext null
-        }
-    }
-
-    private suspend fun getPlayerResponseFromApi(videoId: String, html: String): JsonObject? =
-        withContext(Dispatchers.IO) {
-            val apiKey =
-                Regex("\"INNERTUBE_API_KEY\"\\s*:\\s*\"([^\"]+)\"").find(html)?.groupValues?.get(1)
+            val html = pageResponse.bodyAsText()
+            val apiKey = Regex("\"INNERTUBE_API_KEY\"\\s*:\\s*\"([^\"]+)\"").find(html)?.groupValues?.get(1)
             if (apiKey == null) {
                 Log.e(TAG, "Could not find INNERTUBE_API_KEY in watch page HTML.")
-                return@withContext null
+                return@withContext PlayerOutcome.NoApiKey("watch page")
             }
 
-            val context = json.parseToJsonElement(INNERTUBE_CONTEXT_JSON)
-
-            val apiUrl = "https://www.youtube.com/youtubei/v1/player?key=$apiKey"
-            val requestBody = buildJsonObject {
-                put("context", context)
-                put("videoId", videoId)
-            }
-
-            try {
-                val response = client.post(apiUrl) {
-                    contentType(ContentType.Application.Json)
-                    setBody(requestBody.toString())
-                }
-                if (response.status.isSuccess()) {
-                    return@withContext json.parseToJsonElement(response.bodyAsText()).jsonObject
-                } else {
-                    Log.e(
-                        TAG,
-                        "Failed to fetch from /player API: ${response.status}. Body: ${response.bodyAsText()}"
-                    )
-                    return@withContext null
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Log.e(TAG, "Exception in getPlayerResponseFromApi for video $videoId", e)
-                return@withContext null
-            }
-        }
-
-    private suspend fun getPlayerResponse(videoId: String): JsonObject? =
-        withContext(Dispatchers.IO) {
-            val watchPageHtml = getWatchPageHtml(videoId) ?: return@withContext null
             // Always use the /player API to fetch the player response, as it's more reliable
             // than parsing the inline JSON from the watch page, which might be incomplete.
-            return@withContext getPlayerResponseFromApi(videoId, watchPageHtml)
-        }
-
-    suspend fun getVideoDetails(videoId: String): Pair<VideoDetails, JsonObject>? =
-        withContext(Dispatchers.IO) {
-            try {
-                val playerResponse = getPlayerResponse(videoId) ?: return@withContext null
-                playabilityProblem(playerResponse)?.let { reason ->
-                    Log.e(TAG, "Video $videoId is not playable: $reason")
-                    throw SummaryException.VideoUnavailableException(reason)
-                }
-                val details = playerResponse["videoDetails"]?.jsonObject
-                val title = details?.get("title")?.jsonPrimitive?.contentOrNull
-                // A missing author must not make an otherwise usable transcript fail.
-                val author = details?.get("author")?.jsonPrimitive?.contentOrNull.orEmpty()
-
-                if (title != null) {
-                    return@withContext Pair(VideoDetails(title, author), playerResponse)
-                } else {
-                    Log.w(
-                        TAG,
-                        "Could not extract video details from 'videoDetails' for $videoId"
-                    )
-                    return@withContext null
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: SummaryException) {
-                throw e
-            } catch (e: Exception) {
-                Log.e(TAG, "Exception in getVideoDetails for video $videoId", e)
-                return@withContext null
+            val response = client.post("https://www.youtube.com/youtubei/v1/player?key=$apiKey") {
+                contentType(ContentType.Application.Json)
+                setBody(playerRequestBody(profile, videoId).toString())
             }
+            if (!response.status.isSuccess()) {
+                Log.e(TAG, "Failed to fetch from /player API: ${response.status}. Body: ${response.bodyAsText()}")
+                return@withContext PlayerOutcome.HttpError("player API", response.status.value)
+            }
+            val playerResponse = try {
+                json.parseToJsonElement(response.bodyAsText()).jsonObject
+            } catch (e: SerializationException) {
+                Log.e(TAG, "The player API answer is not JSON", e)
+                return@withContext PlayerOutcome.BadBody("player API")
+            } catch (e: IllegalArgumentException) {
+                Log.e(TAG, "The player API answer is not a JSON object", e)
+                return@withContext PlayerOutcome.BadBody("player API")
+            }
+            classifyPlayerResponse(playerResponse)
         }
 
+    /**
+     * The title, author and player data of [videoId].
+     * @throws SummaryException a restricted video is "unavailable"; any other failure is an
+     * extraction failure with the client and step in its details.
+     */
+    suspend fun getVideoDetails(videoId: String): Pair<VideoDetails, JsonObject> {
+        val profile = ANDROID_LEGACY
+        val outcome = getPlayerOutcome(videoId, profile)
+        Log.i(TAG, "Player data for $videoId as ${profile.label}: ${outcome::class.simpleName}")
+        val playerResponse = (outcome as? PlayerOutcome.Playable)?.response ?: throw outcome.toFailure(profile)
+        val details = playerResponse["videoDetails"]?.jsonObject
+        val title = details?.get("title")?.jsonPrimitive?.contentOrNull
+            ?: throw extractionFailed(profile, "no video title in the player data")
+        // A missing author must not make an otherwise usable transcript fail.
+        val author = details?.get("author")?.jsonPrimitive?.contentOrNull.orEmpty()
+        return Pair(VideoDetails(title, author), playerResponse)
+    }
+
+    /**
+     * The transcript text of the best caption track and its language code.
+     * @throws SummaryException no captions at all is "no transcript"; a download that fails or an
+     * empty or unreadable transcript is an extraction failure.
+     */
     suspend fun getTranscript(
         videoId: String,
         playerResponse: JsonObject,
         preferredLanguage: String = "en",
-    ): Pair<String, String>? = withContext(Dispatchers.IO) {
-        try {
-            val playabilityStatus = playerResponse["playabilityStatus"]?.jsonObject
-            if (playabilityStatus != null) {
-                val status = playabilityStatus["status"]?.jsonPrimitive?.contentOrNull
-                if (status == "LOGIN_REQUIRED" || status == "UNPLAYABLE") {
-                    val reason =
-                        playabilityStatus["reason"]?.jsonPrimitive?.contentOrNull ?: status
-                    Log.e(
-                        TAG,
-                        "Cannot get transcript for $videoId. Status: $status, Reason: $reason"
-                    )
-                    return@withContext null
-                }
-            }
-
-            val captionTracksJson = playerResponse["captions"]?.jsonObject
-                ?.get("playerCaptionsTracklistRenderer")?.jsonObject
-                ?.get("captionTracks")?.jsonArray
-
-            if (captionTracksJson == null) {
-                Log.w(TAG, "No caption tracks found for video $videoId.")
-                return@withContext null
-            }
-
-            val tracks = json.decodeFromJsonElement<List<CaptionTrack>>(captionTracksJson)
-
-            if (tracks.isEmpty()) {
-                Log.w(TAG, "No caption tracks found for video $videoId.")
-                return@withContext null
-            }
-
-            // Select the best track (prefer manual to auto, prefer specified language over English)
-            val track = selectCaptionTrack(tracks, preferredLanguage)
-
-            if (track == null) {
-                Log.w(TAG, "Could not select a suitable caption track for video $videoId.")
-                return@withContext null
-            }
-
-            val transcriptUrl = if (track.baseUrl.contains("fmt=srv3")) {
-                track.baseUrl.replace("fmt=srv3", "fmt=json3")
-            } else if (track.baseUrl.contains("?")) {
-                "${track.baseUrl}&fmt=json3"
-            } else {
-                "${track.baseUrl}?fmt=json3"
-            }
-            val transcriptResponse = client.get(transcriptUrl) {
-                // Mimic browser behavior; this is required for the request to succeed
-                headers { append("Accept-Language", "$preferredLanguage,en;q=0.9") }
-            }
-
-            if (!transcriptResponse.status.isSuccess()) {
-                Log.e(
-                    TAG,
-                    "Failed to download transcript from $transcriptUrl: ${transcriptResponse.status}"
-                )
-                return@withContext null
-            }
-
-            val transcriptJson = transcriptResponse.bodyAsText()
-            if (transcriptJson.isEmpty()) {
-                Log.e(TAG, "Transcript response body is empty for $transcriptUrl")
-                return@withContext null
-            }
-
-            val transcriptText = parseJsonTranscript(transcriptJson)
-            return@withContext Pair(transcriptText, track.languageCode)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.e(TAG, "Exception in getTranscript for video $videoId", e)
-            return@withContext null
+    ): Pair<String, String> = withContext(Dispatchers.IO) {
+        val profile = ANDROID_LEGACY
+        val captionTracksJson = playerResponse["captions"]?.jsonObject
+            ?.get("playerCaptionsTracklistRenderer")?.jsonObject
+            ?.get("captionTracks")?.jsonArray
+        if (captionTracksJson == null) {
+            Log.w(TAG, "No caption tracks found for video $videoId.")
+            throw SummaryException.NoTranscriptException()
         }
+
+        val tracks = try {
+            json.decodeFromJsonElement<List<CaptionTrack>>(captionTracksJson)
+        } catch (e: SerializationException) {
+            Log.e(TAG, "The caption track list is not readable", e)
+            throw extractionFailed(profile, "caption track list unreadable")
+        }
+        if (tracks.isEmpty()) {
+            Log.w(TAG, "No caption tracks found for video $videoId.")
+            throw SummaryException.NoTranscriptException()
+        }
+
+        // Select the best track (prefer manual to auto, prefer specified language over English)
+        val track = selectCaptionTrack(tracks, preferredLanguage)
+            ?: throw SummaryException.NoTranscriptException()
+        Log.i(
+            TAG,
+            "Caption tracks for $videoId: ${tracks.joinToString { "${it.languageCode}${if (it.kind == "asr") "(auto)" else ""}" }}; " +
+                    "chosen ${track.languageCode}${if (track.kind == "asr") "(auto)" else ""}"
+        )
+
+        val transcriptUrl = if (track.baseUrl.contains("fmt=srv3")) {
+            track.baseUrl.replace("fmt=srv3", "fmt=json3")
+        } else if (track.baseUrl.contains("?")) {
+            "${track.baseUrl}&fmt=json3"
+        } else {
+            "${track.baseUrl}?fmt=json3"
+        }
+        val transcriptResponse = client.get(transcriptUrl) {
+            // Mimic browser behavior; this is required for the request to succeed
+            headers { append("Accept-Language", "$preferredLanguage,en;q=0.9") }
+        }
+        if (!transcriptResponse.status.isSuccess()) {
+            Log.e(TAG, "Failed to download transcript from $transcriptUrl: ${transcriptResponse.status}")
+            throw extractionFailed(profile, "subtitle download: HTTP ${transcriptResponse.status.value}")
+        }
+        val transcriptJson = transcriptResponse.bodyAsText()
+        if (transcriptJson.isEmpty()) {
+            Log.e(TAG, "Transcript response body is empty for $transcriptUrl")
+            throw extractionFailed(profile, "subtitle download: empty answer")
+        }
+
+        val transcriptText = parseJsonTranscript(transcriptJson)
+        if (transcriptText.isBlank()) {
+            throw extractionFailed(profile, "subtitle format not understood or empty")
+        }
+        Pair(transcriptText, track.languageCode)
     }
 
     private fun parseJsonTranscript(jsonString: String): String {

@@ -147,4 +147,5 @@
     <string name="history_export_none">لا توجد ملخصات فيديوهات YouTube للتصدير.</string>
     <string name="history_export_failed">تعذّر تصدير السجل.</string>
     <string name="history_select_hint">اختر ملخصًا لقراءته هنا</string>
+    <string name="youtubeExtractionFailed">تعذّرت قراءة فيديو YouTube هذا. ربما غيّر YouTube شيئًا ما. حاول مرة أخرى لاحقًا أو حدّث التطبيق؛ تحتوي «إظهار التفاصيل» على مزيد من المعلومات.</string>
 </resources>

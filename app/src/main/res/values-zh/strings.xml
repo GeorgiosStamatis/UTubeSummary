@@ -208,4 +208,5 @@
     <string name="history_export_none">没有可导出的 YouTube 视频摘要。</string>
     <string name="history_export_failed">无法导出历史记录。</string>
     <string name="history_select_hint">选择一条摘要即可在此阅读</string>
+    <string name="youtubeExtractionFailed">无法读取此 YouTube 视频。YouTube 可能已做出更改。请稍后重试或更新应用；“显示详情”中有更多信息。</string>
 </resources>

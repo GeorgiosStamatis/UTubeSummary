@@ -38,6 +38,18 @@ sealed class SummaryException(message: String) : Exception(message) {
         override fun getUserMessageResId(apiKey: String?) = R.string.videoUnavailable
     }
 
+    /**
+     * The extraction itself failed (YouTube refused the request, changed its answer, ...), as opposed
+     * to a video that is really unavailable. [detail] names the client and the step.
+     */
+    class ExtractionFailedException(detail: String) : SummaryException("Extraction failed: $detail") {
+        init {
+            technicalDetails = detail
+        }
+
+        override fun getUserMessageResId(apiKey: String?) = R.string.youtubeExtractionFailed
+    }
+
     class NoContentException : SummaryException("Could not extract any content.") {
         override fun getUserMessageResId(apiKey: String?) = R.string.noContent
     }

@@ -144,5 +144,6 @@
     <string name="history_export_none">Nejsou žádná shrnutí videí z YouTube k exportu.</string>
     <string name="history_export_failed">Historii se nepodařilo exportovat.</string>
     <string name="history_select_hint">Vyberte shrnutí, které se zde zobrazí</string>
+    <string name="youtubeExtractionFailed">Toto video z YouTube se nepodařilo přečíst. YouTube možná něco změnil. Zkuste to později znovu nebo aktualizujte aplikaci; více informací najdete v části „Zobrazit podrobnosti“.</string>
 </resources>
 

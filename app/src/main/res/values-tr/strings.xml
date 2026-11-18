@@ -162,4 +162,5 @@
     <string name="history_export_none">Dışa aktarılacak YouTube video özeti yok.</string>
     <string name="history_export_failed">Geçmiş dışa aktarılamadı.</string>
     <string name="history_select_hint">Burada okumak için bir özet seçin</string>
+    <string name="youtubeExtractionFailed">Bu YouTube videosu okunamadı. YouTube bir şeyi değiştirmiş olabilir. Daha sonra tekrar deneyin veya uygulamayı güncelleyin; daha fazla bilgi için “Ayrıntıları göster” seçeneğine bakın.</string>
 </resources>

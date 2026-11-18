@@ -281,4 +281,5 @@
     <string name="useLengthOptions">Usar opções de comprimento</string>
     <string name="useLengthOptionsDescription">Usar as opções de comprimento para o resumo</string>
     <string name="history_select_hint">Selecione um resumo para lê-lo aqui</string>
+    <string name="youtubeExtractionFailed">Não foi possível ler este vídeo do YouTube. O YouTube pode ter mudado alguma coisa. Tente novamente mais tarde ou atualize o app; “Mostrar detalhes” tem mais informações.</string>
 </resources>

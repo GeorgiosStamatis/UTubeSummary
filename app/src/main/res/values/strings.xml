@@ -274,4 +274,5 @@
     <!-- File access -->
     <string name="fileUnavailable">The file could not be opened. Pick it again, or check that it is a valid file.</string>
     <string name="history_select_hint">Select a summary to read it here</string>
+    <string name="youtubeExtractionFailed">Could not read this YouTube video. YouTube may have changed something. Try again later or update the app; “Show details” has more information.</string>
 </resources>

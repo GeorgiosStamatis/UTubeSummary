@@ -276,4 +276,5 @@
     <string name="useLengthOptions">Usa le opzioni di lunghezza</string>
     <string name="useLengthOptionsDescription">Usa le opzioni di lunghezza per il riassunto</string>
     <string name="history_select_hint">Seleziona un riassunto per leggerlo qui</string>
+    <string name="youtubeExtractionFailed">Impossibile leggere questo video di YouTube. Forse YouTube ha cambiato qualcosa. Riprova più tardi o aggiorna l\'app; «Mostra dettagli» offre più informazioni.</string>
 </resources>

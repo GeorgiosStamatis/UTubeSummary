@@ -139,4 +139,5 @@
     <string name="history_export_none">Немає підсумків відео YouTube для експорту.</string>
     <string name="history_export_failed">Не вдалося експортувати історію.</string>
     <string name="history_select_hint">Виберіть підсумок, щоб прочитати його тут</string>
+    <string name="youtubeExtractionFailed">Не вдалося прочитати це відео YouTube. Можливо, YouTube щось змінив. Спробуйте пізніше або оновіть застосунок; докладніше — у «Показати подробиці».</string>
 </resources>
