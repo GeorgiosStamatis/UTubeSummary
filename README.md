@@ -176,6 +176,14 @@ than #17 (signed with a different key).
   the others answer in the format of their prompt. Profiles can be shared as JSON text
 - **History management**: remove a single summary of an entry, select several entries for bulk
   delete or pin, and sort by newest, oldest or title
+- **More robust YouTube extraction**: if YouTube refuses the app's normal request, the app tries the
+  Android client without the API key and then the iOS client; failures say "YouTube may have changed
+  something" with the client and step under *Show details* (instead of "video unavailable"); videos with
+  automatic dubbing (many auto-generated subtitle tracks) use the manual or original-language subtitles, not
+  the first auto-generated one (this caused summaries in an unrelated language)
+- **Test aids**: `tools/mock_llm_server.py` is a mock OpenAI-compatible server for testing without an API
+  key, `tools/youtube_probe.ps1` (PowerShell, see `docs/YOUTUBE_PROBE.md`) shows which YouTube client
+  identities still work, and `docs/MANUAL_TESTS.md` lists the manual test cases
 - **Files in and out**: `.txt`, `.md` and Word files can be summarized (tables, tabs and line breaks
   are kept), a summary can be saved as a Markdown file, and the YouTube video summaries of the
   History can be exported from Settings in the format the importer reads

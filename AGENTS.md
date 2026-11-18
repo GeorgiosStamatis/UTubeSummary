@@ -30,7 +30,9 @@ shared fakes are in `testutil/` (`FakeHistoryRepository`, `FakeUserPreferencesRe
 `@IoDispatcher`) so use cases can be tested deterministically, and `ArchitectureRulesTest` fails when a
 layer imports one it must not know (`model`/`domain` → ui/vm/data/di, `vm`/`ui` → data/repositories).
 Manual test cases are in `docs/MANUAL_TESTS.md`; `tools/mock_llm_server.py` is an OpenAI-compatible mock
-server for testing without an API key. Remaining refactoring ideas: `docs/REFACTORING_BACKLOG.md`.
+server for testing without an API key. `tools/youtube_probe.ps1` (PowerShell, `docs/YOUTUBE_PROBE.md`) checks which
+YouTube client identities still work; rerun it and update `YouTubeClient.kt` when YouTube stops accepting a client.
+Remaining refactoring ideas: `docs/REFACTORING_BACKLOG.md`.
 ```bash
 # Run unit tests
 ./gradlew clean test
@@ -205,6 +207,8 @@ The app defines two product flavors under the `distribution` dimension (`app/bui
   - `BiliBiliSubtitleTool.kt`: BiliBili subtitle extraction
   - `ArticleExtractorTool.kt`: Web article content extraction
   - `FileExtractorTool.kt`: Document parsing
+  - `YouTubeClient.kt`: client identities (`ANDROID_LEGACY`, `ANDROID_FULL`, `IOS`), the ordered `YOUTUBE_ATTEMPTS`, request body/headers, `PlayerOutcome` and error mapping
+  - `YouTubeFallback.kt`: pure `runAttempts` policy (first success wins; restriction, no subtitles and extraction failure are told apart)
 
 #### ViewModels (`vm/`)
 - **`AppViewModel`**: App-level lifecycle, onboarding status (`isOnboarded`), intent routing
