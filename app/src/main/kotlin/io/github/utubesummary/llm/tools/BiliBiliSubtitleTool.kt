@@ -80,15 +80,10 @@ class BiliBiliSubtitleTool(
     name = "extract_subtitle_from_bilibili_url",
     description = "Fetches the subtitle for a given BiliBili video URL."
 ) {
-    private val bvidRegex = "(BV[1-9A-HJ-NP-Za-km-z]{10})".toRegex()
     private val json = Json { ignoreUnknownKeys = true }
 
     companion object {
         private const val TAG = "BiliBiliSubtitleTool"
-        private fun ensureScheme(url: String): String {
-            return if (!url.matches(Regex("^https?://.*"))) "https://$url" else url
-        }
-
         fun isBiliBiliLink(input: String): Boolean = VideoSubtype.isBiliBili(input)
     }
 
@@ -131,7 +126,7 @@ class BiliBiliSubtitleTool(
     }
 
     private suspend fun extractBvid(url: String): String? {
-        val urlString = ensureScheme(url)
+        val urlString = ensureHttpsScheme(url)
         val parsedUrl = Url(urlString)
         val finalUrl = if (parsedUrl.host == "b23.tv") {
             // For b23.tv short links, we need to resolve the redirect to get the full URL.
@@ -144,17 +139,7 @@ class BiliBiliSubtitleTool(
 
         val pathSegments = finalUrl.segments.filter { it.isNotEmpty() }
 
-        // Prioritize finding the BVID in path segments that follow /video/
-        val bvidFromPath =
-            if (pathSegments.size >= 2 && pathSegments.first().equals("video", ignoreCase = true)) {
-                pathSegments[1]
-            } else {
-                // Otherwise, check if the first segment is a BVID (common after redirects)
-                pathSegments.firstOrNull()
-            }
-
-        // Verify that the extracted string matches the BVID format.
-        return bvidFromPath?.takeIf { bvidRegex.matches(it) }
+        return bvidFromPathSegments(pathSegments)
     }
 
     private suspend fun getVideoDetails(bvid: String, sessData: String): BiliVideoInfoData {
@@ -230,7 +215,7 @@ class BiliBiliSubtitleTool(
 
         val subtitlesUrl = subtitles
             .filter { it.subtitleUrl.isNotBlank() }
-            .map { it.copy(subtitleUrl = prependHttps(it.subtitleUrl)) }
+            .map { it.copy(subtitleUrl = protocolRelativeToHttps(it.subtitleUrl)) }
             // try user uploaded subtitle or Chinese subtitle first
             .sortedByDescending { it.type == 0 || it.lan.contains("zh", ignoreCase = true) }
 
@@ -239,11 +224,6 @@ class BiliBiliSubtitleTool(
             throw SummaryException.NoTranscriptException()
         }
         return subtitlesUrl
-    }
-
-    // BiliBili subtitle URLs sometimes start with "//", which needs "https:" prefix
-    private fun prependHttps(url: String): String {
-        return if (url.startsWith("//")) "https:${url}" else url
     }
 
     private suspend fun getSubtitleContent(subtitleUrl: String): BiliSubtitleContentResponse {
@@ -272,4 +252,29 @@ internal fun bilibiliHttpFailure(statusCode: Int): SummaryException = when (stat
     401, 403, 412 -> SummaryException.BiliBiliLoginRequiredException()
     404 -> SummaryException.InvalidLinkException()
     else -> SummaryException.UnknownException("BiliBili answered with HTTP $statusCode")
+}
+
+private val bvidRegex = "(BV[1-9A-HJ-NP-Za-km-z]{10})".toRegex()
+
+/** Adds `https://` to a link typed without a scheme. */
+internal fun ensureHttpsScheme(url: String): String =
+    if (!url.matches(Regex("^https?://.*"))) "https://$url" else url
+
+/** BiliBili subtitle URLs sometimes start with "//", which needs the "https:" prefix. */
+internal fun protocolRelativeToHttps(url: String): String =
+    if (url.startsWith("//")) "https:$url" else url
+
+/**
+ * The video id (`BV…`) of a BiliBili link, from the non-empty path segments. The segment after
+ * `/video/` is preferred; otherwise the first segment is tried (common after a short link
+ * redirect). Anything that is not a valid id gives null.
+ */
+internal fun bvidFromPathSegments(pathSegments: List<String>): String? {
+    val candidate =
+        if (pathSegments.size >= 2 && pathSegments.first().equals("video", ignoreCase = true)) {
+            pathSegments[1]
+        } else {
+            pathSegments.firstOrNull()
+        }
+    return candidate?.takeIf { bvidRegex.matches(it) }
 }

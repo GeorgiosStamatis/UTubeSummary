@@ -94,6 +94,7 @@ but only a device shows wiring mistakes. Run these once (they are mostly `P0`/`P
 | Text file decoding | 4.12 (file with BOM, file with Windows line endings), 12.1, 12.2 |
 | Width constants (`ContentMaxWidth` etc. replace repeated dp values) | 2.4, 13.8, 15.8, 15.9 (nothing should look different) |
 | Self-hosted server path (`openAiCompatibleEndpoint`) | 3.7, 3.8 with LM Studio / Custom Provider (bare host and host with `/v1`) |
+| BiliBili link helpers (moved out of the tool class) | 4.5 with a `bilibili.com/video/BV…` link and a `b23.tv` short link |
 | Profile ids moved to the model layer | 5.1, 5.5, 5.6, 11.9, 11.14 |
 
 ---
@@ -198,7 +199,7 @@ its own specific message (private, age-restricted, unavailable), not a generic f
 
 **4.5 `P1` BiliBili (C5).** With subtitles: works. Without: a clear “no subtitles” style message. When
 BiliBili asks for a login, the app opens Settings > third-party service. After login, retry works;
-**Clear BiliBili Login** asks for confirmation and clears it.
+**Clear BiliBili Login** asks for confirmation and clears it. *Unit-tested:* link forms and video-id extraction (`BiliBiliLinkTest`), error mapping (`BiliBiliHttpFailureTest`); the live subtitles and login need the real site.
 
 **4.6 `P1` PDF text (C7, D3).** Text PDF and scanned PDF on Android 13/14. *Expected:* both summarize; no
 crash on scanned pages.
@@ -611,7 +612,7 @@ Run: `./gradlew testGmsDebugUnitTest` (CI does it on every push).
 | Import/export | `VideoSummaryBackupParserTest`, `VideoSummaryBackupWriterTest`, `ImportVideoSummariesUseCaseTest`, `HistoryUseCasesTest` (export) |
 | Providers: URL normalization, called path of self-hosted servers, config use case, connection test requests, model parsing | `ProviderConfigUseCaseTest`, `OpenAiCompatibleEndpointTest`, `ProviderConfigTest`, `ProviderConnectionRequestTest`, `ProviderDialogButtonsTest`, `SettingsViewModelTest` |
 | Errors | `LlmErrorParserTest`, `SummaryExceptionTest`, `BiliBiliHttpFailureTest` |
-| Content tools | `YouTubeTranscriptToolTest`, `ArticleExtractorToolTest`, `DocxTextBuilderTest`, `FileKindTest`, `YouTubeVideoIdTest`, `YouTubeThumbnailTest` |
+| Content tools | `YouTubeTranscriptToolTest`, `BiliBiliLinkTest`, `ArticleExtractorToolTest`, `DocxTextBuilderTest`, `FileKindTest`, `YouTubeVideoIdTest`, `YouTubeThumbnailTest` |
 | Sharing, Markdown, handoff | `ShareTextTest`, `MarkdownTextTest`, `SummaryHandoffTest`, `InMemorySourceTextStoreTest` |
 | Settings storage / security | `UserPreferencesCompatibilityTest`, `SecureValueCodecTest`, `StringListConverterTest` |
 | Caches, executor | `BoundedLruCacheTest`, `GeminiRequestTest` |
