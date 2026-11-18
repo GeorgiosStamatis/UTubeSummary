@@ -251,6 +251,8 @@ than #17 (signed with a different key).
   trigger it
 - Removed the undocumented `INSTANT_SUMMARIZE` intent action; share-sheet and text-selection
   summaries are unchanged
+- The privacy policy now also covers video thumbnails, the data that stays on the device and the
+  sharing, saving and export features that only run when you start them
 - Privacy policy rewritten to match what the app actually does (no analytics, third-party requests
   listed); the contact route is now
   [GitHub issues](https://github.com/GeorgiosStamatis/UTubeSummary/issues)
@@ -284,8 +286,11 @@ The app follows Google's [official Android Architecture Recommendations](https:/
   LLM handler for each summary.
 - **Summary language, progress and handoff**: the language setting (`model/SummaryLanguage.kt`) is
   resolved in `SummarizeContentUseCase` and named in the prompt; `SummarizationProgress` exposes the
-  current phase through `ObserveSummarizationPhaseUseCase`; `SummaryHandoff` passes a finished summary
-  from the instant dialog to the main activity in memory.
+  current phase through `ObserveSummarizationPhaseUseCase` (each request has an id, so an older one
+  finishing cannot clear a newer one's phase); `SummaryHandoff` passes a finished summary from the
+  instant dialog to the main activity in memory.
+- **LLM gateway**: the summarize and ask use cases depend on the `LlmGateway` interface (implemented by
+  `LLMHandler`), so they are unit-tested with a fake gateway and in-memory repositories.
 - **History model**: an entry keeps the current result per length plus `alternatives` (results of other
   profiles or languages), a `pinned` flag and `variantKeys` for the profile filter; the Room database
   is at version 3 with a migration from version 2.

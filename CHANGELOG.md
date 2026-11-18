@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - History: remove one summary, select and bulk delete/pin, sort
 - Summarize .txt/.md files; Word tables kept; save as Markdown; export History
 
+### Fixed
+
+- Picked file or photo kept after the app is killed
+- More German, Spanish, French, Italian, Portuguese texts
+
 ## [2.1.0] - 2026-11-17
 
 ### Added
