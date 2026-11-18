@@ -83,4 +83,49 @@ class YouTubeClientTest {
         assertEquals("ANDROID", ANDROID_LEGACY.name)
         assertTrue(ANDROID_LEGACY.version.matches(Regex("""\d+(\.\d+)+""")))
     }
+
+    @Test
+    fun `the legacy client sends no extra headers`() {
+        assertEquals(emptyMap<String, String>(), requestHeaders(ANDROID_LEGACY))
+    }
+
+    @Test
+    fun `the full android client sends the headers of the real app`() {
+        assertEquals(
+            mapOf(
+                "User-Agent" to "com.google.android.youtube/20.10.38 (Linux; U; Android 11) gzip",
+                "X-YouTube-Client-Name" to "3",
+                "X-YouTube-Client-Version" to "20.10.38",
+            ),
+            requestHeaders(ANDROID_FULL)
+        )
+    }
+
+    @Test
+    fun `the full android client adds device, os, language and region to the context`() {
+        val body = playerRequestBody(ANDROID_FULL, "abc")
+
+        val client = body["context"]!!.jsonObject["client"]!!.jsonObject
+        assertEquals("\"ANDROID\"", client["clientName"].toString())
+        assertEquals("30", client["androidSdkVersion"].toString())
+        assertEquals("\"Android\"", client["osName"].toString())
+        assertEquals("\"11\"", client["osVersion"].toString())
+        assertEquals("\"en\"", client["hl"].toString())
+        assertEquals("\"US\"", client["gl"].toString())
+    }
+
+    @Test
+    fun `the two android profiles differ only in how they identify themselves`() {
+        assertEquals(ANDROID_LEGACY.name, ANDROID_FULL.name)
+        assertEquals(ANDROID_LEGACY.version, ANDROID_FULL.version)
+        assertTrue(ANDROID_FULL.userAgent!!.contains(ANDROID_FULL.version))
+    }
+
+    @Test
+    fun `no profile contains a key or token`() {
+        listOf(ANDROID_LEGACY, ANDROID_FULL).forEach { client ->
+            val text = client.toString() + requestHeaders(client) + playerRequestBody(client, "abc")
+            assertTrue(!text.contains("AIza"), "$client looks like it holds an API key")
+        }
+    }
 }

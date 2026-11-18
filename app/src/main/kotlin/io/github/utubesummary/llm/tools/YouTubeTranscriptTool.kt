@@ -6,6 +6,7 @@ import ai.koog.serialization.typeToken
 import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -235,6 +236,7 @@ private class YouTubeExtractor(private val client: HttpClient) {
             // than parsing the inline JSON from the watch page, which might be incomplete.
             val response = client.post("https://www.youtube.com/youtubei/v1/player?key=$apiKey") {
                 contentType(ContentType.Application.Json)
+                requestHeaders(profile).forEach { (name, value) -> header(name, value) }
                 setBody(playerRequestBody(profile, videoId).toString())
             }
             if (!response.status.isSuccess()) {
@@ -320,6 +322,8 @@ private class YouTubeExtractor(private val client: HttpClient) {
         val transcriptResponse = client.get(transcriptUrl) {
             // Mimic browser behavior; this is required for the request to succeed
             headers { append("Accept-Language", "${preferredLanguages.first()},en;q=0.9") }
+            // The subtitle address belongs to the client that asked for it: same identity again.
+            requestHeaders(profile).forEach { (name, value) -> header(name, value) }
         }
         if (!transcriptResponse.status.isSuccess()) {
             Log.e(TAG, "Failed to download transcript from $transcriptUrl: ${transcriptResponse.status}")

@@ -1,7 +1,9 @@
 package io.github.utubesummary.llm.tools
 
 import io.github.utubesummary.exception.SummaryException
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -9,7 +11,16 @@ import kotlinx.serialization.json.put
  * The identity the app presents to YouTube's internal player API ("innertube"). YouTube can stop
  * accepting an old version without notice, so everything that identifies the client lives here.
  */
-internal data class InnertubeClient(val name: String, val version: String) {
+internal data class InnertubeClient(
+    val name: String,
+    val version: String,
+    /** `User-Agent` of the real app this client imitates; null sends none (what the app always did). */
+    val userAgent: String? = null,
+    /** Numeric id YouTube uses for this client in `X-YouTube-Client-Name`; null sends no client headers. */
+    val clientNameId: Int? = null,
+    /** Extra fields of the `client` object (device, OS, language, region). */
+    val extraContext: Map<String, JsonElement> = emptyMap(),
+) {
     /** Short text for logs and error details, e.g. "ANDROID 20.10.38". */
     val label: String get() = "$name $version"
 }
@@ -21,12 +32,39 @@ internal data class InnertubeClient(val name: String, val version: String) {
  */
 internal val ANDROID_LEGACY = InnertubeClient(name = "ANDROID", version = "20.10.38")
 
+/**
+ * The same client with everything the real YouTube Android app sends: its `User-Agent`, the client
+ * headers, device/OS fields and language/region. Tried after [ANDROID_LEGACY] fails; the values are
+ * those of the YouTube Android app of that version.
+ */
+internal val ANDROID_FULL = InnertubeClient(
+    name = "ANDROID",
+    version = "20.10.38",
+    userAgent = "com.google.android.youtube/20.10.38 (Linux; U; Android 11) gzip",
+    clientNameId = 3,
+    extraContext = mapOf(
+        "androidSdkVersion" to JsonPrimitive(30),
+        "osName" to JsonPrimitive("Android"),
+        "osVersion" to JsonPrimitive("11"),
+        "hl" to JsonPrimitive("en"),
+        "gl" to JsonPrimitive("US"),
+    ),
+)
+
+/** The HTTP headers that go with a request (player API or subtitle download) made as [client]. */
+internal fun requestHeaders(client: InnertubeClient): Map<String, String> = buildMap {
+    client.userAgent?.let { put("User-Agent", it) }
+    client.clientNameId?.let { put("X-YouTube-Client-Name", it.toString()) }
+    if (client.clientNameId != null) put("X-YouTube-Client-Version", client.version)
+}
+
 /** The JSON body of a `/youtubei/v1/player` request for [videoId] as seen by [client]. */
 internal fun playerRequestBody(client: InnertubeClient, videoId: String): JsonObject = buildJsonObject {
     put("context", buildJsonObject {
         put("client", buildJsonObject {
             put("clientName", client.name)
             put("clientVersion", client.version)
+            client.extraContext.forEach { (key, value) -> put(key, value) }
         })
     })
     put("videoId", videoId)
