@@ -20,8 +20,8 @@ android {
         applicationId = "io.github.utubesummary"
         minSdk = 33
         targetSdk = 37
-        versionCode = 52
-        versionName = "2.1.0"
+        versionCode = 53
+        versionName = "2.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
