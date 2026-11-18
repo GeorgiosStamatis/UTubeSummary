@@ -291,17 +291,22 @@ fun HomeScreen(
         documentFilename != null || urlOrText.isNotBlank()
     }
     val hasResult = summarizationState.summaryResult?.summary?.isNotEmpty() == true
-    val isLengthDirty =
-        settings.showLength && (summarizationState.summaryResult?.let { it.length != settings.summaryLength }
-            ?: false)
-    // A result from a known, different profile is stale. Unknown (restored from history) is not.
-    val isProfileDirty = summarizationState.summaryResult != null &&
-            summarizationState.profileId != null &&
-            summarizationState.profileId != settings.selectedProfileId
-    val isLanguageDirty = summarizationState.summaryResult != null &&
-            summarizationState.language != null &&
-            summarizationState.language != settings.summaryLanguage
-    val isDirty = isLengthDirty || isProfileDirty || isLanguageDirty
+    // A result from a known, different length, profile or language is stale. Unknown (restored
+    // from history) is not.
+    val isDirty = isResultStale(
+        result = ResultSettings(
+            hasResult = summarizationState.summaryResult != null,
+            resultLength = summarizationState.summaryResult?.length,
+            resultProfileId = summarizationState.profileId,
+            resultLanguage = summarizationState.language,
+        ),
+        selected = SelectedSettings(
+            showLength = settings.showLength,
+            length = settings.summaryLength,
+            profileId = settings.selectedProfileId,
+            language = settings.summaryLanguage,
+        ),
+    )
 
     val actions = HomeActions(
         onSummarize = {
