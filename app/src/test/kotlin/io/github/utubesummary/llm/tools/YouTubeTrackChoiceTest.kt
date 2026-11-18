@@ -41,13 +41,48 @@ class YouTubeTrackChoiceTest {
     }
 
     @Test
-    fun `the auto track beats the default hint`() {
-        assertEquals("de", choose(listOf(track("ar"), track("de", auto = true)), defaultIndex = 0))
+    fun `without spoken or wanted tracks YouTube's default track is used`() {
+        assertEquals("de", choose(listOf(track("ar"), track("de"), track("es")), defaultIndex = 1))
     }
 
     @Test
-    fun `without spoken or wanted tracks YouTube's default track is used`() {
-        assertEquals("de", choose(listOf(track("ar"), track("de"), track("es")), defaultIndex = 1))
+    fun `the default hint names the spoken language when several auto tracks exist`() {
+        val tracks = listOf(track("ar", auto = true), track("en", auto = true), track("en"))
+
+        assertEquals("en", choose(tracks, preferred = listOf("de"), defaultIndex = 1))
+    }
+
+    @Test
+    fun `a video with automatic dubbing gives the manual track of the original language`() {
+        // 20 auto-generated tracks in many languages, one manual track: the first auto track is Arabic.
+        val auto = listOf("ar", "bn", "nl", "en", "fr", "de", "hi", "ja", "ko", "pt", "ru", "es", "uk")
+            .map { track(it, auto = true) }
+        val tracks = auto.take(4) + track("en-US") + auto.drop(4)
+
+        assertEquals("en-US", choose(tracks))
+        // The spoken language (English: it has a manual and an auto track) wins over a wanted auto-only language.
+        assertEquals("en-US", choose(tracks, preferred = listOf("de", "en")))
+    }
+
+    @Test
+    fun `several auto tracks without a manual one give the wanted language, not the first`() {
+        val tracks = listOf(track("ar", auto = true), track("en", auto = true), track("de", auto = true))
+
+        assertEquals("en", choose(tracks))
+        assertEquals("de", choose(tracks, preferred = listOf("de", "en")))
+    }
+
+    @Test
+    fun `the original audio language decides when it is known`() {
+        val tracks = listOf(track("ar", auto = true), track("en", auto = true))
+
+        assertEquals("en", selectCaptionTrack(tracks, preferredLanguages = listOf("de"), originalAudioLanguage = "en")?.languageCode)
+        assertEquals("ar", selectCaptionTrack(tracks, preferredLanguages = listOf("de"), originalAudioLanguage = "ar-EG")?.languageCode)
+    }
+
+    @Test
+    fun `a regional manual track counts as its language`() {
+        assertEquals("pt-BR", choose(listOf(track("fr", auto = true), track("pt-BR")), preferred = listOf("pt", "en")))
     }
 
     @Test

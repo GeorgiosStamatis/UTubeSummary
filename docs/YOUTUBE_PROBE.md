@@ -43,7 +43,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\youtube_probe.ps1 `
   -VideoIds 9UMpD5QMU-c,dQw4w9WgXcQ,<only-translated-subtitles-id>,<age-restricted-id>,<private-id>
 ```
 
-It takes one to three minutes (it waits a little between requests on purpose) and prints progress.
+It takes two to four minutes (it waits a little between requests on purpose) and prints progress.
 At the end it prints a table and saves everything to `youtube_probe_result.txt` in the folder where
 you ran it.
 
@@ -59,6 +59,14 @@ One row per video × client × "with key / no key":
 
 The lines above the table tell whether the API key was found in the watch page (`present` /
 `absent`) for the two page variants.
+
+### Track details (new in version 2)
+After the table the script prints, for every video, how YouTube describes the subtitle and audio tracks:
+each subtitle track (`lang`, `kind` = `asr` for auto-generated, `vssId`, `name`), the `audioTracks` block with
+its default indices, the audio tracks found in the stream data (`id`, `name`, `isDefault`) and the first 50
+characters of the first manual and the first auto-generated subtitle text. This shows which marker tells
+the **original spoken language** from automatic dubbing/translation tracks (the cause of the Arabic summary).
+Nothing in it is secret.
 
 ## 5. What to do with the result
 1. **Paste the whole output (or the contents of `youtube_probe_result.txt`) into the chat.**

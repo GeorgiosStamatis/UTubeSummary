@@ -217,10 +217,69 @@ function Write-Both {
     $lines.Add($Text)
 }
 
+# Prints how YouTube describes the subtitle tracks and the audio tracks of a video. This shows which
+# marker tells the original spoken language from automatic dubbing/translation tracks.
+function Show-TrackDetail {
+    param($Client, [string]$VideoId)
+    Write-Both ("Track detail for {0} (asked as {1}):" -f $VideoId, $Client.Label)
+    $result = Send-Request -Uri 'https://www.youtube.com/youtubei/v1/player' -Method 'POST' -Headers (Get-ClientHeaders $Client) -UserAgent $Client.UserAgent -Body (New-PlayerBody $Client $VideoId)
+    if (-not $result.Body) { Write-Both '  (no answer)'; return }
+    try { $json = $result.Body | ConvertFrom-Json } catch { Write-Both '  (answer is not JSON)'; return }
+    $renderer = $null
+    if ($null -ne $json.captions) { $renderer = $json.captions.playerCaptionsTracklistRenderer }
+    $tracks = @()
+    if ($null -eq $renderer) {
+        Write-Both '  (no captions block)'
+    } else {
+        $tracks = @($renderer.captionTracks | Where-Object { $null -ne $_ })
+        $index = 0
+        foreach ($track in $tracks) {
+            $name = ''
+            if ($null -ne $track.name) { $name = [string]$track.name.simpleText }
+            Write-Both ("  track {0}: lang={1} kind={2} vssId={3} translatable={4} name='{5}'" -f $index, $track.languageCode, $track.kind, $track.vssId, $track.isTranslatable, $name)
+            $index++
+        }
+        Write-Both ("  defaultAudioTrackIndex = {0}" -f $renderer.defaultAudioTrackIndex)
+        $audioIndex = 0
+        foreach ($audio in @($renderer.audioTracks)) {
+            if ($null -ne $audio) {
+                Write-Both ("  audioTracks[{0}]: defaultCaptionTrackIndex={1} captionTrackIndices={2} hasDefaultTrack={3}" -f $audioIndex, $audio.defaultCaptionTrackIndex, (@($audio.captionTrackIndices) -join ','), $audio.hasDefaultTrack)
+            }
+            $audioIndex++
+        }
+    }
+    $seen = @{}
+    if ($null -ne $json.streamingData) {
+        foreach ($format in @($json.streamingData.adaptiveFormats)) {
+            if ($null -ne $format -and $null -ne $format.audioTrack) {
+                $id = [string]$format.audioTrack.id
+                if (-not $seen.ContainsKey($id)) {
+                    $seen[$id] = $true
+                    Write-Both ("  audio format track: id={0} name='{1}' isDefault={2}" -f $id, $format.audioTrack.displayName, $format.audioTrack.audioIsDefault)
+                }
+            }
+        }
+    }
+    if ($seen.Count -eq 0) { Write-Both '  (no audio track info in streamingData)' }
+    # The beginning of the text of the first manual track and the first auto-generated track.
+    $manual = $tracks | Where-Object { $_.kind -ne 'asr' } | Select-Object -First 1
+    $auto = $tracks | Where-Object { $_.kind -eq 'asr' } | Select-Object -First 1
+    foreach ($pair in @(@('first manual', $manual), @('first auto', $auto))) {
+        $track = $pair[1]
+        if ($null -eq $track) { continue }
+        $download = Get-TrackText $track $Client
+        $preview = $download.Text
+        if ($preview.Length -gt 50) { $preview = $preview.Substring(0, 50) }
+        Write-Both ("  text of {0} ({1}): HTTP {2}, {3}" -f $pair[0], $track.languageCode, $download.Status, $preview)
+    }
+    Write-Both ''
+}
+
 Write-Both "YouTube probe - $(Get-Date -Format 'yyyy-MM-dd HH:mm') - PowerShell $($PSVersionTable.PSVersion)"
 Write-Both ''
 
 $rows = New-Object System.Collections.Generic.List[object]
+$detailVideos = @()
 foreach ($videoId in $VideoIds) {
     Write-Host "Video $videoId ..."
     $keys = @{}
@@ -239,13 +298,22 @@ foreach ($videoId in $VideoIds) {
         $rows.Add((Test-Client $client $videoId $null 'no key'))
         Start-Sleep -Milliseconds 300
     }
+    $detailVideos += $videoId
 }
 
 Write-Both ''
 Write-Both 'Result (Status = HTTP code of the player request, 0 = no answer; Subtitles = text downloaded for the chosen track):'
 $table = ($rows | Format-Table Video, Client, Key, Status, Playability, Tracks, Languages, Subtitles -AutoSize | Out-String -Width 4096)
 Write-Both $table
-Write-Both 'Legend: ANDROID_LEGACY is what the app sends today. Please paste everything above into the chat.'
+Write-Both 'Legend: ANDROID_LEGACY is what the app sends today.'
+Write-Both ''
+Write-Both 'Track details (how YouTube describes the subtitle and audio tracks):'
+Write-Both ''
+foreach ($videoId in $detailVideos) {
+    Show-TrackDetail $Clients[0] $videoId
+    Start-Sleep -Milliseconds 300
+}
+Write-Both 'Please paste everything above into the chat.'
 
 $lines | Out-File -FilePath $OutFile -Encoding utf8
 Write-Host ''

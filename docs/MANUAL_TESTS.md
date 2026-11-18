@@ -248,14 +248,14 @@ YouTube really says so (a real private or removed video: 4.4 shows the unavailab
 internet it must say “no internet” (8.4). *Unit-tested:* `YouTubeClientTest`. Check the translated texts in
 17.1. In Logcat (tag `YouTubeExtractor`) every run logs the client, the caption tracks found and the one chosen.
 
-**4.18 `P1` Subtitle choice with several tracks.** Use a video that has manual subtitles in several languages
-but no English track and no auto-generated one (typical for a company channel; C13 below), and one normal
-video with auto-generated captions. With **Video language**: *Expected:* the summary is in the language of the
-subtitles that were read; in Logcat (`YouTubeExtractor`) the line “Caption tracks for …; chosen …” names
-the track (YouTube's own default track is used when nothing else fits). Then choose **German** (or another
-language you see in the track list) as summary language: *Expected:* a manual subtitle track in that language
-is read when one exists. *Unit-tested:* the whole ranking (`YouTubeTrackChoiceTest`, `YouTubeTranscriptToolTest`);
-the device check is that real YouTube answers contain the fields the code reads.
+**4.18 `P1` Subtitle choice with many auto-generated tracks.** Summarize `https://youtu.be/9UMpD5QMU-c`
+(English video with automatic dubbing: 20 auto-generated subtitle tracks in other languages and one manual
+`en-US`) with **Video language**. *Expected:* the summary is in **English** (before the fix it was Arabic,
+because the first auto track is Arabic); Logcat (`YouTubeExtractor`) shows “Caption tracks for …; chosen
+en-US”. Then choose **German** as summary language: *Expected:* still the English transcript (no manual
+German track), summarized in German. Also try a video with only translated manual subtitles (C13): the track
+YouTube marks as default is used. *Unit-tested:* the whole ranking (`YouTubeTrackChoiceTest`,
+`YouTubeTranscriptToolTest`); the device check is that real YouTube answers contain the fields the code reads.
 
 ---
 

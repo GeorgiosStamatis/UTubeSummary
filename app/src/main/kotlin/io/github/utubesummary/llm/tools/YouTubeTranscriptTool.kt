@@ -89,28 +89,47 @@ internal data class CaptionTrack(
     data class Name(val simpleText: String = "")
 }
 
+/** The language without region or script: `en-US` and `en` are both `en`. */
+private fun baseLanguage(code: String): String = code.substringBefore('-').lowercase()
+
 /**
- * Picks the caption track to read. Auto-generated ("asr") tracks are always in the language that
- * is spoken in the video, so that language is preferred when a manual track exists for it; then a
- * manual track in one of [preferredLanguages] (in that order), then the auto-generated one, then the
- * track YouTube marks as the default ([defaultTrackIndex], when given), then a track of a preferred
- * language family (e.g. `en-GB` for `en`), then the first track.
+ * Picks the caption track to read.
+ *
+ * Videos with automatic dubbing or translation list auto-generated ("asr") tracks in many languages, so
+ * the first auto track is **not** the spoken language. The spoken language is taken from, in order:
+ * [originalAudioLanguage], the track YouTube marks as default ([defaultTrackIndex]), the only auto
+ * track, or the language that has both a manual and an auto track. Then the order is: a manual track in
+ * the spoken language, a manual track in a wanted language ([preferredLanguages], in that order), the
+ * auto track of the spoken language, YouTube's default track, an auto track in a wanted language, any
+ * track in a wanted language, the first track. Languages match by their base (`en-US` is `en`).
  */
 internal fun selectCaptionTrack(
     tracks: List<CaptionTrack>,
     preferredLanguages: List<String> = listOf("en"),
     defaultTrackIndex: Int? = null,
+    originalAudioLanguage: String? = null,
 ): CaptionTrack? {
-    val spokenLanguage = tracks.firstOrNull { it.kind == "asr" }?.languageCode
-    return tracks.firstOrNull { spokenLanguage != null && it.languageCode == spokenLanguage && it.kind != "asr" }
-        ?: preferredLanguages.firstNotNullOfOrNull { language ->
-            tracks.firstOrNull { it.languageCode == language && it.kind != "asr" }
+    val manual = tracks.filter { it.kind != "asr" }
+    val auto = tracks.filter { it.kind == "asr" }
+    val wanted = preferredLanguages.map(::baseLanguage)
+
+    val spoken: String? = originalAudioLanguage?.takeIf { it.isNotBlank() }?.let(::baseLanguage)
+        ?: defaultTrackIndex?.let { tracks.getOrNull(it) }?.let { baseLanguage(it.languageCode) }
+        ?: auto.singleOrNull()?.let { baseLanguage(it.languageCode) }
+        ?: auto.map { baseLanguage(it.languageCode) }.firstOrNull { language ->
+            manual.any { baseLanguage(it.languageCode) == language }
         }
-        ?: tracks.firstOrNull { it.kind == "asr" }
+
+    fun manualIn(language: String): CaptionTrack? =
+        manual.firstOrNull { it.languageCode.equals(language, ignoreCase = true) }
+            ?: manual.firstOrNull { baseLanguage(it.languageCode) == language }
+
+    return spoken?.let { manualIn(it) }
+        ?: wanted.firstNotNullOfOrNull { manualIn(it) }
+        ?: spoken?.let { language -> auto.firstOrNull { baseLanguage(it.languageCode) == language } }
         ?: defaultTrackIndex?.let { tracks.getOrNull(it) }
-        ?: preferredLanguages.firstNotNullOfOrNull { language ->
-            tracks.firstOrNull { it.languageCode.startsWith(language) }
-        }
+        ?: wanted.firstNotNullOfOrNull { language -> auto.firstOrNull { baseLanguage(it.languageCode) == language } }
+        ?: wanted.firstNotNullOfOrNull { language -> tracks.firstOrNull { baseLanguage(it.languageCode) == language } }
         ?: tracks.firstOrNull()
 }
 
