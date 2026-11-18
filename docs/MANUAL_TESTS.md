@@ -57,7 +57,7 @@ failure with the case id, what you did and what you saw; for crashes add the Log
 | C12 | A video-summaries JSON backup of the original app (for import) |
 
 **Priority tags.** Every case carries a tag: `P0` smoke (27 cases, about 45 minutes, run on every
-build), `P1` normal (62, run before a release), `P2` rare or cosmetic (36, run when the area
+build), `P1` normal (62, run before a release), `P2` rare or cosmetic (37, run when the area
 changed). See the [smoke run](#smoke-run-p0-only) below.
 
 **Mock AI server (no API key needed).** On a computer in the same Wi-Fi run
@@ -98,6 +98,7 @@ but only a device shows wiring mistakes. Run these once (they are mostly `P0`/`P
 | Summary card action buttons (copy, share, save, speak) moved to `SummaryActionButtons.kt` | 9.1–9.4 and the buttons in the History detail (11.3) and the instant dialog (13.1) |
 | Time and id sources (`Clock`, `IdGenerator`) injected into the summarize use case, History merge and profile creation | 5.6 (create a custom profile), 11.1, 11.2 (date of the merged entry is the newest summary), 11.12 |
 | Injected IO dispatcher in the summarize, ask and import use cases | 4.1 (one summary end to end), 7.2 (cancel), 10.1 (ask), 12.1 (import) |
+| YouTube client profile and error handling (`YouTubeClient.kt`) | 4.1, 4.3, 4.4 (private/removed still say unavailable), 8.4 (airplane mode says no internet), 4.17 |
 | Profile ids moved to the model layer | 5.1, 5.5, 5.6, 11.9, 11.14 |
 
 ---
@@ -234,6 +235,14 @@ tap Summarize.
 
 **4.16 `P1` Unreadable file.** Pick a file, remove or lose access to it (move it/revoke permission), then
 Summarize. *Expected:* “pick it again” message.
+
+**4.17 `P2` YouTube extraction failure message.** Cannot be forced on demand (it appears only when
+YouTube changes or refuses the app's request). *Expected when it happens:* “Could not read this YouTube
+video. YouTube may have changed something…”, and **Show details** names the client and step, for example
+`ANDROID 20.10.38 · player API: HTTP 400`. It must **not** say “private / age-restricted / removed” unless
+YouTube really says so (a real private or removed video: 4.4 shows the unavailable text), and without
+internet it must say “no internet” (8.4). *Unit-tested:* `YouTubeClientTest`. Check the translated texts in
+17.1. In Logcat (tag `YouTubeExtractor`) every run logs the client, the caption tracks found and the one chosen.
 
 ---
 
@@ -615,7 +624,7 @@ Run: `./gradlew testGmsDebugUnitTest` (CI does it on every push).
 | Import/export | `VideoSummaryBackupParserTest`, `VideoSummaryBackupWriterTest`, `ImportVideoSummariesUseCaseTest`, `HistoryUseCasesTest` (export) |
 | Providers: URL normalization, called path of self-hosted servers, config use case, connection test requests, model parsing | `ProviderConfigUseCaseTest`, `OpenAiCompatibleEndpointTest`, `ProviderConfigTest`, `ProviderConnectionRequestTest`, `ProviderDialogButtonsTest`, `SettingsViewModelTest` |
 | Errors | `LlmErrorParserTest`, `SummaryExceptionTest`, `BiliBiliHttpFailureTest` |
-| Content tools | `YouTubeTranscriptToolTest`, `BiliBiliLinkTest`, `ArticleExtractorToolTest`, `DocxTextBuilderTest`, `FileKindTest`, `YouTubeVideoIdTest`, `YouTubeThumbnailTest` |
+| Content tools | `YouTubeTranscriptToolTest`, `YouTubeClientTest`, `BiliBiliLinkTest`, `ArticleExtractorToolTest`, `DocxTextBuilderTest`, `FileKindTest`, `YouTubeVideoIdTest`, `YouTubeThumbnailTest` |
 | Sharing, Markdown, handoff | `ShareTextTest`, `MarkdownTextTest`, `SummaryHandoffTest`, `InMemorySourceTextStoreTest` |
 | Settings storage / security | `UserPreferencesCompatibilityTest`, `SecureValueCodecTest`, `StringListConverterTest` |
 | Caches, executor | `BoundedLruCacheTest`, `GeminiRequestTest` |
