@@ -61,6 +61,8 @@ failure with the case id, what you did and what you saw; for crashes add the Log
 build), `P1` normal (63, run before a release), `P2` rare or cosmetic (37, run when the area
 changed). See the [smoke run](#smoke-run-p0-only) below.
 
+**YouTube probe.** `docs/YOUTUBE_PROBE.md` explains how to run `tools/youtube_probe.ps1` (Windows PowerShell) to see which YouTube client identities still work; run it before a release and whenever a YouTube case (4.1, 4.3, 4.18) starts failing.
+
 **Mock AI server (no API key needed).** On a computer in the same Wi-Fi run
 `python3 tools/mock_llm_server.py` (Python 3, nothing to install). On the phone add a **Custom
 Provider** with the URL `http://<computer-ip>:8080` and no key. Use it for every case that only needs *a*
