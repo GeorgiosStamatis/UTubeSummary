@@ -20,5 +20,3 @@ local.properties
 *.jks
 keystore.*
 .artifacts/
-# YouTube probe output (contains nothing secret, but is not part of the repo)
-youtube_probe_result.txt

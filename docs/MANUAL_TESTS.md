@@ -61,17 +61,10 @@ failure with the case id, what you did and what you saw; for crashes add the Log
 build), `P1` normal (63, run before a release), `P2` rare or cosmetic (37, run when the area
 changed). See the [smoke run](#smoke-run-p0-only) below.
 
-**YouTube probe.** `docs/YOUTUBE_PROBE.md` explains how to run `tools/youtube_probe.ps1` (Windows PowerShell) to see which YouTube client identities still work; run it before a release and whenever a YouTube case (4.1, 4.3, 4.18) starts failing.
-
-**Mock AI server (no API key needed).** On a computer in the same Wi-Fi run
-`python3 tools/mock_llm_server.py` (Python 3, nothing to install). On the phone add a **Custom
-Provider** with the URL `http://<computer-ip>:8080` and no key. Use it for every case that only needs *a*
-model answer (sections 5–11, 13, 15) and to make the error cases repeatable: put `MOCK_401`, `MOCK_429`,
-`MOCK_404MODEL`, `MOCK_CONTEXT`, `MOCK_500` into the text you summarize to get that error (8.1–8.3, 8.6),
-`MOCK_SLOW` for a 20-second answer (7.2–7.5, 14.3), `MOCK_TABLE` for a Markdown table (5.3) and `MOCK_LONG`
-for a very long answer (9.1). The answer states the profile prompt, language rule and length rule that the app
-sent, so 5.x and 6.x can be checked by reading it. Real providers are still needed for 3.1, 3.3–3.6, 4.x
-(the real YouTube/BiliBili/article/file extraction) and one final run.
+**Test providers.** Cases that only need *a* model answer (sections 5–11, 13, 15) can use any provider or a
+local OpenAI-compatible test server added as a **Custom Provider**. Error cases are made repeatable with a
+wrong key (8.1), a non-existing model id (8.2), and a very long text on a small-context model (8.6). Real
+providers are needed for 3.1, 3.3–3.6, 4.x (the real YouTube/BiliBili/article/file extraction) and one final run.
 
 Start with a clean install unless a case says otherwise (Settings > App info > Storage > Clear data).
 
@@ -93,7 +86,7 @@ but only a device shows wiring mistakes. Run these once (they are mostly `P0`/`P
 | Instant dialog in its own file | 13.1, 13.3, 13.4, 13.5, 13.8 |
 | Summary card rules (author and overview display) | 4.1 (author shown, overview not repeated), 4.13 (no author for pasted text), 5.3 |
 | History grouping (`HistorySections.kt`), open entry kept on rotation | 11.3, 11.6, 11.8, 11.12, 15.2, 15.4, 15.5 |
-| Text to speech chunking | 9.1 (very long summary, MOCK_LONG) |
+| Text to speech chunking | 9.1 (very long summary) |
 | Text file decoding | 4.12 (file with BOM, file with Windows line endings), 12.1, 12.2 |
 | Width constants (`ContentMaxWidth` etc. replace repeated dp values) | 2.4, 13.8, 15.8, 15.9 (nothing should look different) |
 | Self-hosted server path (`openAiCompatibleEndpoint`) | 3.7, 3.8 with LM Studio / Custom Provider (bare host and host with `/v1`) |
@@ -249,8 +242,8 @@ example `ANDROID 20.10.38 +key · player API: HTTP 400 | ANDROID 20.10.38 no key
 must **not** say “private / age-restricted / removed” unless YouTube really says so (a real private or removed
 video: 4.4), a video without any subtitles still says “no transcript” (4.4), and without internet it says “no
 internet” (8.4). *Unit-tested:* the whole policy (`YouTubeFallbackTest`, `YouTubeClientTest`); the device check is
-that the first attempt succeeds for a normal video. If a YouTube case starts failing, run the probe
-(`docs/YOUTUBE_PROBE.md`) and send the result.
+that the first attempt succeeds for a normal video. If a YouTube case starts failing, check the client
+constants in `YouTubeClient.kt` and report the Logcat lines (tag `YouTubeExtractor`).
 
 **4.18 `P1` Subtitle choice with many auto-generated tracks.** Summarize `https://youtu.be/9UMpD5QMU-c`
 (English video with automatic dubbing: 20 auto-generated subtitle tracks in other languages and one manual
@@ -368,7 +361,7 @@ to choose a model with a larger context; the content is **not** truncated silent
 
 **9.1 `P0` Text to speech.** Play on a long summary with Markdown (bold, bullets). *Expected:* reads the text
 without saying “asterisk/hash”; long summaries do not fail; pause/stop works; changing speed works
-(Settings); speech stops when a new result arrives. *Fixed:* a chunk sent to the speech engine could be one character over its limit; now it never is. Use `MOCK_LONG` for a very long summary: it must read to the end and then stop. *Unit-tested:* `SpeechChunksTest`, `MarkdownTextTest`.
+(Settings); speech stops when a new result arrives. *Fixed:* a chunk sent to the speech engine could be one character over its limit; now it never is. Use a very long summary: it must read to the end and then stop. *Unit-tested:* `SpeechChunksTest`, `MarkdownTextTest`.
 
 **9.2 `P2` Copy.** Copy summary and copy answer. *Expected:* clipboard holds the text.
 

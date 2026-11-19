@@ -1,6 +1,6 @@
 # Remaining refactoring (after batch 7)
 
-Done so far, for reference: all of section A below, the mock AI server, priority tags, pure functions with tests (title/author choice,
+Done so far, for reference: all of section A below, priority tags, pure functions with tests (title/author choice,
 stale-result rules, History grouping, speech chunks, text decoding, share intents, author/overview rules),
 architecture rules test, profile ids in the model layer, `HomeScreen` / `InstantSummaryDialog` split into
 files, open History entry kept on rotation. Room schema export was tried and reverted (the two build
@@ -52,7 +52,7 @@ If you only want the best value for the effort: **18 (selective)**, **16 (just b
 |------|------|------|
 | Merge `isKnownAuthor` and `isUnknownAuthor` | M | Changes which authors are shown |
 | Limit clear-text HTTP to local addresses | M–H | Breaks VPN / hostname setups; needs an app-level check |
-| ~~YouTube extraction without the hard-coded client version~~ | done | The version is now one named constant per client with a fallback chain (Android → Android without key → iOS), chosen from a probe run on 2026-11-18; the versions themselves still have to be updated by hand if YouTube stops accepting them (`docs/YOUTUBE_PROBE.md`) |
+| ~~YouTube extraction without the hard-coded client version~~ | done | The version is now one named constant per client with a fallback chain (Android → Android without key → iOS), chosen from a check against YouTube on 2026-11-18; the versions themselves still have to be updated by hand in `YouTubeClient.kt` if YouTube stops accepting them |
 | PDF text layer first, API < 35 handling | M | Device-only |
 | Highlight the active History row | L | Adds one manual check |
 

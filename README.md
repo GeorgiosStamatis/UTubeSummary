@@ -72,7 +72,7 @@ package previously.
 ### Installing test builds
 
 Each CI build has its own increasing version number (shown in Settings, e.g.
-`2.0.0-ci35+0f146ab`). Install the new APK **over** the previous one, always the same flavor
+`2.2.0-ci35+0f146ab`). Install the new APK **over** the previous one, always the same flavor
 (`gms` or `standalone`): it updates in place and keeps your AI provider, API key and history. You
 only need to uninstall first if Android says "App not installed", which happens for builds older
 than #17 (signed with a different key).
@@ -181,9 +181,6 @@ than #17 (signed with a different key).
   something" with the client and step under *Show details* (instead of "video unavailable"); videos with
   automatic dubbing (many auto-generated subtitle tracks) use the manual or original-language subtitles, not
   the first auto-generated one (this caused summaries in an unrelated language)
-- **Test aids**: `tools/mock_llm_server.py` is a mock OpenAI-compatible server for testing without an API
-  key, `tools/youtube_probe.ps1` (PowerShell, see `docs/YOUTUBE_PROBE.md`) shows which YouTube client
-  identities still work, and `docs/MANUAL_TESTS.md` lists the manual test cases
 - **Files in and out**: `.txt`, `.md` and Word files can be summarized (tables, tabs and line breaks
   are kept), a summary can be saved as a Markdown file, and the YouTube video summaries of the
   History can be exported from Settings in the format the importer reads
@@ -250,6 +247,11 @@ than #17 (signed with a different key).
 - A picked file or camera photo is kept when Android ends the app's process, and a file that can no
   longer be opened gets a clear "pick it again" message
 - The "fetching / summarizing" status can no longer be cleared by an older request finishing
+- YouTube videos with automatic dubbing (many auto-generated subtitle tracks) could be summarized from
+  an auto-generated track in an unrelated language (for example Arabic for an English video)
+- Text files with a byte order mark or Windows line endings are read cleanly, and a text-to-speech chunk
+  can no longer exceed the speech engine's limit by one character
+- The Settings list no longer stretches across a tablet
 
 **Security & privacy**
 
@@ -271,7 +273,8 @@ than #17 (signed with a different key).
 
 **Project**
 
-- Version 2.1.0 (database migration 2 to 3: existing History is kept)
+- Version 2.2.0 (since 2.1.0: tablet and landscape layouts, History management, files in and out, more
+  robust YouTube extraction; the database migration 2 to 3 keeps the existing History)
 - Renamed to UTubeSummary with a new app id (`io.github.utubesummary`): it installs next to the
   original app and does not share its data
 - Storage identifiers renamed: Room database `utubesummary_db` and Keystore alias
@@ -280,7 +283,9 @@ than #17 (signed with a different key).
 - Google Play badges removed, because this fork has no Play Store listing
 - CI builds installable debug APKs on every push: each has its own increasing version number (shown
   in Settings), all share one debug signing key so they update in place, and the unit test suite
-  covers the new features
+  covers the new features; `ArchitectureRulesTest` fails when a layer imports one it must not know
+- Manual test cases are in [docs/MANUAL_TESTS.md](docs/MANUAL_TESTS.md); remaining refactoring ideas
+  are in [docs/REFACTORING_BACKLOG.md](docs/REFACTORING_BACKLOG.md)
 - README and project pages use the new logo (`.github/social-preview.png` is ready for the
   repository's social preview)
 
@@ -306,6 +311,13 @@ The app follows Google's [official Android Architecture Recommendations](https:/
 - **History model**: an entry keeps the current result per length plus `alternatives` (results of other
   profiles or languages), a `pinned` flag and `variantKeys` for the profile filter; the Room database
   is at version 3 with a migration from version 2.
+- **Injected seams**: time, ids and the IO dispatcher are injected into the use cases (`Clock`,
+  `IdGenerator` and `@IoDispatcher` in `domain/provider/`), so they are tested with fixed values and in
+  virtual time; the tests share in-memory fakes in `testutil/`.
+- **YouTube extraction**: the client identities (`ANDROID_LEGACY`, `ANDROID_FULL`, `IOS`) and their order
+  are in `llm/tools/YouTubeClient.kt`; the pure policy `runAttempts` (`YouTubeFallback.kt`) uses the first
+  that works and tells a restricted video, a video without subtitles and a failed extraction apart.
+  The caption track is chosen by language rather than by position (`selectCaptionTrack`).
 - **Dependency Injection**: Powered by Dagger Hilt with `@Binds` for domain repository contracts.
 - **Asynchronous Operations**: Kotlin Coroutines + Flow for reactive, main-safe async streams.
 

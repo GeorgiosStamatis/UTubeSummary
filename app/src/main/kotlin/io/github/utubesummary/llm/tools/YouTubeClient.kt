@@ -53,7 +53,7 @@ internal val ANDROID_FULL = InnertubeClient(
 
 /**
  * The YouTube iOS app. A different client family: if YouTube changes what it accepts from Android
- * clients, this one may still work. Verified working in the probe of November 2026.
+ * clients, this one may still work. Checked against YouTube in November 2026.
  */
 internal val IOS = InnertubeClient(
     name = "IOS",
@@ -78,8 +78,8 @@ internal data class ClientAttempt(val client: InnertubeClient, val useApiKey: Bo
 
 /**
  * The order in which YouTube is asked. The first is exactly what the app has always sent; the
- * others only run when it fails. The probe of November 2026 showed that the Android and iOS clients
- * work with and without the key, and that the TV and web clients do not work as specified, so those
+ * others only run when it fails. A check against YouTube in November 2026 showed that the Android and iOS
+ * clients work with and without the key, and that the TV and web clients do not work as specified, so those
  * are not listed.
  */
 internal val YOUTUBE_ATTEMPTS = listOf(

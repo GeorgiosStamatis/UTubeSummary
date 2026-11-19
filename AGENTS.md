@@ -29,10 +29,9 @@ shared fakes are in `testutil/` (`FakeHistoryRepository`, `FakeUserPreferencesRe
 `FakeProviderConfigRepository`), time, ids and the IO dispatcher are injected (`Clock`, `IdGenerator`,
 `@IoDispatcher`) so use cases can be tested deterministically, and `ArchitectureRulesTest` fails when a
 layer imports one it must not know (`model`/`domain` → ui/vm/data/di, `vm`/`ui` → data/repositories).
-Manual test cases are in `docs/MANUAL_TESTS.md`; `tools/mock_llm_server.py` is an OpenAI-compatible mock
-server for testing without an API key. `tools/youtube_probe.ps1` (PowerShell, `docs/YOUTUBE_PROBE.md`) checks which
-YouTube client identities still work; rerun it and update `YouTubeClient.kt` when YouTube stops accepting a client.
-Remaining refactoring ideas: `docs/REFACTORING_BACKLOG.md`.
+Manual test cases are in `docs/MANUAL_TESTS.md`; remaining refactoring ideas are in `docs/REFACTORING_BACKLOG.md`.
+YouTube client versions live in `YouTubeClient.kt`; check them when YouTube extraction starts failing (Logcat tag
+`YouTubeExtractor` lists every attempt).
 ```bash
 # Run unit tests
 ./gradlew clean test
