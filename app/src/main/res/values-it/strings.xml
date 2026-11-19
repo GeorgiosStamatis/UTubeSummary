@@ -277,4 +277,14 @@
     <string name="useLengthOptionsDescription">Usa le opzioni di lunghezza per il riassunto</string>
     <string name="history_select_hint">Seleziona un riassunto per leggerlo qui</string>
     <string name="youtubeExtractionFailed">Impossibile leggere questo video di YouTube. Forse YouTube ha cambiato qualcosa. Riprova più tardi o aggiorna l\'app; «Mostra dettagli» offre più informazioni.</string>
+    <string name="history_update">Aggiorna</string>
+    <string name="history_update_title">Aggiornare questa voce?</string>
+    <string name="history_update_confirm">Recuperare di nuovo la fonte e rifare i %1$d riassunti di questa voce con il tuo provider e modello attuali? I riassunti fatti da contenuto invariato vengono mantenuti.</string>
+    <string name="history_updating">Aggiornamento %1$d/%2$d…</string>
+    <string name="history_updating_fetching">Recupero della fonte…</string>
+    <string name="history_update_done">%1$d riassunti aggiornati</string>
+    <string name="history_update_done_skipped">%1$d riassunti aggiornati, %2$d saltati (il profilo non esiste più)</string>
+    <string name="history_update_partial">%1$d riassunti su %2$d aggiornati; gli altri non sono riusciti</string>
+    <string name="history_update_up_to_date">Già aggiornato</string>
+    <string name="history_update_cancelled">Aggiornamento annullato</string>
 </resources>

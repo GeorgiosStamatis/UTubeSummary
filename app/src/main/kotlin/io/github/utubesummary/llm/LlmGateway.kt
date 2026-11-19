@@ -1,6 +1,7 @@
 package io.github.utubesummary.llm
 
 import io.github.utubesummary.model.ChatExchange
+import io.github.utubesummary.model.ExtractedContent
 import io.github.utubesummary.model.SummarySource
 import io.github.utubesummary.model.SummaryLength
 import java.util.Locale
@@ -34,6 +35,9 @@ data class SummarizationRequest(
 interface LlmGateway {
     /** Extracts the content of [source] and summarizes it. */
     suspend fun summarize(request: SummarizationRequest, source: SummarySource): SummarizationOutcome
+
+    /** Fetches the content of a video, article or document again, without asking a model. */
+    suspend fun extractContent(source: SummarySource): ExtractedContent
 
     /** Answers [question] about [sourceText] with a plain request (no agent, no tools). */
     suspend fun askQuestion(

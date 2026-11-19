@@ -158,7 +158,9 @@ than #17 (signed with a different key).
 - **History**: search; pin items to the top; filter by pinned, profile or type; sort by newest,
   oldest or title; long-press to select several entries for bulk delete or pin (with Undo).
   Summarizing the same item again (other profile, language or length) keeps every summary in one
-  entry, oldest first, with all but the newest collapsed, and a single summary can be removed
+  entry, oldest first, with all but the newest collapsed, and a single summary can be removed. **Update** (videos and web pages) fetches the source again and
+  makes every summary of the entry again from the new content; if the content did not change, nothing is
+  re-summarized
 
 - **Private by design**: no analytics or tracking; your API keys and BiliBili login are encrypted on
   your device. Content is only sent to the LLM provider you configure. Two optional third-party

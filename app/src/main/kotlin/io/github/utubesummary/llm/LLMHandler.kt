@@ -14,6 +14,10 @@ import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.ChatExchange
 import io.github.utubesummary.model.SummarySource
 import java.util.Locale
+import io.github.utubesummary.exception.toSummaryException
+import io.github.utubesummary.llm.tools.BiliBiliVideo
+import io.github.utubesummary.model.ExtractedContent
+import kotlinx.coroutines.CancellationException
 
 private const val MAX_AGENT_CACHE_SIZE = 20
 
@@ -135,6 +139,24 @@ class LLMHandler(
         structuredOutput = request.structuredOutput,
         summaryLanguage = request.summaryLanguage,
     ).run(source)
+
+    override suspend fun extractContent(source: SummarySource): ExtractedContent = try {
+        when (source) {
+            is SummarySource.Video ->
+                if (YouTubeTranscriptTool.isYouTubeLink(source.url)) {
+                    youTubeTranscriptTool.execute(YouTubeTranscript(source.url))
+                } else {
+                    bilibiliSubtitleTool.execute(BiliBiliVideo(source.url))
+                }
+            is SummarySource.Article -> articleExtractorTool.execute(Article(source.url))
+            is SummarySource.Document -> fileExtractorTool.execute(File(source.uri))
+            else -> throw IllegalArgumentException("There is nothing to fetch for this source")
+        }
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Throwable) {
+        throw e.toSummaryException()
+    }
 
     /** Answers [question] about [sourceText] with a plain request (no agent, no tools). */
     override suspend fun askQuestion(

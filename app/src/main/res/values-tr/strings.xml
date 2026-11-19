@@ -163,4 +163,14 @@
     <string name="history_export_failed">Geçmiş dışa aktarılamadı.</string>
     <string name="history_select_hint">Burada okumak için bir özet seçin</string>
     <string name="youtubeExtractionFailed">Bu YouTube videosu okunamadı. YouTube bir şeyi değiştirmiş olabilir. Daha sonra tekrar deneyin veya uygulamayı güncelleyin; daha fazla bilgi için “Ayrıntıları göster” seçeneğine bakın.</string>
+    <string name="history_update">Güncelle</string>
+    <string name="history_update_title">Bu giriş güncellensin mi?</string>
+    <string name="history_update_confirm">Kaynak yeniden alınsın ve bu girişin %1$d özeti mevcut sağlayıcı ve modelinizle yeniden yapılsın mı? Değişmemiş içerikten yapılan özetler korunur.</string>
+    <string name="history_updating">Güncelleniyor %1$d/%2$d…</string>
+    <string name="history_updating_fetching">Kaynak alınıyor…</string>
+    <string name="history_update_done">%1$d özet güncellendi</string>
+    <string name="history_update_done_skipped">%1$d özet güncellendi, %2$d atlandı (profil artık yok)</string>
+    <string name="history_update_partial">%2$d özetten %1$d tanesi güncellendi; diğerleri başarısız oldu</string>
+    <string name="history_update_up_to_date">Zaten güncel</string>
+    <string name="history_update_cancelled">Güncelleme iptal edildi</string>
 </resources>

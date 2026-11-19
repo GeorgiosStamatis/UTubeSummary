@@ -48,6 +48,8 @@ import kotlinx.coroutines.delay
 import io.github.utubesummary.ui.component.summaryLanguageLabel
 import io.github.utubesummary.ui.component.historyProfileName
 import io.github.utubesummary.model.HistoryLengthResult
+import io.github.utubesummary.model.isSameVariant
+import io.github.utubesummary.vm.UpdateUiState
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -66,6 +68,10 @@ fun HistoryDetailSheet(
     onPinnedChange: (Boolean) -> Unit = {},
     onRemoveResult: ((HistoryLengthResult) -> Unit)? = null,
     onSummarizeAgain: (() -> Unit)? = null,
+    onUpdate: (() -> Unit)? = null,
+    updateProgress: UpdateUiState.Running? = null,
+    updateBusy: Boolean = false,
+    onCancelUpdate: () -> Unit = {},
     sheetState: SheetState = rememberBottomSheetState(
         initialValue = SheetValue.Expanded,
         enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
@@ -89,7 +95,11 @@ fun HistoryDetailSheet(
                 onShowSnackbar = onShowSnackbar,
                 onPinnedChange = onPinnedChange,
                 onRemoveResult = onRemoveResult,
-                onSummarizeAgain = onSummarizeAgain
+                onSummarizeAgain = onSummarizeAgain,
+                onUpdate = onUpdate,
+                updateProgress = updateProgress,
+                updateBusy = updateBusy,
+                onCancelUpdate = onCancelUpdate
             )
         }
     }
@@ -108,6 +118,10 @@ fun HistoryDetailContent(
     onPinnedChange: (Boolean) -> Unit = {},
     onRemoveResult: ((HistoryLengthResult) -> Unit)? = null,
     onSummarizeAgain: (() -> Unit)? = null,
+    onUpdate: (() -> Unit)? = null,
+    updateProgress: UpdateUiState.Running? = null,
+    updateBusy: Boolean = false,
+    onCancelUpdate: () -> Unit = {},
 ) {
     // Every result of the item, oldest first: a new summary is appended after the last one.
     val results = remember(summary) { summary.allResultsOldestFirst() }
@@ -220,6 +234,23 @@ fun HistoryDetailContent(
                 ) {
                     Text(stringResource(R.string.summarize_again))
                 }
+            }
+
+            if (onUpdate != null) {
+                // An update makes each distinct profile / language / length summary again.
+                val variantCount = remember(summary) {
+                    results.fold(emptyList<HistoryLengthResult>()) { distinct, result ->
+                        if (distinct.any { isSameVariant(it, result) }) distinct else distinct + result
+                    }.size
+                }
+                HistoryUpdateControls(
+                    summaryCount = variantCount,
+                    progress = updateProgress,
+                    busy = updateBusy,
+                    onUpdate = onUpdate,
+                    onCancel = onCancelUpdate,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
             }
         }
     }

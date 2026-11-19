@@ -24,6 +24,7 @@ import io.github.utubesummary.model.ExtractedContent
 import io.github.utubesummary.model.HistoryLengthResult
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryLength
+import io.github.utubesummary.model.contentFingerprint
 import io.github.utubesummary.model.effectiveSummaryLanguage
 import io.github.utubesummary.model.summaryPromptLocale
 import io.github.utubesummary.model.SummaryOutput
@@ -123,6 +124,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
                 model = active.model,
                 profile = profile,
                 language = language ?: effectiveSummaryLanguage(prefs),
+                fingerprint = contentFingerprint(outcome.extracted?.content ?: outcome.sourceText),
             )
 
             summaryOutput
@@ -148,6 +150,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
         model: String?,
         profile: SummaryProfile,
         language: String,
+        fingerprint: String?,
     ) {
         if (source is SummarySource.None) return
 
@@ -193,6 +196,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             profileName = profile.name,
             language = language,
             createdOn = clock.nowMillis(),
+            sourceFingerprint = fingerprint,
         )
 
         val summary = HistorySummary(

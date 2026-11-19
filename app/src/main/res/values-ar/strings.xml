@@ -148,4 +148,14 @@
     <string name="history_export_failed">تعذّر تصدير السجل.</string>
     <string name="history_select_hint">اختر ملخصًا لقراءته هنا</string>
     <string name="youtubeExtractionFailed">تعذّرت قراءة فيديو YouTube هذا. ربما غيّر YouTube شيئًا ما. حاول مرة أخرى لاحقًا أو حدّث التطبيق؛ تحتوي «إظهار التفاصيل» على مزيد من المعلومات.</string>
+    <string name="history_update">تحديث</string>
+    <string name="history_update_title">تحديث هذا العنصر؟</string>
+    <string name="history_update_confirm">هل تريد جلب المصدر مجددًا وإنشاء الملخصات الـ %1$d لهذا العنصر من جديد بالمزوّد والنموذج الحاليين؟ تُحفظ الملخصات المبنية على محتوى لم يتغيّر.</string>
+    <string name="history_updating">جارٍ التحديث %1$d/%2$d…</string>
+    <string name="history_updating_fetching">جارٍ جلب المصدر…</string>
+    <string name="history_update_done">تم تحديث %1$d ملخصات</string>
+    <string name="history_update_done_skipped">تم تحديث %1$d ملخصات، وتم تخطي %2$d (الملف الشخصي لم يعد موجودًا)</string>
+    <string name="history_update_partial">تم تحديث %1$d من %2$d ملخصات؛ فشلت البقية</string>
+    <string name="history_update_up_to_date">محدّث بالفعل</string>
+    <string name="history_update_cancelled">أُلغي التحديث</string>
 </resources>

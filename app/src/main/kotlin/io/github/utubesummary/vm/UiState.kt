@@ -11,6 +11,7 @@ import io.github.utubesummary.model.ProviderConfig
 import io.github.utubesummary.model.ProviderTestResult
 import io.github.utubesummary.model.SummaryLength
 import io.github.utubesummary.model.SummaryOutput
+import io.github.utubesummary.domain.usecase.UpdateOutcome
 
 data class AppStartAction(
     val content: String? = null,
@@ -86,3 +87,28 @@ sealed interface ImportState {
     data class Done(val result: ImportResult) : ImportState
     data class Failed(val reason: ImportFailure) : ImportState
 }
+
+/** Whether a History entry is being updated (fetched again and re-summarized). */
+sealed interface UpdateUiState {
+    data object Idle : UpdateUiState
+
+    /** [done] of [total] summaries of the entry [entryId] are made again; [total] is 0 while the source is fetched. */
+    data class Running(val entryId: String, val done: Int, val total: Int) : UpdateUiState
+}
+
+/** How an update ended, for the message shown to the user. */
+sealed interface UpdateResult {
+    data object UpToDate : UpdateResult
+    data class Updated(val updated: Int, val skipped: Int) : UpdateResult
+    data class Partial(val updated: Int, val total: Int) : UpdateResult
+    data object Cancelled : UpdateResult
+    data class Failed(val error: SummaryException) : UpdateResult
+}
+
+/** Maps what the use case reports to the result that is shown. */
+fun updateResultOf(outcome: UpdateOutcome): UpdateResult = when {
+    outcome.failed > 0 -> UpdateResult.Partial(outcome.updated, outcome.updated + outcome.failed)
+    outcome.updated > 0 -> UpdateResult.Updated(outcome.updated, outcome.skipped)
+    else -> UpdateResult.UpToDate
+}
+

@@ -32,6 +32,8 @@ class AskAboutContentUseCaseImplTest {
         override suspend fun summarize(request: SummarizationRequest, source: SummarySource): SummarizationOutcome =
             error("not used")
 
+        override suspend fun extractContent(source: SummarySource): ExtractedContent = error("not used")
+
         override suspend fun askQuestion(
             provider: AIProvider,
             apiKey: String,

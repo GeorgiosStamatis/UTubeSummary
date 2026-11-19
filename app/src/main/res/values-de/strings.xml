@@ -251,4 +251,14 @@
     <string name="fileUnavailable">Die Datei konnte nicht geöffnet werden. Wähle sie erneut aus oder prüfe, ob sie gültig ist.</string>
     <string name="history_select_hint">Wähle eine Zusammenfassung, um sie hier zu lesen</string>
     <string name="youtubeExtractionFailed">Dieses YouTube-Video konnte nicht gelesen werden. YouTube hat möglicherweise etwas geändert. Versuche es später erneut oder aktualisiere die App; unter „Details anzeigen“ stehen weitere Informationen.</string>
+    <string name="history_update">Aktualisieren</string>
+    <string name="history_update_title">Diesen Eintrag aktualisieren?</string>
+    <string name="history_update_confirm">Die Quelle erneut abrufen und die %1$d Zusammenfassungen dieses Eintrags mit deinem aktuellen Anbieter und Modell neu erstellen? Zusammenfassungen zu unverändertem Inhalt bleiben erhalten.</string>
+    <string name="history_updating">Aktualisiere %1$d/%2$d…</string>
+    <string name="history_updating_fetching">Quelle wird abgerufen…</string>
+    <string name="history_update_done">%1$d Zusammenfassungen aktualisiert</string>
+    <string name="history_update_done_skipped">%1$d Zusammenfassungen aktualisiert, %2$d übersprungen (Profil existiert nicht mehr)</string>
+    <string name="history_update_partial">%1$d von %2$d Zusammenfassungen aktualisiert; die übrigen sind fehlgeschlagen</string>
+    <string name="history_update_up_to_date">Bereits aktuell</string>
+    <string name="history_update_cancelled">Aktualisierung abgebrochen</string>
 </resources>

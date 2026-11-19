@@ -29,6 +29,11 @@ import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryType
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
+import io.github.utubesummary.domain.usecase.UpdateHistoryEntryUseCase
+import io.github.utubesummary.exception.toSummaryException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 
 private const val SEARCH_DEBOUNCE_MILLIS = 300L
 
@@ -41,6 +46,7 @@ class HistoryViewModel @Inject constructor(
     private val removeHistoryResultUseCase: RemoveHistoryResultUseCase,
     private val deleteHistorySummariesUseCase: DeleteHistorySummariesUseCase,
     private val getHistorySummaryUseCase: GetHistorySummaryUseCase,
+    private val updateHistoryEntryUseCase: UpdateHistoryEntryUseCase,
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -100,6 +106,43 @@ class HistoryViewModel @Inject constructor(
         viewModelScope.launch {
             setHistoryPinnedUseCase(id, pinned)
         }
+    }
+
+    private val _updateState = MutableStateFlow<UpdateUiState>(UpdateUiState.Idle)
+
+    /** Progress of the running update of an entry, or idle. */
+    val updateState: StateFlow<UpdateUiState> = _updateState.asStateFlow()
+
+    private var updateJob: Job? = null
+
+    /**
+     * Fetches the source of [entry] again and makes its summaries again from the new content.
+     * [onFinished] gets how it ended and the entry as it is now (null if it no longer exists).
+     */
+    fun updateEntry(entry: HistorySummary, onFinished: (UpdateResult, HistorySummary?) -> Unit) {
+        if (updateJob?.isActive == true) return
+        updateJob = viewModelScope.launch {
+            _updateState.value = UpdateUiState.Running(entry.id, done = 0, total = 0)
+            var result: UpdateResult = UpdateResult.Cancelled
+            try {
+                result = updateHistoryEntryUseCase(entry) { progress ->
+                    _updateState.value = UpdateUiState.Running(entry.id, progress.done, progress.total)
+                }.fold(
+                    onSuccess = { updateResultOf(it) },
+                    onFailure = { UpdateResult.Failed(it.toSummaryException()) },
+                )
+            } finally {
+                // Also after a cancel: some summaries may have been made again already.
+                withContext(NonCancellable) {
+                    _updateState.value = UpdateUiState.Idle
+                    onFinished(result, getHistorySummaryUseCase(entry.id))
+                }
+            }
+        }
+    }
+
+    fun cancelUpdate() {
+        updateJob?.cancel()
     }
 
     /** Loads the entry with [id], for example to show it again after the screen was recreated. */

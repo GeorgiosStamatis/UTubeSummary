@@ -41,6 +41,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.currentTime
 import io.github.utubesummary.model.ExtractedContent
 import io.github.utubesummary.model.SummaryType
+import io.github.utubesummary.model.contentFingerprint
 
 class SummarizeContentUseCaseImplTest {
 
@@ -62,6 +63,8 @@ class SummarizeContentUseCaseImplTest {
             if (delayMillis > 0) delay(delayMillis)
             return result()
         }
+
+        override suspend fun extractContent(source: SummarySource): ExtractedContent = error("not used")
 
         override suspend fun askQuestion(
             provider: AIProvider,
@@ -391,5 +394,15 @@ class SummarizeContentUseCaseImplTest {
         useCase(videoLink, profileId = "quick_brief")
 
         assertEquals("the transcript text", store.get(videoLink))
+    }
+
+    @Test
+    fun `the saved result carries a fingerprint of the extracted text`() = runTest {
+        selectOpenAi()
+        gateway.result = { outcome(extracted = extraction) }
+
+        useCase(videoLink)
+
+        assertEquals(contentFingerprint("the transcript text"), history.added.single().activeResult!!.sourceFingerprint)
     }
 }

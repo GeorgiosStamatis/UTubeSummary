@@ -140,4 +140,14 @@
     <string name="history_export_failed">Не вдалося експортувати історію.</string>
     <string name="history_select_hint">Виберіть підсумок, щоб прочитати його тут</string>
     <string name="youtubeExtractionFailed">Не вдалося прочитати це відео YouTube. Можливо, YouTube щось змінив. Спробуйте пізніше або оновіть застосунок; докладніше — у «Показати подробиці».</string>
+    <string name="history_update">Оновити</string>
+    <string name="history_update_title">Оновити цей запис?</string>
+    <string name="history_update_confirm">Отримати джерело ще раз і заново створити %1$d підсумків цього запису з вашим поточним постачальником і моделлю? Підсумки зроблені зі незмінного вмісту, зберігаються.</string>
+    <string name="history_updating">Оновлення %1$d/%2$d…</string>
+    <string name="history_updating_fetching">Отримання джерела…</string>
+    <string name="history_update_done">Оновлено підсумків: %1$d</string>
+    <string name="history_update_done_skipped">Оновлено підсумків: %1$d, пропущено: %2$d (профілю більше не існує)</string>
+    <string name="history_update_partial">Оновлено %1$d із %2$d підсумків; решта не вдалася</string>
+    <string name="history_update_up_to_date">Уже актуально</string>
+    <string name="history_update_cancelled">Оновлення скасовано</string>
 </resources>

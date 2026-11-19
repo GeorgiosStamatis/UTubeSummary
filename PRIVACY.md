@@ -86,6 +86,8 @@ property, or (iii) protect the personal safety of users of the Application or th
 * **What stays on your device:** your History (including pinned entries and every summary kept for
   an item), summarization profiles (including ones you create or import), the chosen summary
   language and your other settings are stored only on your device.
+  With each summary of a video or web page the App also stores a short fingerprint (a hash, not the
+  text) of the content it was made from, so that "Update" can tell whether the source has changed.
 * **Things you start yourself:** sharing a summary or a profile, saving a summary as a Markdown file
   and exporting your History happen only when you choose them, and the file or text goes only where
   you send it. The App does not upload these.

@@ -145,5 +145,15 @@
     <string name="history_export_failed">Historii se nepodařilo exportovat.</string>
     <string name="history_select_hint">Vyberte shrnutí, které se zde zobrazí</string>
     <string name="youtubeExtractionFailed">Toto video z YouTube se nepodařilo přečíst. YouTube možná něco změnil. Zkuste to později znovu nebo aktualizujte aplikaci; více informací najdete v části „Zobrazit podrobnosti“.</string>
+    <string name="history_update">Aktualizovat</string>
+    <string name="history_update_title">Aktualizovat tuto položku?</string>
+    <string name="history_update_confirm">Znovu stáhnout zdroj a znovu vytvořit %1$d shrnutí této položky pomocí aktuálního poskytovatele a modelu? Shrnutí vytvořená z nezměněného obsahu zůstanou.</string>
+    <string name="history_updating">Aktualizace %1$d/%2$d…</string>
+    <string name="history_updating_fetching">Stahování zdroje…</string>
+    <string name="history_update_done">Aktualizováno shrnutí: %1$d</string>
+    <string name="history_update_done_skipped">Aktualizováno shrnutí: %1$d, přeskočeno: %2$d (profil už neexistuje)</string>
+    <string name="history_update_partial">Aktualizováno %1$d z %2$d shrnutí; ostatní selhala</string>
+    <string name="history_update_up_to_date">Už je aktuální</string>
+    <string name="history_update_cancelled">Aktualizace zrušena</string>
 </resources>
 

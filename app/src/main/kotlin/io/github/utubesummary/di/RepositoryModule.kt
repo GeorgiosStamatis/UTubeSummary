@@ -27,6 +27,8 @@ import io.github.utubesummary.domain.repository.AIProviderConfigRepository
 import io.github.utubesummary.domain.repository.HistoryRepository
 import io.github.utubesummary.domain.repository.UserPreferencesRepository
 import io.github.utubesummary.domain.usecase.ExportHistoryUseCase
+import io.github.utubesummary.domain.usecase.UpdateHistoryEntryUseCase
+import io.github.utubesummary.domain.usecase.UpdateHistoryEntryUseCaseImpl
 import io.github.utubesummary.domain.usecase.ExportHistoryUseCaseImpl
 import io.github.utubesummary.domain.usecase.SummarizeContentUseCase
 import io.github.utubesummary.domain.usecase.SummarizeContentUseCaseImpl
@@ -71,6 +73,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindTextFileReader(impl: AndroidTextFileReader): TextFileReader
+
+    @Binds
+    @Singleton
+    abstract fun bindUpdateHistoryEntryUseCase(impl: UpdateHistoryEntryUseCaseImpl): UpdateHistoryEntryUseCase
 
     @Binds
     @Singleton

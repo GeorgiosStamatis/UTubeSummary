@@ -17,4 +17,6 @@ data class HistoryLengthResult(
     val language: String? = null,
     /** When this result was made; 0 for older entries. */
     val createdOn: Long = 0L,
+    /** Fingerprint of the extracted text this was made from (see [contentFingerprint]); null for older results. */
+    val sourceFingerprint: String? = null,
 )

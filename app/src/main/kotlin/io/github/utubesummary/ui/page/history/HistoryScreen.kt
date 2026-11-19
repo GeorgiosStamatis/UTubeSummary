@@ -81,6 +81,10 @@ import io.github.utubesummary.ui.page.history.sheet.HistoryDetailContent
 import io.github.utubesummary.ui.page.history.sheet.HistoryDetailSheet
 import io.github.utubesummary.vm.HistoryViewModel
 import io.github.utubesummary.ui.component.ContentMaxWidth
+import androidx.compose.ui.platform.LocalContext
+import io.github.utubesummary.model.canBeUpdated
+import io.github.utubesummary.vm.UpdateResult
+import io.github.utubesummary.vm.UpdateUiState
 
 /**
  * Material 3 Expressive History Screen with Android 16 search bar, connected shapes, and tonal badges
@@ -171,6 +175,35 @@ fun HistoryScreen(
             }
         }
 
+    // Update: fetch the source again and make every summary of the entry again from the new content.
+    val updateState by viewModel.updateState.collectAsState()
+    val context = LocalContext.current
+    val onUpdateAction: (() -> Unit)? = selectedSummary?.takeIf { it.canBeUpdated() }?.let { entry ->
+        {
+            viewModel.updateEntry(entry) { result, reloaded ->
+                // Show the entry as it is now, unless the user has opened another one meanwhile.
+                if (selectedSummary?.id == entry.id) select(reloaded)
+                val message = when (result) {
+                    UpdateResult.UpToDate -> context.getString(R.string.history_update_up_to_date)
+                    is UpdateResult.Updated ->
+                        if (result.skipped > 0) {
+                            context.getString(R.string.history_update_done_skipped, result.updated, result.skipped)
+                        } else {
+                            context.getString(R.string.history_update_done, result.updated)
+                        }
+                    is UpdateResult.Partial ->
+                        context.getString(R.string.history_update_partial, result.updated, result.total)
+                    UpdateResult.Cancelled -> context.getString(R.string.history_update_cancelled)
+                    is UpdateResult.Failed ->
+                        result.error.getUserMessageResId()?.let { context.getString(it) }
+                            ?: result.error.message.orEmpty()
+                }
+                scope.launch { snackbarHostState.showSnackbar(message) }
+            }
+        }
+    }
+    val runningUpdate = (updateState as? UpdateUiState.Running)?.takeIf { it.entryId == selectedSummary?.id }
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -239,7 +272,11 @@ fun HistoryScreen(
                 onShowSnackbar = showSnackbar,
                 onRemoveResult = onRemoveResult,
                 onPinnedChange = onPinnedChange,
-                onSummarizeAgain = onSummarizeAgainAction
+                onSummarizeAgain = onSummarizeAgainAction,
+                onUpdate = onUpdateAction,
+                updateProgress = runningUpdate,
+                updateBusy = updateState is UpdateUiState.Running,
+                onCancelUpdate = viewModel::cancelUpdate
             )
         }
 
@@ -450,7 +487,11 @@ fun HistoryScreen(
                             onShowSnackbar = showSnackbar,
                             onPinnedChange = onPinnedChange,
                             onRemoveResult = onRemoveResult,
-                            onSummarizeAgain = onSummarizeAgainAction
+                            onSummarizeAgain = onSummarizeAgainAction,
+                            onUpdate = onUpdateAction,
+                            updateProgress = runningUpdate,
+                            updateBusy = updateState is UpdateUiState.Running,
+                            onCancelUpdate = viewModel::cancelUpdate
                         )
                     }
                 }

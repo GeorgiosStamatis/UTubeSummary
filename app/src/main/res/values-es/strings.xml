@@ -282,4 +282,14 @@
     <string name="useLengthOptionsDescription">Usar las opciones de longitud para el resumen</string>
     <string name="history_select_hint">Selecciona un resumen para leerlo aquí</string>
     <string name="youtubeExtractionFailed">No se pudo leer este vídeo de YouTube. Puede que YouTube haya cambiado algo. Inténtalo de nuevo más tarde o actualiza la app; «Mostrar detalles» ofrece más información.</string>
+    <string name="history_update">Actualizar</string>
+    <string name="history_update_title">¿Actualizar esta entrada?</string>
+    <string name="history_update_confirm">¿Volver a obtener la fuente y rehacer los %1$d resúmenes de esta entrada con tu proveedor y modelo actuales? Los resúmenes hechos con contenido sin cambios se conservan.</string>
+    <string name="history_updating">Actualizando %1$d/%2$d…</string>
+    <string name="history_updating_fetching">Obteniendo la fuente…</string>
+    <string name="history_update_done">%1$d resúmenes actualizados</string>
+    <string name="history_update_done_skipped">%1$d resúmenes actualizados, %2$d omitidos (el perfil ya no existe)</string>
+    <string name="history_update_partial">%1$d de %2$d resúmenes actualizados; los demás fallaron</string>
+    <string name="history_update_up_to_date">Ya está actualizado</string>
+    <string name="history_update_cancelled">Actualización cancelada</string>
 </resources>

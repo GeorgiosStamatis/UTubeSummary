@@ -171,4 +171,14 @@
     <string name="history_export_failed">履歴をエクスポートできませんでした。</string>
     <string name="history_select_hint">ここに表示する要約を選択してください</string>
     <string name="youtubeExtractionFailed">このYouTube動画を読み取れませんでした。YouTube側で仕様が変更された可能性があります。後でもう一度試すか、アプリを更新してください。詳細は「詳細を表示」で確認できます。</string>
+    <string name="history_update">更新</string>
+    <string name="history_update_title">このエントリを更新しますか？</string>
+    <string name="history_update_confirm">ソースを再取得し、現在のプロバイダーとモデルでこのエントリの%1$d件の要約を作り直しますか？内容が変わっていない要約はそのまま残ります。</string>
+    <string name="history_updating">更新中 %1$d/%2$d…</string>
+    <string name="history_updating_fetching">ソースを取得中…</string>
+    <string name="history_update_done">%1$d件の要約を更新しました</string>
+    <string name="history_update_done_skipped">%1$d件の要約を更新、%2$d件をスキップ（プロフィールが存在しません）</string>
+    <string name="history_update_partial">%2$d件中%1$d件の要約を更新しました。残りは失敗しました</string>
+    <string name="history_update_up_to_date">すでに最新です</string>
+    <string name="history_update_cancelled">更新をキャンセルしました</string>
 </resources>

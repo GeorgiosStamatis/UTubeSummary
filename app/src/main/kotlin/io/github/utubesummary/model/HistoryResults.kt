@@ -56,3 +56,7 @@ fun HistorySummary.withoutResult(target: HistoryLengthResult): HistorySummary? {
         alternatives = remaining.filterNot { it in current.values },
     )
 }
+
+/** Videos and web pages can be fetched again; text has nothing to fetch and documents may be gone. */
+fun HistorySummary.canBeUpdated(): Boolean =
+    (type == SummaryType.VIDEO || type == SummaryType.ARTICLE) && !sourceLink.isNullOrBlank()

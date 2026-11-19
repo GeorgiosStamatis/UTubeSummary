@@ -30,12 +30,34 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import io.github.utubesummary.testutil.FakeHistoryRepository
+import io.github.utubesummary.domain.usecase.UpdateHistoryEntryUseCase
+import io.github.utubesummary.domain.usecase.UpdateOutcome
+import io.github.utubesummary.domain.usecase.UpdateProgress
+import io.github.utubesummary.exception.SummaryException
+import io.github.utubesummary.vm.UpdateResult
+import io.github.utubesummary.vm.UpdateUiState
+import kotlinx.coroutines.CompletableDeferred
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HistoryViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
 
+    private class FakeUpdateUseCase : UpdateHistoryEntryUseCase {
+        var result: Result<UpdateOutcome> = Result.success(UpdateOutcome(updated = 2, upToDate = 0, skipped = 0, failed = 0))
+        var gate: CompletableDeferred<Unit>? = null
+        var calls = 0
+
+        override suspend fun invoke(entry: HistorySummary, onProgress: (UpdateProgress) -> Unit): Result<UpdateOutcome> {
+            calls++
+            onProgress(UpdateProgress(done = 0, total = 2))
+            gate?.await()
+            onProgress(UpdateProgress(done = 2, total = 2))
+            return result
+        }
+    }
+
+    private val fakeUpdate = FakeUpdateUseCase()
     private lateinit var fakeRepository: FakeHistoryRepository
     private lateinit var viewModel: HistoryViewModel
 
@@ -51,6 +73,7 @@ class HistoryViewModelTest {
             removeHistoryResultUseCase = RemoveHistoryResultUseCase(fakeRepository),
             deleteHistorySummariesUseCase = DeleteHistorySummariesUseCase(fakeRepository),
             getHistorySummaryUseCase = GetHistorySummaryUseCase(fakeRepository),
+            updateHistoryEntryUseCase = fakeUpdate,
         )
     }
 
@@ -200,5 +223,74 @@ class HistoryViewModelTest {
 
         assertEquals("b", loaded?.id)
         assertNull(missing)
+    }
+
+    private fun runUpdate(entry: HistorySummary): Pair<UpdateResult?, HistorySummary?> {
+        var result: UpdateResult? = null
+        var reloaded: HistorySummary? = null
+        viewModel.updateEntry(entry) { r, e ->
+            result = r
+            reloaded = e
+        }
+        return result to reloaded
+    }
+
+    @Test
+    fun `an update reports what it did and shows the entry as it is now`() = runTest(testDispatcher) {
+        fakeRepository.items.add(entry("a"))
+
+        val (result, reloaded) = runUpdate(entry("a"))
+
+        assertEquals(UpdateResult.Updated(updated = 2, skipped = 0), result)
+        assertEquals("a", reloaded?.id)
+        assertEquals(UpdateUiState.Idle, viewModel.updateState.value)
+    }
+
+    @Test
+    fun `an update that changed nothing is up to date`() = runTest(testDispatcher) {
+        fakeUpdate.result = Result.success(UpdateOutcome(updated = 0, upToDate = 2, skipped = 0, failed = 0))
+
+        assertEquals(UpdateResult.UpToDate, runUpdate(entry("a")).first)
+    }
+
+    @Test
+    fun `an update with a failed summary is partial`() = runTest(testDispatcher) {
+        fakeUpdate.result = Result.success(UpdateOutcome(updated = 1, upToDate = 0, skipped = 0, failed = 1))
+
+        assertEquals(UpdateResult.Partial(updated = 1, total = 2), runUpdate(entry("a")).first)
+    }
+
+    @Test
+    fun `a failed update carries the error`() = runTest(testDispatcher) {
+        fakeUpdate.result = Result.failure(SummaryException.NoInternetException())
+
+        val result = runUpdate(entry("a")).first
+
+        assertTrue((result as UpdateResult.Failed).error is SummaryException.NoInternetException)
+    }
+
+    @Test
+    fun `a running update can be cancelled`() = runTest(testDispatcher) {
+        fakeUpdate.gate = CompletableDeferred()
+        fakeRepository.items.add(entry("a"))
+        var result: UpdateResult? = null
+        viewModel.updateEntry(entry("a")) { r, _ -> result = r }
+
+        assertEquals(UpdateUiState.Running("a", done = 0, total = 2), viewModel.updateState.value)
+
+        viewModel.cancelUpdate()
+
+        assertEquals(UpdateResult.Cancelled, result)
+        assertEquals(UpdateUiState.Idle, viewModel.updateState.value)
+    }
+
+    @Test
+    fun `a second update does not start while one is running`() = runTest(testDispatcher) {
+        fakeUpdate.gate = CompletableDeferred()
+        viewModel.updateEntry(entry("a")) { _, _ -> }
+
+        viewModel.updateEntry(entry("b")) { _, _ -> }
+
+        assertEquals(1, fakeUpdate.calls)
     }
 }

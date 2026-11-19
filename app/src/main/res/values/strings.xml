@@ -275,4 +275,14 @@
     <string name="fileUnavailable">The file could not be opened. Pick it again, or check that it is a valid file.</string>
     <string name="history_select_hint">Select a summary to read it here</string>
     <string name="youtubeExtractionFailed">Could not read this YouTube video. YouTube may have changed something. Try again later or update the app; “Show details” has more information.</string>
+    <string name="history_update">Update</string>
+    <string name="history_update_title">Update this entry?</string>
+    <string name="history_update_confirm">Fetch the source again and make the %1$d summaries of this entry again with your current provider and model? Summaries made from unchanged content are kept.</string>
+    <string name="history_updating">Updating %1$d/%2$d…</string>
+    <string name="history_updating_fetching">Fetching the source…</string>
+    <string name="history_update_done">Updated %1$d summaries</string>
+    <string name="history_update_done_skipped">Updated %1$d summaries, %2$d skipped (profile no longer exists)</string>
+    <string name="history_update_partial">Updated %1$d of %2$d summaries; the others failed</string>
+    <string name="history_update_up_to_date">Already up to date</string>
+    <string name="history_update_cancelled">Update cancelled</string>
 </resources>
