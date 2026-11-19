@@ -58,7 +58,7 @@ failure with the case id, what you did and what you saw; for crashes add the Log
 | C13 | A YouTube video whose manual subtitles exist in several languages but not in English (and has no auto-generated captions) |
 
 **Priority tags.** Every case carries a tag: `P0` smoke (27 cases, about 45 minutes, run on every
-build), `P1` normal (64, run before a release), `P2` rare or cosmetic (37, run when the area
+build), `P1` normal (65, run before a release), `P2` rare or cosmetic (37, run when the area
 changed). See the [smoke run](#smoke-run-p0-only) below.
 
 **Test providers.** Cases that only need *a* model answer (sections 5–11, 13, 15) can use any provider or a
@@ -97,6 +97,7 @@ but only a device shows wiring mistakes. Run these once (they are mostly `P0`/`P
 | YouTube client profiles, fallback chain and error handling (`YouTubeClient.kt`, `YouTubeFallback.kt`) | 4.1, 4.3, 4.4 (private/removed/no subtitles keep their texts), 8.4 (airplane mode says no internet), 4.17, 4.18 |
 | Subtitle ranking, wanted subtitle language from the summary language, transcript language in `ExtractedContent` | 4.1, 4.3, 4.18, 6.3 |
 | Shared link while History/Settings is open goes to Home (`backStackForStartAction`) | 13.9, 13.1, 13.4, 11.11 (Summarize again) |
+| Extracted text reused for the same input (`SummarySource.Extracted`, `SourceTextStore.putContent`) | 4.19, 4.1, 4.7, 5.3, 10.1 (Ask after a reused run), 11.2 |
 | Profile ids moved to the model layer | 5.1, 5.5, 5.6, 11.9, 11.14 |
 
 ---
@@ -254,6 +255,14 @@ en-US”. Then choose **German** as summary language: *Expected:* still the Engl
 German track), summarized in German. Also try a video with only translated manual subtitles (C13): the track
 YouTube marks as default is used. *Unit-tested:* the whole ranking (`YouTubeTrackChoiceTest`,
 `YouTubeTranscriptToolTest`); the device check is that real YouTube answers contain the fields the code reads.
+
+**4.19 `P1` Second summary reuses the extracted text.** Summarize a YouTube link, then the **same link** with another
+profile (or language or length). *Expected:* Logcat (`YouTubeExtractor`) shows **no** second `Attempt …` line, the
+result arrives faster, the History entry holds both summaries with the same title and author, and an Ask question
+still works. Same for an article and a PDF (no second download or OCR). A **different** link, or plain text, is
+extracted on its own; after force-stopping the app the next summary downloads again. *Known:* an article that
+changed in between is not refreshed until the app process ends. *Unit-tested:* `SummarizeContentUseCaseImplTest`,
+`InMemorySourceTextStoreTest`, `ExtractedSourceTest`.
 
 ---
 

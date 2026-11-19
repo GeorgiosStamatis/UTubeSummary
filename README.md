@@ -147,7 +147,7 @@ than #17 (signed with a different key).
 
 - **Share and re-run**: share a summary as Markdown (title, source link, key points, tags), see
   whether the app is fetching content or summarizing, cancel a running summary, and summarize a
-  History item again with another profile, language or length. The instant summary dialog has the
+  History item again with another profile, language or length. Summarizing the same input again reuses the text that was already downloaded or read (kept in memory only, last three inputs), so a second profile does not download the transcript again. The instant summary dialog has the
   same profile and language pickers
 
 - **Configurable LLM settings**: Custom API keys, base URLs, prompt customization, and summary lengths

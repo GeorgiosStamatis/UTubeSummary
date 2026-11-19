@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Two-pane History and Home on tablets/landscape
-- History: remove one summary, select and bulk delete/pin, sort
+- History: remove one, bulk delete/pin, sort
 - Summarize .txt/.md; Word tables; save as Markdown; export History
 - YouTube: fallback clients and clearer errors
 - Summarize again reuses the downloaded text
