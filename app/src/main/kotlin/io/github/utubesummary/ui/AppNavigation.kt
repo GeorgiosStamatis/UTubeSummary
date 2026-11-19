@@ -6,6 +6,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -52,6 +53,16 @@ fun AppNavigation(
                     backStack.add(targetRoute)
                 }
             }
+        }
+    }
+
+    // A link or summary shared into the app must be shown on Home, wherever the user is: only the top
+    // screen is composed, so Home would never read it while History or Settings is on top.
+    val startAction by appViewModel.appStartAction.collectAsState()
+    LaunchedEffect(startAction) {
+        if (startAction.content != null || startAction.initialSummary != null) {
+            val target = backStackForStartAction(backStack)
+            while (backStack.size > target.size) backStack.removeLastOrNull()
         }
     }
 

@@ -252,6 +252,8 @@ than #17 (signed with a different key).
 - Text files with a byte order mark or Windows line endings are read cleanly, and a text-to-speech chunk
   can no longer exceed the speech engine's limit by one character
 - The Settings list no longer stretches across a tablet
+- A link shared into the app while History or Settings is open now opens the Home screen (where profile and
+  language can be chosen) instead of staying behind the open screen
 
 **Security & privacy**
 

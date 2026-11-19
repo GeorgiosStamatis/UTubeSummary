@@ -58,7 +58,7 @@ failure with the case id, what you did and what you saw; for crashes add the Log
 | C13 | A YouTube video whose manual subtitles exist in several languages but not in English (and has no auto-generated captions) |
 
 **Priority tags.** Every case carries a tag: `P0` smoke (27 cases, about 45 minutes, run on every
-build), `P1` normal (63, run before a release), `P2` rare or cosmetic (37, run when the area
+build), `P1` normal (64, run before a release), `P2` rare or cosmetic (37, run when the area
 changed). See the [smoke run](#smoke-run-p0-only) below.
 
 **Test providers.** Cases that only need *a* model answer (sections 5–11, 13, 15) can use any provider or a
@@ -96,6 +96,7 @@ but only a device shows wiring mistakes. Run these once (they are mostly `P0`/`P
 | Injected IO dispatcher in the summarize, ask and import use cases | 4.1 (one summary end to end), 7.2 (cancel), 10.1 (ask), 12.1 (import) |
 | YouTube client profiles, fallback chain and error handling (`YouTubeClient.kt`, `YouTubeFallback.kt`) | 4.1, 4.3, 4.4 (private/removed/no subtitles keep their texts), 8.4 (airplane mode says no internet), 4.17, 4.18 |
 | Subtitle ranking, wanted subtitle language from the summary language, transcript language in `ExtractedContent` | 4.1, 4.3, 4.18, 6.3 |
+| Shared link while History/Settings is open goes to Home (`backStackForStartAction`) | 13.9, 13.1, 13.4, 11.11 (Summarize again) |
 | Profile ids moved to the model layer | 5.1, 5.5, 5.6, 11.9, 11.14 |
 
 ---
@@ -496,6 +497,14 @@ sent until you tap Summarize. A web page link `utubesummary://clipboard` in a br
 *Expected:* the dialog uses up to about 90% of the height, content is scrollable; in portrait about
 55%.
 
+**13.9 `P1` Share while another screen is open.** Open **History**, then share a YouTube link to the app (not the
+instant dialog). *Expected:* the app shows **Home** with the link in the input and the current Profile, Language
+and Length selectors, so they can be changed before summarizing; pressing Back on Home leaves the app (History is
+not left behind). Repeat with **Settings** and **Advanced Summary Setup** open, with the instant dialog's “Open in
+app” while History is open, and while Home is already open (unchanged). During the first-run tutorial the link
+appears on Home after the tutorial. *Unit-tested:* the back-stack rule (`NavBackStackTest`); the device check is the
+real hand-over.
+
 ---
 
 ## 14. Process death and rotation
@@ -641,7 +650,7 @@ Run: `./gradlew testGmsDebugUnitTest` (CI does it on every push).
 | Layout and display rules | `WindowLayoutTest`, `HistorySectionsTest`, `HistoryDateSectionTest`, `ResultStalenessTest`, `SummaryCardRulesTest`, `ReorderableListStateTest`, `LlmSwitcherStateTest` |
 | Title and author choice | `TitleAndAuthorTest`, `ArticleExtractorToolTest` |
 | Text to speech text, text files, picker types | `SpeechChunksTest`, `MarkdownTextTest`, `TextDecodingTest`, `SupportedFileTypesTest`, `FileKindTest` |
-| Share intents (what is summarized, auto start) | `IncomingShareTest` |
+| Share intents (what is summarized, auto start) and the back stack after a share | `IncomingShareTest`, `NavBackStackTest` |
 | Search state | `SettingsSearchStateTest`, `HistorySearchStateTest` |
 | Layering of the code (ui/vm/domain/model imports) | `ArchitectureRulesTest` |
 
