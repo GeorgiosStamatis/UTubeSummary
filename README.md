@@ -79,6 +79,8 @@ than #17 (signed with a different key).
 
 ## 📖 Features
 
+A step-by-step guide for users is in [docs/user_guide.md](docs/user_guide.md).
+
 - **Summarize multiple media types**
 
 | media        | supported types                     |
@@ -147,7 +149,7 @@ than #17 (signed with a different key).
 
 - **Share and re-run**: share a summary as Markdown (title, source link, key points, tags), see
   whether the app is fetching content or summarizing, cancel a running summary, and summarize a
-  History item again with another profile, language or length. Summarizing the same input again reuses the text that was already downloaded or read (kept in memory only, last three inputs), so a second profile does not download the transcript again. The instant summary dialog has the
+  History item again with another profile, language or length. Summarizing the same input again reuses the text that was already downloaded or read (kept in memory only, last three inputs), so a second profile does not download the transcript again (use **Update** to refresh it). The instant summary dialog has the
   same profile and language pickers
 
 - **Configurable LLM settings**: Custom API keys, base URLs, prompt customization, and summary lengths
@@ -278,7 +280,8 @@ than #17 (signed with a different key).
 **Project**
 
 - Version 2.2.0 (since 2.1.0: tablet and landscape layouts, History management, files in and out, more
-  robust YouTube extraction; the database migration 2 to 3 keeps the existing History)
+  robust YouTube extraction, History **Update**, reuse of the downloaded text for the same input; the
+  database migration 2 to 3 keeps the existing History)
 - Renamed to UTubeSummary with a new app id (`io.github.utubesummary`): it installs next to the
   original app and does not share its data
 - Storage identifiers renamed: Room database `utubesummary_db` and Keystore alias
@@ -318,6 +321,10 @@ The app follows Google's [official Android Architecture Recommendations](https:/
 - **Injected seams**: time, ids and the IO dispatcher are injected into the use cases (`Clock`,
   `IdGenerator` and `@IoDispatcher` in `domain/provider/`), so they are tested with fixed values and in
   virtual time; the tests share in-memory fakes in `testutil/`.
+- **History Update**: `UpdateHistoryEntryUseCase` fetches the source again (`LlmGateway.extractContent`), plans
+  with the pure `planUpdate` which summaries are outdated (each result stores a `sourceFingerprint`, a hash of the
+  text it was made from) and makes them again through `SummarizeContentUseCase`, which reuses the text kept in
+  `SourceTextStore`.
 - **YouTube extraction**: the client identities (`ANDROID_LEGACY`, `ANDROID_FULL`, `IOS`) and their order
   are in `llm/tools/YouTubeClient.kt`; the pure policy `runAttempts` (`YouTubeFallback.kt`) uses the first
   that works and tells a restricted video, a video without subtitles and a failed extraction apart.
