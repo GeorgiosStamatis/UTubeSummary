@@ -54,6 +54,7 @@ YouTube client versions live in `YouTubeClient.kt`; check them when YouTube extr
 
 > [!TIP]
 > Coding agents should use the `android-cli` skill for CLI workflows, SDK management, running/debugging apps on emulators/devices, UI inspection, and taking screenshots.
+> The project skills live in `.agents/skills/` and are mirrored in `.claude/skills/` for Claude Code; keep both copies in sync.
 
 ---
 
