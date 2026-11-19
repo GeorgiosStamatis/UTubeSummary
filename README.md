@@ -21,6 +21,9 @@
 
 </div>
 
+> 📦 **Development has moved to [Synopta](https://github.com/GeorgiosStamatis/Synopta).** This repository is
+> kept as it is and gets no further updates. Synopta continues its full history under a new name and app id.
+
 > **UTubeSummary is a fork of [SummaryExpressive](https://github.com/kid1412621/SummaryExpressive)**
 > by [kid1412621](https://github.com/kid1412621) and contributors, licensed under the
 > [GNU GPL v3](LICENSE.txt). Full credit for the original app goes to them. See
