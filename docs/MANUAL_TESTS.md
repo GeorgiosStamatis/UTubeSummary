@@ -58,7 +58,7 @@ failure with the case id, what you did and what you saw; for crashes add the Log
 | C13 | A YouTube video whose manual subtitles exist in several languages but not in English (and has no auto-generated captions) |
 
 **Priority tags.** Every case carries a tag: `P0` smoke (27 cases, about 45 minutes, run on every
-build), `P1` normal (65, run before a release), `P2` rare or cosmetic (37, run when the area
+build), `P1` normal (66, run before a release), `P2` rare or cosmetic (38, run when the area
 changed). See the [smoke run](#smoke-run-p0-only) below.
 
 **Test providers.** Cases that only need *a* model answer (sections 5–11, 13, 15) can use any provider or a
@@ -98,6 +98,7 @@ but only a device shows wiring mistakes. Run these once (they are mostly `P0`/`P
 | Subtitle ranking, wanted subtitle language from the summary language, transcript language in `ExtractedContent` | 4.1, 4.3, 4.18, 6.3 |
 | Shared link while History/Settings is open goes to Home (`backStackForStartAction`) | 13.9, 13.1, 13.4, 11.11 (Summarize again) |
 | Extracted text reused for the same input (`SummarySource.Extracted`, `SourceTextStore.putContent`) | 4.19, 4.1, 4.7, 5.3, 10.1 (Ask after a reused run), 11.2 |
+| History Update (`UpdateHistoryEntryUseCase`, `contentFingerprint`, `SourceTextStore.putContent`) | 11.16, 11.17, 11.2, 11.11, 4.19 |
 | Profile ids moved to the model layer | 5.1, 5.5, 5.6, 11.9, 11.14 |
 
 ---
@@ -455,6 +456,20 @@ even after that profile was renamed or deleted (the stored name remains).
 **11.15 `P2` Thumbnails.** YouTube entries show a small thumbnail (also imported/older ones); with the
 switch off or offline, an icon is shown instead; Settings shows no excessive cache (cap 50 MB).
 
+**11.16 `P1` Update an entry.** Summarize an article with three different profiles (one History entry, three
+summaries), open it and tap **Update**, confirm. *Expected:* the dialog names the number of summaries (3);
+“Updating 1/3…” counts up and can be cancelled; Logcat shows **one** download of the page; the three summaries are
+replaced (same profiles, languages and lengths) and the detail shows the new ones; a message says “Updated 3
+summaries”. Summaries made before this version have no fingerprint, so the first Update re-summarizes them once.
+Works the same for a YouTube entry (usually “Already up to date”, see 11.17) and in the tablet layout.
+*Unit-tested:* `UpdatePlanTest`, `UpdateHistoryEntryUseCaseTest`, `ContentFingerprintTest`, `HistoryViewModelTest`.
+
+**11.17 `P2` Update edge cases.** (a) Update again right away: *Expected:* “Already up to date”, no model call (no
+model traffic, no cost). (b) A **text** or **document** entry shows no Update button. (c) Delete a custom profile
+that an entry used, then Update: that summary is kept and the message says it was skipped. (d) Airplane mode: the
+normal “no internet” text, nothing changed. (e) **Cancel** while updating: the entry shows what was made again so
+far. (f) A page that changed (a test page you control) re-summarizes only the changed content; unchanged ones are kept.
+
 ---
 
 ## 12. Import and export
@@ -647,7 +662,7 @@ Run: `./gradlew testGmsDebugUnitTest` (CI does it on every push).
 | Summarize use case (also: result stamped with the injected clock, slow and cancelled requests in virtual time): provider choice, profile prompt, structured vs free-form, language, length, no secret in errors, cancellation, phase | `SummarizeContentUseCaseImplTest`, `SummarizeContentUseCaseTest`, `ActiveProviderTest`, `PromptsTest`, `SummaryLanguageTest`, `SummarizationProgressTest` |
 | Summary view model: cancel, replace, stale results, caching, length switch, chat | `SummaryViewModelTest`, `AskAboutContentUseCaseImplTest`, `QuestionPromptTest` |
 | Profiles: built-ins, editing/resetting, custom, sharing/import | `BuiltInProfilesTest`, `ResolveProfilesTest`, `UpdateSummaryProfilesUseCaseTest` (also generated ids), `ProfileShareTest` |
-| History model and storage: merge by variant, alternatives, remove, pin, escape search, undo restore | `HistoryResultsTest`, `HistoryRepositoryImplTest` (also merge timestamp), `HistoryMapperTest`, `HistoryLengthResultsConverterTest`, `RemoveHistoryResultUseCaseTest`, `HistoryUseCasesTest`, `HistoryFilterTest` |
+| History model and storage: merge by variant, alternatives, remove, pin, escape search, undo restore | `HistoryResultsTest`, `UpdatePlanTest`, `UpdateHistoryEntryUseCaseTest`, `ContentFingerprintTest`, `HistoryRepositoryImplTest` (also merge timestamp), `HistoryMapperTest`, `HistoryLengthResultsConverterTest`, `RemoveHistoryResultUseCaseTest`, `HistoryUseCasesTest`, `HistoryFilterTest` |
 | History view model: search, filters, sort, selection, bulk delete/pin, reopening an entry by id | `HistoryViewModelTest` |
 | Import/export | `VideoSummaryBackupParserTest`, `VideoSummaryBackupWriterTest`, `ImportVideoSummariesUseCaseTest`, `HistoryUseCasesTest` (export) |
 | Providers: URL normalization, called path of self-hosted servers, config use case, connection test requests, model parsing | `ProviderConfigUseCaseTest`, `OpenAiCompatibleEndpointTest`, `ProviderConfigTest`, `ProviderConnectionRequestTest`, `ProviderDialogButtonsTest`, `SettingsViewModelTest` |

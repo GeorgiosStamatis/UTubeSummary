@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - File or photo kept after the app is killed
-- Complete de/es/fr/it/pt translations
+- de/es/fr/it/pt translations
 - Settings list no longer stretches on tablets
 - Wrong YouTube subtitle language for dubbed videos
 - Shared link opens Home from any screen
