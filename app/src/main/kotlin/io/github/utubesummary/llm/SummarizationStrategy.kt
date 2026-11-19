@@ -37,7 +37,26 @@ data class ExtractedPayload(
 data class SummarizationOutcome(
     val summary: SummaryOutput,
     val sourceText: String,
+    /** What was extracted (title, author, language, text); kept so the same input is not extracted again. */
+    val extracted: ExtractedContent? = null,
 )
+
+/**
+ * The payload for a source whose text was already extracted: the same link and flags that the
+ * extraction nodes would have produced for [source]'s original input.
+ */
+internal fun payloadForExtracted(source: SummarySource.Extracted): ExtractedPayload =
+    when (val original = source.original) {
+        is SummarySource.Video -> ExtractedPayload(
+            content = source.content,
+            sourceLink = original.url,
+            isYoutube = YouTubeTranscriptTool.isYouTubeLink(original.url),
+            isBiliBili = BiliBiliSubtitleTool.isBiliBiliLink(original.url),
+        )
+        is SummarySource.Article -> ExtractedPayload(content = source.content, sourceLink = original.url)
+        is SummarySource.Document -> ExtractedPayload(content = source.content, sourceLink = original.uri)
+        else -> ExtractedPayload(content = source.content)
+    }
 
 data class SummarizationResult(
     val summaryText: String,
@@ -102,6 +121,10 @@ fun createSummarizationStrategy(
                 ExtractedPayload(content = content, sourceLink = source.uri)
             }
 
+            val nodeUseExtracted by node<SummarySource.Extracted, ExtractedPayload>("use_extracted_content") { source ->
+                payloadForExtracted(source)
+            }
+
             val nodePreparePlainText by node<SummarySource.Text, ExtractedPayload>("prepare_plain_text") { source ->
                 ExtractedPayload(content = ExtractedContent("Text Input", "", source.content))
             }
@@ -136,10 +159,17 @@ fun createSummarizationStrategy(
                         transformed { it as SummarySource.Text }
             )
 
+            edge(
+                nodeStart forwardTo nodeUseExtracted
+                        onCondition { it is SummarySource.Extracted }
+                        transformed { it as SummarySource.Extracted }
+            )
+
             edge(nodeExtractArticle forwardTo nodeFinish)
             edge(nodeExtractYoutube forwardTo nodeFinish)
             edge(nodeExtractBiliBili forwardTo nodeFinish)
             edge(nodeExtractFile forwardTo nodeFinish)
+            edge(nodeUseExtracted forwardTo nodeFinish)
             edge(nodePreparePlainText forwardTo nodeFinish)
         }
 
@@ -191,7 +221,7 @@ fun createSummarizationStrategy(
                 errorReason = structuredResult?.errorReason,
             )
 
-            SummarizationOutcome(summary = output, sourceText = textToSummarize)
+            SummarizationOutcome(summary = output, sourceText = textToSummarize, extracted = payload.content)
         }
 
         edge(nodeStart forwardTo contentExtractorSubgraph)

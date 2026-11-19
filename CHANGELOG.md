@@ -11,17 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Two-pane History and Home on tablets and in landscape
+- Two-pane History and Home on tablets/landscape
 - History: remove one summary, select and bulk delete/pin, sort
 - Summarize .txt/.md; Word tables; save as Markdown; export History
 - YouTube: fallback clients and clearer errors
+- Summarize again reuses the downloaded text
 
 ### Fixed
 
 - File or photo kept after the app is killed
-- More German, Spanish, French, Italian, Portuguese texts
+- Complete de/es/fr/it/pt translations
 - Settings list no longer stretches on tablets
-- Wrong-language YouTube subtitles for dubbed videos
+- Wrong YouTube subtitle language for dubbed videos
 - Shared link opens Home from any screen
 
 ## [2.1.0] - 2026-11-17

@@ -3,6 +3,7 @@ package io.github.utubesummary.data.provider
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
+import io.github.utubesummary.model.ExtractedContent
 
 class InMemorySourceTextStoreTest {
 
@@ -27,5 +28,27 @@ class InMemorySourceTextStoreTest {
         assertEquals("1", store.get("a"))
         assertEquals("3", store.get("c"))
         assertEquals("4", store.get("d"))
+    }
+
+    @Test
+    fun `stores the whole extraction and returns its text`() {
+        val store = InMemorySourceTextStore()
+        val content = ExtractedContent(title = "T", author = "A", content = "body", languageCode = "en")
+
+        store.putContent("a", content)
+
+        assertEquals(content, store.getContent("a"))
+        assertEquals("body", store.get("a"))
+        assertNull(store.getContent("missing"))
+    }
+
+    @Test
+    fun `a text only entry has no title or author of its own`() {
+        val store = InMemorySourceTextStore()
+
+        store.put("a", "text")
+
+        assertEquals("text", store.getContent("a")!!.content)
+        assertNull(store.getContent("a")!!.languageCode)
     }
 }

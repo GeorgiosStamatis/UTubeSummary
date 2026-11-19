@@ -20,6 +20,7 @@ import io.github.utubesummary.llm.LlmGateway
 import io.github.utubesummary.llm.SummarizationRequest
 import io.github.utubesummary.llm.SummarizationProgress
 import io.github.utubesummary.model.DEFAULT_PROFILE_ID
+import io.github.utubesummary.model.ExtractedContent
 import io.github.utubesummary.model.HistoryLengthResult
 import io.github.utubesummary.model.HistorySummary
 import io.github.utubesummary.model.SummaryLength
@@ -101,14 +102,18 @@ class SummarizeContentUseCaseImpl @Inject constructor(
             )
 
             val progressId = progress.start()
+            // The same input was summarized before in this session: its extracted text is still in
+            // memory, so it is not downloaded or read again (plain text has nothing to extract).
+            val stored = if (source is SummarySource.Text) null else sourceTextStore.getContent(text)
+            val toSummarize = if (stored != null) SummarySource.Extracted(source, stored) else source
             val outcome = try {
-                llmGateway.summarize(request, source)
+                llmGateway.summarize(request, toSummarize)
             } finally {
                 progress.finish(progressId)
             }
             val summaryOutput = outcome.summary
             // Kept in memory only, so questions can be asked about this content.
-            sourceTextStore.put(text, outcome.sourceText)
+            sourceTextStore.putContent(text, outcome.extracted ?: ExtractedContent(content = outcome.sourceText))
 
             saveSummaryToHistory(
                 summaryOutput = summaryOutput,
@@ -173,7 +178,7 @@ class SummarizeContentUseCaseImpl @Inject constructor(
                 subtype = VideoSubtype.fromUrl(source.url)
             }
 
-            is SummarySource.None -> return
+            is SummarySource.Extracted, is SummarySource.None -> return
         }
 
         val initialResult = HistoryLengthResult(

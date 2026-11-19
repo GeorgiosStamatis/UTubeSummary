@@ -39,6 +39,8 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.currentTime
+import io.github.utubesummary.model.ExtractedContent
+import io.github.utubesummary.model.SummaryType
 
 class SummarizeContentUseCaseImplTest {
 
@@ -74,9 +76,12 @@ class SummarizeContentUseCaseImplTest {
     }
 
     private class MapSourceTextStore : SourceTextStore {
-        val texts = mutableMapOf<String, String>()
-        override fun put(key: String, text: String) { texts[key] = text }
-        override fun get(key: String): String? = texts[key]
+        val contents = mutableMapOf<String, ExtractedContent>()
+        val texts: Map<String, String> get() = contents.mapValues { it.value.content }
+        override fun put(key: String, text: String) { contents[key] = ExtractedContent(content = text) }
+        override fun get(key: String): String? = contents[key]?.content
+        override fun putContent(key: String, content: ExtractedContent) { contents[key] = content }
+        override fun getContent(key: String): ExtractedContent? = contents[key]
     }
 
     private val progress = SummarizationProgress()
@@ -113,7 +118,7 @@ class SummarizeContentUseCaseImplTest {
 
     private val useCase = newUseCase()
 
-    private fun outcome(text: String = "The summary") = SummarizationOutcome(
+    private fun outcome(text: String = "The summary", extracted: ExtractedContent? = null) = SummarizationOutcome(
         summary = SummaryOutput(
             title = "Title",
             author = "Author",
@@ -123,6 +128,7 @@ class SummarizeContentUseCaseImplTest {
             length = SummaryLength.MEDIUM,
         ),
         sourceText = "source text",
+        extracted = extracted,
     )
 
     private fun selectOpenAi() {
@@ -305,5 +311,85 @@ class SummarizeContentUseCaseImplTest {
         gateway.result = { throw RuntimeException("boom") }
         useCase("https://example.com/post")
         assertNull(progress.phase.value)
+    }
+
+    private val videoLink = "https://youtu.be/dQw4w9WgXcQ"
+    private val extraction = ExtractedContent(
+        title = "Real title",
+        author = "A channel",
+        content = "the transcript text",
+        languageCode = "en",
+    )
+
+    @Test
+    fun `the same input is not extracted again`() = runTest {
+        selectOpenAi()
+        gateway.result = { outcome(extracted = extraction) }
+
+        useCase(videoLink)
+        assertTrue(gateway.lastSource is SummarySource.Video)
+
+        useCase(videoLink, profileId = "quick_brief")
+        val second = gateway.lastSource as SummarySource.Extracted
+        assertEquals(SummarySource.Video(videoLink), second.original)
+        assertEquals(extraction, second.content)
+        assertEquals(2, gateway.calls)
+    }
+
+    @Test
+    fun `a reused extraction is saved with the original link and type`() = runTest {
+        selectOpenAi()
+        gateway.result = { outcome(extracted = extraction) }
+
+        useCase(videoLink)
+        useCase(videoLink, language = "fr")
+
+        assertEquals(2, history.added.size)
+        assertTrue(history.added.all { it.sourceLink == videoLink && it.type == SummaryType.VIDEO })
+    }
+
+    @Test
+    fun `another input is extracted on its own`() = runTest {
+        selectOpenAi()
+        gateway.result = { outcome(extracted = extraction) }
+
+        useCase(videoLink)
+        useCase("https://example.com/post")
+
+        assertTrue(gateway.lastSource is SummarySource.Article)
+    }
+
+    @Test
+    fun `plain text is never taken from the store`() = runTest {
+        selectOpenAi()
+        gateway.result = { outcome() }
+
+        useCase("some plain words that are summarized as they are")
+        useCase("some plain words that are summarized as they are", profileId = "quick_brief")
+
+        assertTrue(gateway.lastSource is SummarySource.Text)
+    }
+
+    @Test
+    fun `a failed first run stores nothing, so the next run extracts again`() = runTest {
+        selectOpenAi()
+        gateway.result = { throw RuntimeException("boom") }
+        useCase(videoLink)
+
+        gateway.result = { outcome(extracted = extraction) }
+        useCase(videoLink)
+
+        assertTrue(gateway.lastSource is SummarySource.Video)
+    }
+
+    @Test
+    fun `the stored text is still available for questions after a reused run`() = runTest {
+        selectOpenAi()
+        gateway.result = { outcome(extracted = extraction) }
+
+        useCase(videoLink)
+        useCase(videoLink, profileId = "quick_brief")
+
+        assertEquals("the transcript text", store.get(videoLink))
     }
 }

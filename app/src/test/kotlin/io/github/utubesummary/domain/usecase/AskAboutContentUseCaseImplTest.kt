@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.Locale
+import io.github.utubesummary.model.ExtractedContent
 
 class AskAboutContentUseCaseImplTest {
 
@@ -52,6 +53,8 @@ class AskAboutContentUseCaseImplTest {
         val texts = mutableMapOf<String, String>()
         override fun put(key: String, text: String) { texts[key] = text }
         override fun get(key: String): String? = texts[key]
+        override fun putContent(key: String, content: ExtractedContent) { texts[key] = content.content }
+        override fun getContent(key: String): ExtractedContent? = texts[key]?.let { ExtractedContent(content = it) }
     }
     private val gateway = FakeGateway()
     private val prefs = FakeUserPreferencesRepository().apply {
