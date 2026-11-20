@@ -1,4 +1,4 @@
-# UTubeSummary 2.2.0 — manual test cases
+# UTubeSummary 0.1.0 — manual test cases
 
 > **Status (branch `ccr-cad0612b-nqwuv3`, after batch 7 and the follow-up cleanups):** CI compiles both flavors and the
 > unit tests pass. Since the first version of this document the app gained: the tablet/landscape layouts
@@ -118,7 +118,7 @@ pinned/deleted; no profile label is wrong (older entries count as “Default”)
 `adb run-as … ` and start the app. *Expected:* the app starts with default settings instead of
 closing after the tutorial.
 
-**1.4 `P2` Version label.** Settings footer shows `2.2.0` (CI builds: `2.2.0-ci<N>+<commit>`) and each new
+**1.4 `P2` Version label.** Settings footer shows `0.1.0` (CI builds: `0.1.0-ci<N>+<commit>`) and each new
 CI build installs over the previous one.
 
 ---

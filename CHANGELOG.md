@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-20
+
+First release of this fork, for personal use (no store listing). Includes everything below 2.2.0.
+
 ### Removed
 
-- Google Play "Rate us" and Discord links in Settings (personal use, no store listing)
+- Google Play "Rate us" and Discord links in Settings
 - Play Store upload from the release workflow
 
 ## [2.2.0] - 2026-11-18

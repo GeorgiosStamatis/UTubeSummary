@@ -72,7 +72,7 @@ There are 2 releases available:
 ### Installing test builds
 
 Each CI build has its own increasing version number (shown in Settings, e.g.
-`2.2.0-ci35+0f146ab`). Install the new APK **over** the previous one, always the same flavor
+`0.1.0-ci35+0f146ab`). Install the new APK **over** the previous one, always the same flavor
 (`gms` or `standalone`): it updates in place and keeps your AI provider, API key and history. You
 only need to uninstall first if Android says "App not installed", which happens for builds older
 than #17 (signed with a different key).
@@ -279,9 +279,10 @@ A step-by-step guide for users is in [docs/user_guide.md](docs/user_guide.md).
 
 **Project**
 
-- Version 2.2.0 (since 2.1.0: tablet and landscape layouts, History management, files in and out, more
-  robust YouTube extraction, History **Update**, reuse of the downloaded text for the same input; the
-  database migration 2 to 3 keeps the existing History)
+- First release of this fork: **0.1.0** (versionCode 1). It contains all the work done since the upstream
+  2.1.0 version (tablet and landscape layouts, History management, files in and out, more robust YouTube
+  extraction, History **Update**, reuse of the downloaded text for the same input), listed in the
+  changelog under 2.2.0
 - Renamed to UTubeSummary with a new app id (`io.github.utubesummary`): it installs next to the
   original app and does not share its data
 - Storage identifiers renamed: Room database `utubesummary_db` and Keystore alias
