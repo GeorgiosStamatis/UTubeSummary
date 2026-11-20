@@ -234,20 +234,6 @@ object SettingBadges {
     }
 
     @Composable
-    fun playStoreColors() = if (isSystemInDarkTheme()) {
-        Color(0xFF423415) to Color(0xFFFCD34D)
-    } else {
-        Color(0xFFFEFCE8) to Color(0xFFCA8A04)
-    }
-
-    @Composable
-    fun discordColors() = if (isSystemInDarkTheme()) {
-        Color(0xFF2B2E56) to Color(0xFFA5B4FC)
-    } else {
-        Color(0xFFEEF2FF) to Color(0xFF5865F2)
-    }
-
-    @Composable
     fun githubColors() = if (isSystemInDarkTheme()) {
         Color(0xFF2A2E35) to Color(0xFFCBD5E1)
     } else {

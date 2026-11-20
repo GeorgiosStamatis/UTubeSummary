@@ -1,0 +1,21 @@
+UTubeSummary
+Copyright (C) 2026 Georgios Stamatis
+
+UTubeSummary is free software: you can redistribute it and/or modify it under the terms of the
+GNU General Public License as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version. See LICENSE.txt.
+
+This program is a modified version of other GPL v3 software:
+
+- SummaryExpressive, Copyright (C) kid1412621 and contributors
+  https://github.com/kid1412621/SummaryExpressive
+- SummaryYou (the original idea), Copyright (C) talosross and contributors
+  https://github.com/talosross/SummaryYou
+
+Modifications by Georgios Stamatis, from November 2026. The changes are listed in README.md
+("What's different in this fork"), CHANGELOG.md and the git history of this repository.
+
+UTubeSummary is a personal-use project. It is not published on any app store and is not sold.
+
+Third-party libraries keep their own licenses (mostly Apache License 2.0 and MIT); Google ML Kit is
+used under Google's terms.

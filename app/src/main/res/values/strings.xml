@@ -97,8 +97,6 @@
     <string name="finishButton">Finish</string>
     <string name="continueButton">Continue</string>
     <string name="skip">Skip</string>
-    <string name="googlePlay">Google Play Store</string>
-    <string name="googlePlayDescription">Rate us</string>
     <string name="tutorial">Tutorial</string>
     <string name="tutorialDescription">Rewatch the Tutorial</string>
     <string name="noHistory">You haven\'t summarized anything yet.</string>
@@ -109,8 +107,6 @@
     <string name="shortcut_summarize_clipboard_short">Clipboard</string>
     <string name="shortcut_summarize_clipboard_long">Summarize from clipboard</string>
     <string name="instant_summarize">Instant Summarize</string>
-    <string name="discord">Discord Group</string>
-    <string name="discordDescription">Join our community</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="undo">Undo</string>

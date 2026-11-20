@@ -16,7 +16,6 @@ import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.StarRate
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
@@ -376,48 +375,6 @@ fun HelpSettingsGroup(
                 }
             },
             onClick = { onNav(Nav.Onboarding) }
-        )
-
-        // Rate on Google Play
-        SettingItem(
-            title = stringResource(id = R.string.googlePlay),
-            subtitle = stringResource(id = R.string.googlePlayDescription),
-            position = GroupPosition.MIDDLE,
-            iconBadge = {
-                val (bg, fg) = SettingBadges.playStoreColors()
-                SettingIconBadge(bg, fg) {
-                    Icon(
-                        Icons.Rounded.StarRate,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            },
-            onClick = {
-                val url = "https://play.google.com/store/apps/details?id=${context.packageName}"
-                context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
-            }
-        )
-
-        // Discord
-        SettingItem(
-            title = stringResource(id = R.string.discord),
-            subtitle = stringResource(id = R.string.discordDescription),
-            position = GroupPosition.MIDDLE,
-            iconBadge = {
-                val (bg, fg) = SettingBadges.discordColors()
-                SettingIconBadge(bg, fg) {
-                    Icon(
-                        ImageVector.vectorResource(id = R.drawable.discord),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            },
-            onClick = {
-                val url = "https://discord.gg/WjN73wKTqd"
-                context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
-            }
         )
 
         // Open Source Code (GitHub)

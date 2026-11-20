@@ -21,8 +21,11 @@
 
 </div>
 
-> 📦 **Development has moved to [Synopta](https://github.com/GeorgiosStamatis/Synopta).** This repository is
-> kept as it is and gets no further updates. Synopta continues its full history under a new name and app id.
+> 🔒 **Personal-use project: never on the Play Store, never monetized.** UTubeSummary is built and installed
+> from this repository for personal use only. It will **not** be published on the Google Play Store or any
+> other app store, and it is **not** a commercial or monetizable product: no paid version, no in-app
+> purchases, no ads, no donations. Reason: reading YouTube and BiliBili subtitles uses the services'
+> unofficial interfaces, which their terms of service do not allow for published or commercial apps.
 
 > **UTubeSummary is a fork of [SummaryExpressive](https://github.com/kid1412621/SummaryExpressive)**
 > by [kid1412621](https://github.com/kid1412621) and contributors, licensed under the
@@ -47,10 +50,10 @@ documents with AI/LLM.
 
 ## 🔗 Downloads
 
-> ⚠️ **Coming soon for this fork.** UTubeSummary has no published release and no Play Store listing
-> yet. The sections below describe how releases are packaged. Until then you can try the latest
-> build: open the **Actions** tab, pick the latest **Build** run and download the
-> `UTubeSummary-debug-apks` artifact (debug APKs, GitHub login required).
+> ℹ️ UTubeSummary is distributed only as APK files from this repository, for personal use; there is no
+> Play Store listing and there never will be. Get the latest build from the **Actions** tab: pick the
+> latest **Build** run and download the `UTubeSummary-debug-apks` artifact (debug APKs, GitHub login
+> required), or a tagged release below if one exists.
 
 [![Get it on Github](https://images.weserv.nl/?url=https://s1.ax1x.com/2023/01/12/pSu1a36.png&h=80)](https://github.com/GeorgiosStamatis/UTubeSummary/releases)
 
@@ -65,12 +68,6 @@ There are 2 releases available:
   text from image, it got larger package size.
 
 - **gms** which allows user to download the model from Google Play Services, but GMS required.
-
-### Play Store
-
-The Play Store release bundled with gms version. This package is signed by Google managed key for
-simplicity, which means it's not compatible to update in Google Play Store if you installed a GitHub
-package previously.
 
 ### Installing test builds
 
@@ -290,7 +287,9 @@ A step-by-step guide for users is in [docs/user_guide.md](docs/user_guide.md).
 - Storage identifiers renamed: Room database `utubesummary_db` and Keystore alias
   `utubesummary_api_key_alias`. Existing history and API keys are not carried over
 - In-app "GitHub" links open this fork, and the upstream author's footer credit was removed
-- Google Play badges removed, because this fork has no Play Store listing
+- Google Play badges, the in-app "Rate us on Google Play" item and the Play upload step of the release
+  workflow removed, because this fork is for personal use and will never be on the Play Store
+- The in-app Discord link (the upstream project's community) removed
 - CI builds installable debug APKs on every push: each has its own increasing version number (shown
   in Settings), all share one debug signing key so they update in place, and the unit test suite
   covers the new features; `ArchitectureRulesTest` fails when a layer imports one it must not know

@@ -223,8 +223,6 @@
     <string name="onboardingSummarizeTitle">Coller et résumer</string>
     <string name="onboardingShareTitle">Superposition de partage instantané</string>
     <string name="onboardingHistoryTitle">Historique et recherche hors ligne</string>
-    <string name="discord">Groupe Discord</string>
-    <string name="discordDescription">Rejoignez notre communauté</string>
     <string name="next">Suivant</string>
     <string name="previous">Précédent</string>
     <string name="undo">Annuler</string>
@@ -269,8 +267,6 @@
     <string name="fileUnavailable">Le fichier n\'a pas pu être ouvert. Sélectionnez-le à nouveau ou vérifiez qu\'il est valide.</string>
     <string name="tooShort">Le contenu fourni est trop court.</string>
     <string name="skip">Passer</string>
-    <string name="googlePlay">Google Play Store</string>
-    <string name="googlePlayDescription">Évaluez-nous</string>
     <string name="tutorial">Tutoriel</string>
     <string name="tutorialDescription">Revoir le tutoriel</string>
     <string name="noHistory">Vous n\'avez encore rien résumé.</string>

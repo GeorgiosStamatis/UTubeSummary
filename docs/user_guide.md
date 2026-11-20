@@ -617,8 +617,6 @@ name.
 | Setting | What it does |
 |---|---|
 | **Tutorial** | *Rewatch the Tutorial.* |
-| **Google Play Store** | *Rate us.* Opens the store page. |
-| **Discord Group** | *Join our community.* |
 | **Open Source Code** | *Our GitHub repository.* |
 | **Version** (bottom) | Shows the app version. Tap it to copy the app information, handy when you report a problem. |
 

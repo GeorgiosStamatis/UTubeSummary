@@ -58,6 +58,21 @@ YouTube client versions live in `YouTubeClient.kt`; check them when YouTube extr
 
 ---
 
+## Risk assessment and project scope (owner's standing rule)
+
+- **Risk first.** Before proposing anything that touches distribution, money, accounts or third-party
+  services, state the risks clearly and plainly (terms-of-service breaches, store policy violations,
+  account suspension, legal action, privacy/GDPR, licensing), with how likely and how severe each one is.
+  Then let the owner decide. Never hide, soften or postpone a risk.
+- **Never propose risky monetization.** Do not suggest monetizing, selling or store-publishing anything
+  that could breach a provider's terms (e.g. YouTube, BiliBili), get a developer account closed, or lead to
+  legal action.
+- **Scope of this repository:** UTubeSummary is for **personal use only**. It will never be published on
+  the Google Play Store or any other store and is not monetizable (no paid version, in-app purchases, ads
+  or donations). Do not add store listings, billing, ads, Play upload steps or store links.
+
+---
+
 ## Development Guidelines
 
 ### Code Style
@@ -140,7 +155,7 @@ The app uses the [Koog Agents library](https://docs.koog.ai/) for orchestrating 
 
 ### Build Flavors & Distribution
 The app defines two product flavors under the `distribution` dimension (`app/build.gradle.kts`):
-- **`gms`**: Uses Google Play Services ML Kit (`com.google.android.gms:play-services-mlkit-text-recognition`). Smaller APK size, requires Google Play Services. Used for Google Play Store releases (signed with Google-managed key).
+- **`gms`**: Uses Google Play Services ML Kit (`com.google.android.gms:play-services-mlkit-text-recognition`). Smaller APK size, requires Google Play Services (no Play Store release: the app is for personal use only).
 - **`standalone`**: Bundles ML model in the APK (`com.google.mlkit:text-recognition`). Larger package size, functions offline without Google Play Services.
 
 ### Project Structure

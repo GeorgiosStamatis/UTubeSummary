@@ -45,8 +45,6 @@
     <string name="finishButton">Fertig</string>
     <string name="continueButton">Weiter</string>
     <string name="skip">Überspringen</string>
-    <string name="googlePlay">Google Play Store</string>
-    <string name="googlePlayDescription">Bewerten Sie uns</string>
     <string name="tutorial">Tutorial</string>
     <string name="tutorialDescription">Wiederhole das Tutorial</string>
     <string name="noHistory">Du hast noch nichts zusammengefasst.</string>
@@ -205,8 +203,6 @@
     <string name="onboardingSummarizeTitle">Einfügen &amp; Zusammenfassen</string>
     <string name="onboardingShareTitle">Sofort-Teilen-Overlay</string>
     <string name="onboardingHistoryTitle">Verlauf &amp; Offline-Suche</string>
-    <string name="discord">Discord-Gruppe</string>
-    <string name="discordDescription">Tritt unserer Community bei</string>
     <string name="next">Weiter</string>
     <string name="previous">Zurück</string>
     <string name="undo">Rückgängig</string>

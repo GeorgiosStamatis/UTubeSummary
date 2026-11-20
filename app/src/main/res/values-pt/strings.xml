@@ -223,8 +223,6 @@
     <string name="onboardingSummarizeTitle">Colar e resumir</string>
     <string name="onboardingShareTitle">Sobreposição de partilha instantânea</string>
     <string name="onboardingHistoryTitle">Histórico e pesquisa offline</string>
-    <string name="discord">Grupo do Discord</string>
-    <string name="discordDescription">Junte-se à nossa comunidade</string>
     <string name="next">Seguinte</string>
     <string name="previous">Anterior</string>
     <string name="undo">Anular</string>
@@ -271,8 +269,6 @@
     <string name="tooLong">O conteúdo fornecido é demasiado longo.</string>
     <string name="rateLimit">Servidor sobrecarregado, tente novamente mais tarde.</string>
     <string name="skip">Saltar</string>
-    <string name="googlePlay">Google Play Store</string>
-    <string name="googlePlayDescription">Avalie-nos</string>
     <string name="tutorial">Tutorial</string>
     <string name="tutorialDescription">Rever o tutorial</string>
     <string name="noHistory">Ainda não resumiu nada.</string>

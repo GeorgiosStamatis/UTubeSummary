@@ -15,7 +15,6 @@ import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material.icons.rounded.Palette
-import androidx.compose.material.icons.rounded.StarRate
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
@@ -107,10 +106,6 @@ fun rememberSettingsSearchState(
     val useAutoExtractLinkSubtitle = stringResource(R.string.useAutoExtractLinkDescription)
     val tutorialTitle = stringResource(R.string.tutorial)
     val tutorialSubtitle = stringResource(R.string.tutorialDescription)
-    val googlePlayTitle = stringResource(R.string.googlePlay)
-    val googlePlaySubtitle = stringResource(R.string.googlePlayDescription)
-    val discordTitle = stringResource(R.string.discord)
-    val discordSubtitle = stringResource(R.string.discordDescription)
     val repoTitle = stringResource(R.string.repository)
     val repoSubtitle = stringResource(R.string.githubDescription)
 
@@ -162,10 +157,6 @@ fun rememberSettingsSearchState(
         useAutoExtractLinkSubtitle,
         tutorialTitle,
         tutorialSubtitle,
-        googlePlayTitle,
-        googlePlaySubtitle,
-        discordTitle,
-        discordSubtitle,
         repoTitle,
         repoSubtitle
     ) {
@@ -388,46 +379,6 @@ fun rememberSettingsSearchState(
                     }
                 },
                 onClick = { onNav(Nav.Onboarding) }
-            ),
-            SearchableSetting(
-                id = "google_play",
-                title = googlePlayTitle,
-                subtitle = googlePlaySubtitle,
-                group = "Help & Community",
-                iconBadge = {
-                    val (bg, fg) = SettingBadges.playStoreColors()
-                    SettingIconBadge(bg, fg) {
-                        Icon(
-                            Icons.Rounded.StarRate,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                },
-                onClick = {
-                    val url = "https://play.google.com/store/apps/details?id=${context.packageName}"
-                    context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
-                }
-            ),
-            SearchableSetting(
-                id = "discord",
-                title = discordTitle,
-                subtitle = discordSubtitle,
-                group = "Help & Community",
-                iconBadge = {
-                    val (bg, fg) = SettingBadges.discordColors()
-                    SettingIconBadge(bg, fg) {
-                        Icon(
-                            ImageVector.vectorResource(id = R.drawable.discord),
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                },
-                onClick = {
-                    val url = "https://discord.gg/WjN73wKTqd"
-                    context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
-                }
             ),
             SearchableSetting(
                 id = "github",
