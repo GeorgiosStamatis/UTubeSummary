@@ -290,11 +290,12 @@ A step-by-step guide for users is in [docs/user_guide.md](docs/user_guide.md).
 
 **Project**
 
-- First release of this fork: **0.1.0** (versionCode 1); **0.1.1** (versionCode 2) adds the NVIDIA provider
-  and the model search, and the release notes are now filled in automatically. It contains all the work done since the upstream
+- First release of this fork: **0.1.0** (versionCode 1). It contains all the work done since the upstream
   2.1.0 version (tablet and landscape layouts, History management, files in and out, more robust YouTube
   extraction, History **Update**, reuse of the downloaded text for the same input), listed in the
   changelog under 2.2.0
+- **0.1.1** (versionCode 2): the NVIDIA provider and the model search; release notes are now filled in
+  automatically from the changelog
 - Renamed to UTubeSummary with a new app id (`io.github.utubesummary`): it installs next to the
   original app and does not share its data
 - Storage identifiers renamed: Room database `utubesummary_db` and Keystore alias
