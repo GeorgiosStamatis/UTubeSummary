@@ -1,0 +1,45 @@
+name: Release notes
+
+# Fills in (or refreshes) the description of existing GitHub releases from CHANGELOG.md / the commit log.
+# Start it by hand: leave "tag" empty to update every v* release.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to update (for example v0.1.1); empty = all v* tags'
+        required: false
+        default: ''
+
+jobs:
+  update-notes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out repository (full history and tags)
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Update the release notes
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          set -e
+          if [ -n "$INPUT_TAG" ]; then
+            tags="$INPUT_TAG"
+          else
+            tags=$(git tag --list 'v*' --sort=v:refname)
+          fi
+          for tag in $tags; do
+            if ! gh release view "$tag" >/dev/null 2>&1; then
+              echo "No release for $tag, skipping"
+              continue
+            fi
+            version="${tag#v}"; version="${version%%(*}"
+            .github/scripts/release-notes.sh "$tag" > "notes-$tag.md"
+            gh release edit "$tag" --title "Release $version" --notes-file "notes-$tag.md"
+            echo "Updated $tag"
+          done

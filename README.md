@@ -70,6 +70,11 @@ There are 2 releases available:
 
 - **gms** which allows user to download the model from Google Play Services, but GMS required.
 
+Each release page lists **what is included**: the text is generated automatically from the matching
+`CHANGELOG.md` section (or, without one, from the commit subjects since the previous release) when a `v*`
+tag is pushed. To fill in or refresh the notes of existing releases, run the **Release notes** workflow from
+the Actions tab (leave the tag empty to update all of them).
+
 ### Installing test builds
 
 Each CI build has its own increasing version number (shown in Settings, e.g.
@@ -285,7 +290,8 @@ A step-by-step guide for users is in [docs/user_guide.md](docs/user_guide.md).
 
 **Project**
 
-- First release of this fork: **0.1.0** (versionCode 1). It contains all the work done since the upstream
+- First release of this fork: **0.1.0** (versionCode 1); **0.1.1** (versionCode 2) adds the NVIDIA provider
+  and the model search, and the release notes are now filled in automatically. It contains all the work done since the upstream
   2.1.0 version (tablet and landscape layouts, History management, files in and out, more robust YouTube
   extraction, History **Update**, reuse of the downloaded text for the same input), listed in the
   changelog under 2.2.0

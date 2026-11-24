@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           submodules: true
+          fetch-depth: 0
 
       - name: Set up Java
         uses: actions/setup-java@v6
@@ -63,10 +64,13 @@ jobs:
           VERSION_NAME=$(echo "$TAG_NAME" | sed -n 's/^v\([^(]*\).*$/\1/p') # Extracts 1.2.3
           VERSION_CODE=$(echo "$TAG_NAME" | sed -n 's/.*(\([0-9]*\)).*$/\1/p') # Extracts 45
 
-          # Fallback to gradle file if parsing tag fails or if you prefer this method
-          if [ -z "$VERSION_NAME" ] || [ -z "$VERSION_CODE" ]; then
-            echo "Could not parse version from tag, falling back to build.gradle.kts"
+          # Each value falls back to the gradle file on its own (a tag like v0.1.1 has no code)
+          if [ -z "$VERSION_NAME" ]; then
+            echo "Could not parse the version name from the tag, using build.gradle.kts"
             VERSION_NAME=$(grep -E 'versionName\s' app/build.gradle.kts | sed -n 's/.*versionName\s*=\s*["'\'']\([^"'\'']*\)["'\''].*/\1/p')
+          fi
+          if [ -z "$VERSION_CODE" ]; then
+            echo "Could not parse the version code from the tag, using build.gradle.kts"
             VERSION_CODE=$(grep 'versionCode' app/build.gradle.kts | sed -n 's/.*versionCode\s*=\s*\([0-9]*\).*/\1/p')
           fi
 
@@ -75,6 +79,9 @@ jobs:
           echo "Tag: ${TAG_NAME}"
           echo "Version Name: ${VERSION_NAME}"
           echo "Version Code: ${VERSION_CODE}"
+
+      - name: Build release notes
+        run: .github/scripts/release-notes.sh "${GITHUB_REF#refs/tags/}" > release-notes.md
 
       - name: Create release folder
         run: mkdir -p ${{ env.APK_DIR }}
@@ -91,6 +98,7 @@ jobs:
           name: "Release ${{ env.VERSION_NAME }} (${{ env.VERSION_CODE }})"
           prerelease: false
           draft: false
+          body_path: release-notes.md
           files: |
             ${{ env.APK_DIR }}/*.apk
 
