@@ -217,4 +217,7 @@
     <string name="history_update_partial">已更新 %2$d 条中的 %1$d 条摘要；其余失败</string>
     <string name="history_update_up_to_date">已是最新</string>
     <string name="history_update_cancelled">更新已取消</string>
+    <string name="searchModel">搜索模型</string>
+    <string name="useTypedModel">使用“%1$s”</string>
+    <string name="noModelsMatch">没有匹配的模型</string>
 </resources>

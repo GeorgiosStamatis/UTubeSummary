@@ -206,7 +206,9 @@
     <string name="setModel">Seleccionar modelo</string>
     <string name="setModelDescription">Selecciona el modelo LLM para el resumen</string>
     <string name="manageModels">Gestionar modelos</string>
-    <string name="addModel">Añadir modelo</string>
+    <string name="searchModel">Buscar modelo</string>
+    <string name="useTypedModel">Usar «%1$s»</string>
+    <string name="noModelsMatch">Ningún modelo coincide con la búsqueda</string>
     <string name="editModel">Editar modelo</string>
     <string name="deleteModel">Eliminar modelo</string>
     <string name="resetToDefaultModels">Restablecer valores predeterminados</string>

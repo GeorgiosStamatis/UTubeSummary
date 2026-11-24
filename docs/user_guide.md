@@ -129,16 +129,19 @@ After **Next**, or any time via *Settings → Select Model*, the dialog **Manage
 
 - **Select a model:** tap a row. The selected row is highlighted. Tap **OK** to confirm (disabled while no model
   is selected).
-- **Add a model:** type or paste the model name into **Add Model** and tap the **+** button (or the keyboard's
-  Done key). The new model goes to the top of the list and is selected. Use this when your provider has a model
-  that is not in the list, or for self-hosted servers whose list is empty.
+- **Search a model:** type part of a name into **Search model**. The list shows only the models that contain it
+  (capitals do not matter); the cross clears the search. The keyboard's Done key selects the model when only one
+  matches. While a search is active the drag handles are hidden.
+- **Use a name that is not in the list:** when what you typed is not one of the models, a row **Use "name"**
+  appears above the list. Tap it to add the name at the top of the list and select it. Use this for a model your
+  provider has not listed yet, or for a server that has no list.
 - **Rename a model:** tap the pencil on its row, edit, and confirm with **Save edit** (or **Cancel edit**).
 - **Delete a model:** tap the bin on its row.
 - **Reorder:** drag a row by its handle (**Drag to reorder**).
 - **Reset:** puts the list back to how it was when you opened the dialog (only active after a change).
 - **Cancel** closes without saving.
 
-If you see **No models configured. Please configure in Settings.** add at least one model name here.
+If you see **No models configured. Please configure in Settings.** tap **Test** in *AI Provider* to load the list, or type the model name in **Search model** and tap **Use "name"**.
 
 ### 2.5 Switch quickly between providers and models
 

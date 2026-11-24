@@ -186,7 +186,9 @@
     <string name="setModel">Modell auswählen</string>
     <string name="setModelDescription">Das LLM-Modell für die Zusammenfassung auswählen</string>
     <string name="manageModels">Modelle verwalten</string>
-    <string name="addModel">Modell hinzufügen</string>
+    <string name="searchModel">Modell suchen</string>
+    <string name="useTypedModel">„%1$s“ verwenden</string>
+    <string name="noModelsMatch">Keine passenden Modelle</string>
     <string name="editModel">Modell bearbeiten</string>
     <string name="deleteModel">Modell löschen</string>
     <string name="resetToDefaultModels">Auf Standard zurücksetzen</string>

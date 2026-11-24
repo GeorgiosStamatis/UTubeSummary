@@ -150,4 +150,7 @@
     <string name="history_update_partial">Оновлено %1$d із %2$d підсумків; решта не вдалася</string>
     <string name="history_update_up_to_date">Уже актуально</string>
     <string name="history_update_cancelled">Оновлення скасовано</string>
+    <string name="searchModel">Шукати модель</string>
+    <string name="useTypedModel">Використати «%1$s»</string>
+    <string name="noModelsMatch">Немає моделей за вашим запитом</string>
 </resources>

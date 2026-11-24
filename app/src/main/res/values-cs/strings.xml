@@ -153,5 +153,8 @@
     <string name="history_update_partial">Aktualizováno %1$d z %2$d shrnutí; ostatní selhala</string>
     <string name="history_update_up_to_date">Už je aktuální</string>
     <string name="history_update_cancelled">Aktualizace zrušena</string>
+    <string name="searchModel">Hledat model</string>
+    <string name="useTypedModel">Použít „%1$s“</string>
+    <string name="noModelsMatch">Hledání neodpovídá žádný model</string>
 </resources>
 

@@ -26,10 +26,10 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
@@ -47,6 +47,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -85,33 +86,39 @@ fun ModelSettingsDialog(
     }
     var selectedModel by remember(savedSelectedModel) { mutableStateOf(savedSelectedModel) }
 
-    var newModelText by remember { mutableStateOf("") }
-    var editingModelIndex by remember { mutableStateOf<Int?>(null) }
+    var query by remember { mutableStateOf("") }
+    var editingModel by remember { mutableStateOf<String?>(null) }
     var editingModelText by remember { mutableStateOf("") }
 
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
     val isChanged = modelsList != savedModelsList || selectedModel != savedSelectedModel
+    val visibleModels = filterModels(modelsList, query)
+    val typedModel = typedModelToUse(modelsList, query)
+    val isFiltering = query.isNotBlank()
+    val focusManager = LocalFocusManager.current
+    val searchLabel = stringResource(R.string.searchModel)
+    val noMatchText = stringResource(R.string.noModelsMatch)
 
     val reorderState = rememberReorderableListState(lazyListState) { fromIndex, toIndex ->
-        val updatedList = modelsList.toMutableList()
-        val item = updatedList.removeAt(fromIndex)
-        updatedList.add(toIndex, item)
-        modelsList = updatedList
+        // Indexes belong to the displayed list; they only match the full list when nothing is filtered.
+        if (!isFiltering) {
+            val updatedList = modelsList.toMutableList()
+            val item = updatedList.removeAt(fromIndex)
+            updatedList.add(toIndex, item)
+            modelsList = updatedList
+        }
     }
 
-    val addModel = {
-        val trimmed = newModelText.trim()
-        if (trimmed.isNotBlank()) {
-            if (!modelsList.contains(trimmed)) {
-                modelsList = listOf(trimmed) + modelsList
-            }
-            selectedModel = trimmed
-            newModelText = ""
-            scope.launch {
-                lazyListState.animateScrollToItem(0)
-            }
+    val useTypedModel = { name: String ->
+        if (name !in modelsList) {
+            modelsList = listOf(name) + modelsList
+        }
+        selectedModel = name
+        query = ""
+        scope.launch {
+            lazyListState.animateScrollToItem(0)
         }
     }
 
@@ -125,45 +132,37 @@ fun ModelSettingsDialog(
         },
         text = {
             Column(modifier = Modifier.heightIn(max = 480.dp)) {
-                // Add model input
-                Row(
+                // Search the provider's model list
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    label = { Text(searchLabel) },
+                    leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
+                    shape = MaterialTheme.shapes.large,
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedTextField(
-                        value = newModelText,
-                        onValueChange = { newModelText = it },
-                        label = { Text(stringResource(R.string.addModel)) },
-                        shape = MaterialTheme.shapes.large,
-                        singleLine = true,
-                        modifier = Modifier.weight(1f),
-                        trailingIcon = {
-                            ClickablePasteIcon(
-                                text = newModelText,
-                                onPaste = { newModelText = it.trim() },
-                                onClear = { newModelText = "" }
-                            )
-                        },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { addModel() })
-                    )
-                    FilledTonalIconButton(
-                        onClick = addModel,
-                        enabled = newModelText.isNotBlank(),
-                        shape = MaterialTheme.shapes.large,
-                        modifier = Modifier.padding(top = 4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Add,
-                            contentDescription = stringResource(R.string.addModel)
+                    trailingIcon = {
+                        ClickablePasteIcon(
+                            text = query,
+                            onPaste = { query = it.trim() },
+                            onClear = { query = "" }
                         )
-                    }
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {
+                        visibleModels.singleOrNull()?.let { selectedModel = it }
+                        focusManager.clearFocus()
+                    })
+                )
+
+                typedModel?.let { name ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    UseTypedModelRow(name = name, onClick = { useTypedModel(name) })
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                if (modelsList.isEmpty()) {
+                if (visibleModels.isEmpty()) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -172,7 +171,11 @@ fun ModelSettingsDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = stringResource(R.string.no_models_configured),
+                            text = if (modelsList.isEmpty()) {
+                                stringResource(R.string.no_models_configured)
+                            } else {
+                                noMatchText
+                            },
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -183,44 +186,48 @@ fun ModelSettingsDialog(
                         modifier = Modifier.weight(1f, fill = false),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        itemsIndexed(modelsList, key = { _, item -> item }) { index, model ->
+                        itemsIndexed(visibleModels, key = { _, item -> item }) { _, model ->
                             ModelListItem(
                                 model = model,
                                 isSelected = selectedModel == model,
-                                isEditing = editingModelIndex == index,
+                                isEditing = editingModel == model,
                                 editingText = editingModelText,
                                 reorderState = reorderState,
+                                canReorder = !isFiltering,
                                 onSelect = { selectedModel = model },
                                 onStartEdit = {
-                                    editingModelIndex = index
+                                    editingModel = model
                                     editingModelText = model
                                 },
                                 onEditingTextChange = { editingModelText = it },
                                 onSaveEdit = { text ->
                                     val trimmed = text.trim()
-                                    if (trimmed.isNotBlank()) {
+                                    val index = modelsList.indexOf(model)
+                                    if (trimmed.isNotBlank() && index >= 0) {
                                         val updatedList = modelsList.toMutableList()
-                                        val oldModel = updatedList[index]
                                         updatedList[index] = trimmed
                                         modelsList = updatedList
-                                        if (selectedModel == oldModel) {
+                                        if (selectedModel == model) {
                                             selectedModel = trimmed
                                         }
                                     }
-                                    editingModelIndex = null
+                                    editingModel = null
                                 },
-                                onCancelEdit = { editingModelIndex = null },
+                                onCancelEdit = { editingModel = null },
                                 onDelete = {
-                                    val updatedList = modelsList.toMutableList()
-                                    val removed = updatedList.removeAt(index)
-                                    modelsList = updatedList
-                                    if (selectedModel == removed) {
-                                        selectedModel = updatedList.getOrNull(
-                                            index.coerceAtMost(updatedList.size - 1)
-                                        ) ?: ""
+                                    val index = modelsList.indexOf(model)
+                                    if (index >= 0) {
+                                        val updatedList = modelsList.toMutableList()
+                                        updatedList.removeAt(index)
+                                        modelsList = updatedList
+                                        if (selectedModel == model) {
+                                            selectedModel = updatedList.getOrNull(
+                                                index.coerceAtMost(updatedList.size - 1)
+                                            ) ?: ""
+                                        }
                                     }
-                                    if (editingModelIndex == index) {
-                                        editingModelIndex = null
+                                    if (editingModel == model) {
+                                        editingModel = null
                                     }
                                 }
                             )
@@ -248,7 +255,8 @@ fun ModelSettingsDialog(
                     onClick = {
                         modelsList = savedModelsList
                         selectedModel = savedSelectedModel
-                        editingModelIndex = null
+                        editingModel = null
+                        query = ""
                     },
                     enabled = isChanged
                 ) {
@@ -269,6 +277,7 @@ private fun LazyItemScope.ModelListItem(
     isEditing: Boolean,
     editingText: String,
     reorderState: ReorderableListState,
+    canReorder: Boolean,
     onSelect: () -> Unit,
     onStartEdit: () -> Unit,
     onEditingTextChange: (String) -> Unit,
@@ -312,6 +321,7 @@ private fun LazyItemScope.ModelListItem(
                     model = model,
                     isSelected = isSelected,
                     reorderState = reorderState,
+                    canReorder = canReorder,
                     onSelect = onSelect,
                     onStartEdit = onStartEdit,
                     onDelete = onDelete
@@ -372,6 +382,7 @@ private fun ModelDisplayRow(
     model: String,
     isSelected: Boolean,
     reorderState: ReorderableListState,
+    canReorder: Boolean,
     onSelect: () -> Unit,
     onStartEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -424,10 +435,48 @@ private fun ModelDisplayRow(
                     modifier = Modifier.size(18.dp)
                 )
             }
-            ReorderDragHandle(
-                reorderState = reorderState,
-                key = model,
-                modifier = Modifier.size(28.dp)
+            if (canReorder) {
+                ReorderDragHandle(
+                    reorderState = reorderState,
+                    key = model,
+                    modifier = Modifier.size(28.dp)
+                )
+            } else {
+                Spacer(modifier = Modifier.size(28.dp))
+            }
+        }
+    }
+}
+
+/** "Use <name>": picks a model the provider's list does not contain. */
+@Composable
+private fun UseTypedModelRow(name: String, onClick: () -> Unit) {
+    val text = stringResource(R.string.useTypedModel, name)
+    Card(
+        onClick = onClick,
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+        ),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = 52.dp)
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Add,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f)
             )
         }
     }

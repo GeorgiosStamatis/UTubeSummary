@@ -181,4 +181,7 @@
     <string name="history_update_partial">%2$d件中%1$d件の要約を更新しました。残りは失敗しました</string>
     <string name="history_update_up_to_date">すでに最新です</string>
     <string name="history_update_cancelled">更新をキャンセルしました</string>
+    <string name="searchModel">モデルを検索</string>
+    <string name="useTypedModel">「%1$s」を使用</string>
+    <string name="noModelsMatch">一致するモデルがありません</string>
 </resources>

@@ -169,4 +169,7 @@
     <string name="history_update_partial">%2$d özetten %1$d tanesi güncellendi; diğerleri başarısız oldu</string>
     <string name="history_update_up_to_date">Zaten güncel</string>
     <string name="history_update_cancelled">Güncelleme iptal edildi</string>
+    <string name="searchModel">Model ara</string>
+    <string name="useTypedModel">\"%1$s\" kullan</string>
+    <string name="noModelsMatch">Aramayla eşleşen model yok</string>
 </resources>

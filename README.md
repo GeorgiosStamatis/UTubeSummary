@@ -115,7 +115,7 @@ A step-by-step guide for users is in [docs/user_guide.md](docs/user_guide.md).
 
 - **Video thumbnails in History**: small, cached YouTube thumbnails (optional, can be switched off)
 
-- **Custom Model Management**: Add, edit, delete, and drag-and-drop reorder models per provider with fallback to Koog defaults
+- **Custom Model Management**: Search the provider's model list (or use a typed name), edit, delete, and drag-and-drop reorder models per provider with fallback to Koog defaults
 
 - **Quick Model Switcher**: Easily switch providers and active models on the Home screen following your custom configured order
 

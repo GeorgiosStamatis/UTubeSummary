@@ -166,8 +166,9 @@ third as `https://…`. *Unit-tested:* the url rules (`ProviderConfigUseCaseTest
 no “you have to provide an API key” error. LM Studio / Custom Provider: optional token is accepted
 and not sent when blank. *Unit-tested:* how the server address maps to the called path (`OpenAiCompatibleEndpointTest`); the device check is the real connection.
 
-**3.9 `P2` Models: add, edit, delete, reorder.** In the model dialog add a custom model id, rename it,
-delete another, drag to reorder, then use **Reset to default**. *Expected:* each change is shown
+**3.9 `P2` Models: search, use a typed name, edit, delete, reorder.** In the model dialog type part of a name in
+**Search model** (the list narrows, drag handles disappear, clear brings them back), type an unlisted id and tap
+**Use "id"**, rename it, delete another, drag to reorder, then use **Reset to default**. *Expected:* each change is shown
 immediately, survives restart; reset restores the built-in list and first model.
 
 **3.10 `P1` Provider ordering and quick switcher.** Reorder providers in Settings. Long-press the indicator

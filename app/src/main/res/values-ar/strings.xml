@@ -156,4 +156,7 @@
     <string name="history_update_partial">تم تحديث %1$d من %2$d ملخصات؛ فشلت البقية</string>
     <string name="history_update_up_to_date">محدّث بالفعل</string>
     <string name="history_update_cancelled">أُلغي التحديث</string>
+    <string name="searchModel">البحث عن نموذج</string>
+    <string name="useTypedModel">استخدام \"%1$s\"</string>
+    <string name="noModelsMatch">لا توجد نماذج مطابقة للبحث</string>
 </resources>

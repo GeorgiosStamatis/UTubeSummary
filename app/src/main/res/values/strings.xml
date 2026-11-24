@@ -61,7 +61,9 @@
     <string name="setModel">Select Model</string>
     <string name="setModelDescription">Select the LLM model for the summary</string>
     <string name="manageModels">Manage Models</string>
-    <string name="addModel">Add Model</string>
+    <string name="searchModel">Search model</string>
+    <string name="useTypedModel">Use \"%1$s\"</string>
+    <string name="noModelsMatch">No models match your search</string>
     <string name="editModel">Edit Model</string>
     <string name="deleteModel">Delete Model</string>
     <string name="resetToDefaultModels">Reset to Default</string>
