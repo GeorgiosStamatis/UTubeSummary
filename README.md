@@ -210,6 +210,9 @@ A step-by-step guide for users is in [docs/user_guide.md](docs/user_guide.md).
 - **AI provider dialog**: built-in providers show their official URL (editable), a **Test** button
   checks the URL and API key, the model list is **filled in automatically** from the provider, and
   pasted URLs such as `https://openrouter.ai/api/v1` are normalized
+- **Manage Models search**: the "Add Model" box is now **Search model**, which filters the provider's
+  list; a **Use "name"** row selects a model the list does not contain (a new model, or a server
+  without a list). Drag handles are hidden while searching
 - Local and LAN addresses typed without a scheme (e.g. `192.168.1.10:1234`) default to `http://`
 - **New app icon and logo**: a play button above three lines of text, as adaptive and themed
   (monochrome) Android icons
