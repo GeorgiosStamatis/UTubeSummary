@@ -70,7 +70,7 @@ internal fun buildConnectionRequest(
             ConnectionRequest("$host/compatible-mode/v1/models", bearer)
         }
 
-        AIProvider.KIMI, AIProvider.MINIMAX -> ConnectionRequest(modelsUrl("v1"), bearer)
+        AIProvider.KIMI, AIProvider.MINIMAX, AIProvider.NVIDIA -> ConnectionRequest(modelsUrl("v1"), bearer)
 
         AIProvider.ZHIPU -> ConnectionRequest(modelsUrl("v4"), bearer)
 

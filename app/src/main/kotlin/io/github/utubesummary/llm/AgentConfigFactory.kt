@@ -30,6 +30,7 @@ object AgentConfigFactory {
             AIProvider.KIMI -> AIProvider.KIMI.models.first()
             AIProvider.MINIMAX -> AIProvider.MINIMAX.models.first()
             AIProvider.ZHIPU -> AIProvider.ZHIPU.models.first()
+            AIProvider.NVIDIA -> AIProvider.NVIDIA.models.first()
             // No built-in models: the user must add a model name in Settings.
             AIProvider.LM_STUDIO, AIProvider.CUSTOM -> throw SummaryException.ModelNotFoundException()
         }

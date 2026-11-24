@@ -1,12 +1,15 @@
 package io.github.utubesummary
 
 import io.github.utubesummary.data.AIProviderConfigEntity
+import ai.koog.prompt.llm.LLMCapability
 import io.github.utubesummary.llm.AIProvider
+import io.github.utubesummary.llm.AgentConfigFactory
 import io.github.utubesummary.model.ProviderConfig
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.util.Locale
 
 class AIProviderConfigTest {
 
@@ -191,6 +194,23 @@ class AIProviderConfigTest {
         AIProvider.entries.forEach {
             assertEquals(it.isMandatoryBaseUrl, it.defaultBaseUrl(en) == null, it.name)
         }
+    }
+
+    @Test
+    fun `NVIDIA is an OpenAI-compatible provider with an official endpoint and a key`() {
+        val nvidia = AIProvider.NVIDIA
+        assertEquals("NVIDIA", nvidia.id.display)
+        assertTrue(nvidia.isRequiredApiKey)
+        assertFalse(nvidia.isMandatoryBaseUrl)
+        assertEquals("https://integrate.api.nvidia.com/v1", nvidia.defaultBaseUrl(Locale.ENGLISH))
+        assertEquals("meta/llama-3.3-70b-instruct", nvidia.getEffectiveModel(null))
+        nvidia.models.forEach {
+            assertTrue(it.supports(LLMCapability.OpenAIEndpoint.Completions), it.id)
+        }
+        assertTrue(
+            AgentConfigFactory.resolveModel(nvidia, "mistralai/some-new-model")
+                .supports(LLMCapability.OpenAIEndpoint.Completions)
+        )
     }
 
     @Test

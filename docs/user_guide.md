@@ -74,7 +74,7 @@ you chose.
 
 | Provider | Needs | Notes |
 |---|---|---|
-| OpenAI, Gemini, Claude, DeepSeek, Mistral, OpenRouter, Qwen, Kimi, MiniMax, Zhipu | An API key | The official address is filled in for you. |
+| OpenAI, Gemini, Claude, DeepSeek, Mistral, OpenRouter, Qwen, Kimi, MiniMax, Zhipu, NVIDIA | An API key | The official address is filled in for you. |
 | Ollama | A server address | A key is not asked for. Enter the address of your own server, for example `192.168.1.10:11434`. |
 | LM Studio | A server address | A key (token) is optional. Example address: `http://192.168.1.10:1234/v1`. |
 | Custom Provider | A server address | Any OpenAI-compatible server. A key is optional. Example: `https://example.com/v1`. |

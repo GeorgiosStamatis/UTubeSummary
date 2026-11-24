@@ -1,0 +1,5 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:height="24dp" android:viewportHeight="24" android:viewportWidth="24" android:width="24dp">
+    <!-- Simple green "eye" mark (not the official logo). -->
+    <path android:fillColor="#76B900" android:pathData="M12,5C6.5,5 2.3,8.6 1,12c1.3,3.4 5.5,7 11,7s9.7,-3.6 11,-7C21.7,8.6 17.5,5 12,5zM12,16.5c-2.5,0 -4.5,-2 -4.5,-4.5s2,-4.5 4.5,-4.5 4.5,2 4.5,4.5 -2,4.5 -4.5,4.5z"/>
+    <path android:fillColor="#76B900" android:pathData="M12,9.5a2.5,2.5 0,1 0,0 5a2.5,2.5 0,1 0,0 -5z"/>
+</vector>

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- NVIDIA provider (build.nvidia.com models)
+
 ### Changed
 
 - Manage Models: "Add Model" is now "Search model" over the provider's list, with "Use name" for unlisted models

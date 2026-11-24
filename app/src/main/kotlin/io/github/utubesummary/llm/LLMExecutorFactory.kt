@@ -71,6 +71,7 @@ class LLMExecutorFactory(
             AIProvider.KIMI -> createKimiExecutor(apiKey, baseUrl, appLanguage)
             AIProvider.MINIMAX -> createMiniMaxExecutor(apiKey, baseUrl, appLanguage)
             AIProvider.ZHIPU -> createZhipuExecutor(apiKey, baseUrl, appLanguage)
+            AIProvider.NVIDIA -> createNvidiaExecutor(apiKey, baseUrl)
             AIProvider.LM_STUDIO, AIProvider.CUSTOM ->
                 createOpenAICompatibleExecutor(provider, apiKey, baseUrl)
         }
@@ -250,6 +251,22 @@ class LLMExecutorFactory(
             httpClientFactory = koogHttpClientFactory
         )
         return MultiLLMPromptExecutor(AIProvider.ZHIPU.id to client)
+    }
+
+    /** NVIDIA's hosted catalog (build.nvidia.com): OpenAI-compatible, `<url>/chat/completions`. */
+    private fun createNvidiaExecutor(apiKey: String, baseUrl: String?): PromptExecutor {
+        val defaultBaseUrl = AIProvider.NVIDIA.defaultBaseUrl(Locale.ENGLISH)!!
+        val finalBaseUrl = (baseUrl?.takeIf { it.isNotBlank() } ?: defaultBaseUrl).trimEnd('/')
+
+        val client = OpenAILLMClient(
+            apiKey,
+            settings = OpenAIClientSettings(
+                baseUrl = finalBaseUrl,
+                chatCompletionsPath = "chat/completions",
+            ),
+            httpClientFactory = koogHttpClientFactory
+        )
+        return MultiLLMPromptExecutor(AIProvider.NVIDIA.id to client)
     }
 
     /**

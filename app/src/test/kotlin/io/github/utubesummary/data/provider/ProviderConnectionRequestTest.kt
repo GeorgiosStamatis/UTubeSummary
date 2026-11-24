@@ -24,6 +24,14 @@ class ProviderConnectionRequestTest {
     }
 
     @Test
+    fun `nvidia lists its models at the integrate endpoint with a bearer token`() {
+        val request = build(AIProvider.NVIDIA)
+        assertEquals("https://integrate.api.nvidia.com/v1/models", request.url)
+        assertEquals("Bearer k", request.headers["Authorization"])
+        assertEquals("https://proxy.example/v1/models", build(AIProvider.NVIDIA, "https://proxy.example/v1/").url)
+    }
+
+    @Test
     fun `optional token is not sent when blank`() {
         val request = build(AIProvider.LM_STUDIO, "http://pc:1234", key = "")
         assertTrue(request.headers.isEmpty())

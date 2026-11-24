@@ -8,6 +8,7 @@ private val openAIEndpointProviders = setOf(
     AIProvider.KIMI,
     AIProvider.MINIMAX,
     AIProvider.ZHIPU,
+    AIProvider.NVIDIA,
     AIProvider.LM_STUDIO,
     AIProvider.CUSTOM,
 )

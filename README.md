@@ -18,6 +18,7 @@
 [![MiniMax](https://img.shields.io/badge/Minimax-E73562?logo=minimax&color=ffffff)](https://platform.minimax.io)
 [![Zhipu](https://img.shields.io/badge/Zhipu-2D2D2D?logo=z.ai)](https://z.ai/model-api)
 [![Qwen](https://img.shields.io/badge/Qwen-605CEC?logo=qwen&logoColor=fff)](https://qwen.ai/apiplatform)
+[![NVIDIA](https://img.shields.io/badge/NVIDIA-76B900?logo=nvidia&logoColor=fff)](https://build.nvidia.com/models)
 
 </div>
 
@@ -99,6 +100,7 @@ A step-by-step guide for users is in [docs/user_guide.md](docs/user_guide.md).
   - Kimi
   - MiniMax
   - Zhipu
+  - NVIDIA (hosted models of build.nvidia.com, OpenAI-compatible)
   - Alibaba Qwen
   - Mistral
   - OpenRouter
@@ -206,6 +208,7 @@ A step-by-step guide for users is in [docs/user_guide.md](docs/user_guide.md).
 - **History thumbnails**: small (about 10 KB) YouTube thumbnails derived from the video id, so older
   and imported items get them too; capped 50 MB cache, falls back to the icon offline; switch in
   Settings > Display
+- **NVIDIA** provider: the hosted catalog of build.nvidia.com (`https://integrate.api.nvidia.com/v1`, an `nvapi-` key); **Test** loads the whole model list, which the **Search model** box filters
 - **LM Studio** and **Custom Provider** (any OpenAI-compatible server) with a URL and an optional token
 - **AI provider dialog**: built-in providers show their official URL (editable), a **Test** button
   checks the URL and API key, the model list is **filled in automatically** from the provider, and

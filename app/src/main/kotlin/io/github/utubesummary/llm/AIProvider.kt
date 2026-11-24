@@ -294,6 +294,28 @@ enum class AIProvider(
             ),
         )
     ),
+    NVIDIA(
+        LLMProvider("nvidia", "NVIDIA"),
+        false,
+        true,
+        R.drawable.nvidia,
+        false,
+        // A few well-known chat models; the full catalog (build.nvidia.com/models) is loaded from the
+        // server with Test, and any other model id can be typed in Manage Models.
+        listOf(
+            "meta/llama-3.3-70b-instruct" to 128_000,
+            "meta/llama-3.1-405b-instruct" to 128_000,
+            "meta/llama-3.1-70b-instruct" to 128_000,
+            "nvidia/llama-3.3-nemotron-super-49b-v1" to 128_000,
+        ).map { (id, context) ->
+            LLModel(
+                provider = LLMProvider("nvidia", "NVIDIA"),
+                id = id,
+                capabilities = openAICompatibleCapabilities,
+                contextLength = context.toLong(),
+            )
+        }
+    ),
     CUSTOM(
         LLMProvider("custom", "Custom Provider"),
         true,
@@ -325,6 +347,7 @@ enum class AIProvider(
             QWEN -> if (chinese) "https://dashscope.aliyuncs.com" else "https://dashscope-intl.aliyuncs.com"
             KIMI -> if (chinese) "https://api.moonshot.cn/v1" else "https://api.moonshot.ai/v1"
             MINIMAX -> if (chinese) "https://api.minimaxi.com/v1" else "https://api.minimax.io/v1"
+            NVIDIA -> "https://integrate.api.nvidia.com/v1"
             ZHIPU -> if (chinese) "https://open.bigmodel.cn/api/paas/v4" else "https://api.z.ai/api/paas/v4"
             OLLAMA, LM_STUDIO, CUSTOM -> null
         }
